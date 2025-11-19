@@ -1,0 +1,15 @@
+# Node dependencies
+/frontend/node_modules/
+/backend/node_modules/
+
+# Build outputs
+/frontend/build/
+/backend/build/
+
+# Environment files (secrets)
+**/.env*
+
+# Logs and miscellaneous
+*.log
+.DS_Store
+Thumbs.db
