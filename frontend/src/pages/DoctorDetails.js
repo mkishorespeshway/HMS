@@ -113,19 +113,30 @@ export default function DoctorDetails() {
             {slots.length === 0 && selectedDate && (
               <div className="text-slate-600">No slots available</div>
             )}
-            {slots.map((s) => {
-              const key = `${s.start}-${s.end}`;
-              const sel = selectedSlot && selectedSlot.start === s.start && selectedSlot.end === s.end;
-              return (
-                <button
-                  key={key}
-                  onClick={() => setSelectedSlot(s)}
-                  className={`px-4 py-2 rounded-full border ${sel ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-900 border-slate-300"}`}
-                >
-                  {s.start} - {s.end}
-                </button>
-              );
-            })}
+            {(() => {
+              const todayISO = new Date().toISOString().slice(0, 10);
+              const now = new Date();
+              const nowMin = now.getHours() * 60 + now.getMinutes();
+              const displaySlots = selectedDate === todayISO
+                ? slots.filter((s) => {
+                    const [hh, mm] = String(s.start || "00:00").split(":").map((x) => Number(x));
+                    return hh * 60 + mm > nowMin;
+                  })
+                : slots;
+              return displaySlots.map((s) => {
+                const key = `${s.start}-${s.end}`;
+                const sel = selectedSlot && selectedSlot.start === s.start && selectedSlot.end === s.end;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedSlot(s)}
+                    className={`px-4 py-2 rounded-full border ${sel ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-900 border-slate-300"}`}
+                  >
+                    {s.start} - {s.end}
+                  </button>
+                );
+              });
+            })()}
           </div>
 
           <button
@@ -141,7 +152,7 @@ export default function DoctorDetails() {
                   type,
                   beneficiaryType: "self",
                 });
-                nav(`/pay/${data._id}`);
+                nav(`/appointments`);
               } catch (err) {
                 alert(err.response?.data?.message || err.message);
               }

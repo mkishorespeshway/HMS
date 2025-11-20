@@ -15,6 +15,8 @@ const nav = useNavigate();
       const { data } = await API.post("/auth/login", { email, password });
       localStorage.setItem("token", data.token);
       if (data?.user?.id) localStorage.setItem("userId", data.user.id);
+      if (data?.user?.name) localStorage.setItem("userName", data.user.name);
+      if (data?.user?.email) localStorage.setItem("userEmail", data.user.email);
       const role = data?.user?.role;
       if (role === "doctor") nav("/doctor/dashboard");
       else if (role === "admin") nav("/admin/dashboard");

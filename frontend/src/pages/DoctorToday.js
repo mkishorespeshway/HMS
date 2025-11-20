@@ -11,7 +11,15 @@ export default function DoctorToday() {
     setLoading(true);
     try {
       const { data } = await API.get("/appointments/today");
-      setList(data || []);
+      let items = data || [];
+      if (!items.length) {
+        try {
+          const mine = await API.get("/appointments/mine");
+          const todayStr = new Date().toISOString().slice(0, 10);
+          items = (mine.data || []).filter((a) => a.date === todayStr);
+        } catch (_) {}
+      }
+      setList(items);
     } catch (e) {
       alert(e.response?.data?.message || e.message);
     } finally {
@@ -20,6 +28,40 @@ export default function DoctorToday() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const accept = async (id, date, startTime) => {
+    const apptId = id || "";
+    if (!apptId) { alert("Invalid appointment"); return; }
+    try {
+      await API.put(`/appointments/${String(apptId)}/accept`, { date, startTime });
+      load();
+    } catch (e) {
+      const msg = e.response?.data?.message || e.message || "Failed to accept";
+      if (e.response?.status === 404) {
+        alert("Appointment not found");
+        await load();
+      } else {
+        alert(msg);
+      }
+    }
+  };
+
+  const reject = async (id, date, startTime) => {
+    const apptId = id || "";
+    if (!apptId) { alert("Invalid appointment"); return; }
+    try {
+      await API.put(`/appointments/${String(apptId)}/reject`, { date, startTime });
+      load();
+    } catch (e) {
+      const msg = e.response?.data?.message || e.message || "Failed to reject";
+      if (e.response?.status === 404) {
+        alert("Appointment not found");
+        await load();
+      } else {
+        alert(msg);
+      }
+    }
+  };
 
   const rows = list.length
     ? list.map((a, i) => (
@@ -33,7 +75,26 @@ export default function DoctorToday() {
           <td className="px-4 py-3">{a.date} {a.startTime}</td>
           <td className="px-4 py-3">₹{a.fee || 0}</td>
           <td className="px-4 py-3">
-            <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">{a.status}</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => accept(a._id || a.id, a.date, a.startTime)}
+                disabled={!(a?._id || a?.id)}
+                className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-green-600 hover:bg-green-700 text-white" : "bg-slate-200 text-slate-500"}`}
+                title="Accept"
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => reject(a._id || a.id, a.date, a.startTime)}
+                disabled={!(a?._id || a?.id)}
+                className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-red-600 hover:bg-red-700 text-white" : "bg-slate-200 text-slate-500"}`}
+                title="Reject"
+              >
+                ✕
+              </button>
+            </div>
           </td>
         </tr>
       ))
@@ -45,7 +106,12 @@ export default function DoctorToday() {
           <td className="px-4 py-3">22</td>
           <td className="px-4 py-3">Nov 25th, 10:30 am</td>
           <td className="px-4 py-3">₹500</td>
-          <td className="px-4 py-3"><span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Completed</span></td>
+          <td className="px-4 py-3">
+            <div className="flex gap-2">
+              <button type="button" className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-md">Accept</button>
+              <button type="button" className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md">Reject</button>
+            </div>
+          </td>
         </tr>
       ));
 
@@ -84,7 +150,7 @@ export default function DoctorToday() {
                     <th className="px-4 py-3 text-left">Age</th>
                     <th className="px-4 py-3 text-left">Date & Time</th>
                     <th className="px-4 py-3 text-left">Fee</th>
-                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>

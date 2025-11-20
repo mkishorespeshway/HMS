@@ -11,15 +11,26 @@ router.get('/', async (req, res) => {
   const filter = {};
   if (city) filter['clinic.city'] = new RegExp(city, 'i');
   if (specialization) filter['specializations'] = specialization;
-  if (q) filter['$or'] = [ { 'clinic.name': new RegExp(q,'i') }, { 'specializations': new RegExp(q,'i') } ];
   if (user) filter['user'] = user;
 
-  const doctors = await DoctorProfile.find(filter).populate({
+  let doctors = await DoctorProfile.find(filter).populate({
     path: 'user',
     select: '-passwordHash',
     match: { role: 'doctor', isDoctorApproved: true }
   });
-  res.json(doctors.filter(d => !!d.user));
+
+  doctors = doctors.filter(d => !!d.user);
+
+  if (q) {
+    const qRegex = new RegExp(String(q), 'i');
+    doctors = doctors.filter(d =>
+      qRegex.test(d.user?.name || '') ||
+      qRegex.test(d.clinic?.name || '') ||
+      (d.specializations || []).some(s => qRegex.test(String(s)))
+    );
+  }
+
+  res.json(doctors);
 });
 
 

@@ -22,6 +22,9 @@ export default function Register() {
       });
 
       localStorage.setItem("token", res.data.token);
+      if (res.data?.user?.id) localStorage.setItem("userId", res.data.user.id);
+      if (res.data?.user?.name) localStorage.setItem("userName", res.data.user.name);
+      if (res.data?.user?.email) localStorage.setItem("userEmail", res.data.user.email);
       nav("/search");
     } catch (err) {
       alert(err.response?.data?.message || err.message);

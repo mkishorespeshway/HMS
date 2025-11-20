@@ -1,11 +1,11 @@
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useState } from "react";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import DoctorLogin from "./pages/DoctorLogin";
 import Register from "./pages/Register";
  
 import DoctorDetails from "./pages/DoctorDetails";
-import BookAppointment from "./pages/BookAppointment";
 import Payment from "./pages/Payment";
 import DoctorToday from "./pages/DoctorToday";
 import DoctorDashboard from "./pages/DoctorDashboard";
@@ -21,11 +21,18 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminAppointments from "./pages/AdminAppointments";
 import AdminAddDoctor from "./pages/AdminAddDoctor";
 import SearchDoctors from "./pages/SearchDoctors";
+import Profile from "./pages/Profile";
+import Appointments from "./pages/Appointments";
 
 
 function Header() {
   const location = useLocation();
+  const nav = useNavigate();
+  const [open, setOpen] = useState(false);
   const hideHeader = location.pathname.startsWith('/admin') || location.pathname.startsWith('/doctor');
+  const token = localStorage.getItem('token');
+  const photo = localStorage.getItem('userPhotoBase64') || ((process.env.PUBLIC_URL || '') + '/doctor3.jpeg');
+  const showAdminLink = !token && !location.pathname.startsWith('/login');
   if (hideHeader) return null;
   return (
     <header className="bg-white border-b">
@@ -37,9 +44,33 @@ function Header() {
             <Link to="/search" className="hover:text-indigo-600">All Doctors</Link>
             <Link to="/about" className="hover:text-indigo-600">About</Link>
             <Link to="/contact" className="hover:text-indigo-600">Contact</Link>
-            <Link to="/admin/login" className="hover:text-indigo-600">Admin</Link>
+            {showAdminLink && <Link to="/admin/login" className="hover:text-indigo-600">Admin</Link>}
           </nav>
-          <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full">Create Account</Link>
+          {token ? (
+            <div className="relative">
+              <img
+                src={photo}
+                alt="User"
+                className="h-9 w-9 rounded-full object-cover border border-slate-300 cursor-pointer"
+                onClick={() => setOpen((v) => !v)}
+                onError={(e) => { e.currentTarget.src = ((process.env.PUBLIC_URL || '') + '/doctor3.jpeg'); }}
+              />
+              {open && (
+                <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-md shadow-md text-sm">
+                  <Link to="/profile" className="block px-3 py-2 hover:bg-slate-50">My Profile</Link>
+                  <Link to="/appointments" className="block px-3 py-2 hover:bg-slate-50">My Appointments</Link>
+                  <button
+                    onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userId'); nav('/login'); }}
+                    className="block w-full text-left px-3 py-2 hover:bg-slate-50"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full">Create Account</Link>
+          )}
         </div>
       </div>
     </header>
@@ -63,7 +94,7 @@ return (
 <Route path="/register" element={<Register />} />
 <Route path="/search" element={<SearchDoctors />} />
 <Route path="/doctor/:id" element={<DoctorDetails />} />
-        <Route path="/book/:id" element={<BookAppointment />} />
+        <Route path="/book/:id" element={<Navigate to="/search" />} />
         <Route path="/pay/:id" element={<Payment />} />
         <Route path="/doctor/today" element={<DoctorToday />} />
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
@@ -76,6 +107,8 @@ return (
         <Route path="/admin/add-doctor" element={<AdminAddDoctor />} />
         <Route path="/admin/doctors" element={<SearchDoctors />} />
         <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/appointments" element={<Appointments />} />
 </Routes>
 </div>
 </BrowserRouter>

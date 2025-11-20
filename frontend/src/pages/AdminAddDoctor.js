@@ -18,10 +18,6 @@ export default function AdminAddDoctor() {
     password: "",
     photoBase64: "",
   });
-  const [resetEmail, setResetEmail] = useState("");
-  const [resetPassword, setResetPassword] = useState("");
-  const [resetStatus, setResetStatus] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -51,25 +47,6 @@ export default function AdminAddDoctor() {
       nav("/admin/doctors");
     } catch (err) {
       alert(err.response?.data?.message || err.message || "Failed to create doctor");
-    }
-  };
-
-  const resetSubmit = async (e) => {
-    e.preventDefault();
-    setResetStatus("");
-    setResetLoading(true);
-    try {
-      await API.post("/admin/doctors/reset-password", {
-        email: resetEmail.trim(),
-        newPassword: resetPassword.trim(),
-      });
-      setResetStatus("Password reset successfully.");
-      setResetEmail("");
-      setResetPassword("");
-    } catch (err) {
-      setResetStatus(err.response?.data?.message || err.message || "Failed to reset password");
-    } finally {
-      setResetLoading(false);
     }
   };
 
@@ -162,19 +139,6 @@ export default function AdminAddDoctor() {
 
           <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">Create Doctor</button>
         </form>
-
-        <hr className="my-6" />
-        <div className="max-w-xl">
-          <h2 className="text-xl font-semibold mb-3">Reset Doctor Password</h2>
-          <form onSubmit={resetSubmit}>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Doctor Email</label>
-            <input value={resetEmail} onChange={(e)=>setResetEmail(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="doctor@example.com" />
-            <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
-            <input type="password" value={resetPassword} onChange={(e)=>setResetPassword(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="New password (min 6 chars)" />
-            {resetStatus && <div className={`text-sm mb-3 ${resetStatus.includes('successfully') ? 'text-green-700' : 'text-red-600'}`}>{resetStatus}</div>}
-            <button className="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-md" disabled={resetLoading}>{resetLoading? 'Updating...' : 'Reset Password'}</button>
-          </form>
-        </div>
       </div>
         </main>
       </div>

@@ -27,6 +27,16 @@ export default function SearchDoctors() {
       const { data } = await API.get("/doctors", { params: { q, specialization } });
       let items = Array.isArray(data) ? data : [];
 
+      if (q && String(q).trim().length > 0) {
+        const norm = String(q).trim().toLowerCase();
+        items = items.filter((d) => {
+          const name = String(d.user?.name || "").toLowerCase();
+          const clinic = String(d.clinic?.name || "").toLowerCase();
+          const specs = (d.specializations || []).map((s) => String(s).toLowerCase());
+          return name.includes(norm) || clinic.includes(norm) || specs.some((s) => s.includes(norm));
+        });
+      }
+
       if (specialization) {
         const norm = specialization.trim().toLowerCase();
         const hasMatches = items.some((d) => (d.specializations || []).some((s) => String(s).toLowerCase().includes(norm)));
@@ -50,6 +60,12 @@ export default function SearchDoctors() {
     search();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [specialization]);
+
+  useEffect(() => {
+    const t = setTimeout(() => { search(); }, 250);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   if (isAdmin) {
     return (
@@ -132,12 +148,13 @@ export default function SearchDoctors() {
               </button>
             </div>
             <div className="mt-4">
-              <input
-                className="w-full border border-slate-300 rounded-md p-2"
-                placeholder="Search doctor or specialization"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
+          <input
+            className="w-full border border-slate-300 rounded-md p-2"
+            placeholder="Search doctor or specialization"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') search(); }}
+          />
               <button
                 onClick={search}
                 className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"

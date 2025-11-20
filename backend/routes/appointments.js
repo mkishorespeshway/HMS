@@ -137,6 +137,52 @@ router.put("/:id/complete", authenticate, async (req, res) => {
     res.json(appt);
 });
 
+router.put("/:id/cancel", authenticate, async (req, res) => {
+    const { id } = req.params;
+    const appt = await Appointment.findById(id);
+    if (!appt) return res.status(404).json({ message: "Appointment not found" });
+    const uid = String(req.user._id);
+    const isOwner = String(appt.patient) === uid || String(appt.doctor) === uid;
+    const isAdmin = req.user.role === "admin";
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+    appt.status = "CANCELLED";
+    await appt.save();
+    res.json(appt);
+});
+
+router.put("/:id/accept", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { date, startTime } = req.body || {};
+  let appt = await Appointment.findById(id);
+  if (!appt && date && startTime) {
+    appt = await Appointment.findOne({ doctor: req.user._id, date, startTime });
+  }
+  if (!appt) return res.status(404).json({ message: "Appointment not found" });
+  if (req.user.role !== "doctor" || String(appt.doctor) !== String(req.user._id)) {
+    return res.status(403).json({ message: "Only the doctor can accept" });
+  }
+  appt.status = "CONFIRMED";
+  await appt.save();
+  res.json(appt);
+});
+
+router.put("/:id/reject", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { date, startTime } = req.body || {};
+  let appt = await Appointment.findById(id);
+  if (!appt && date && startTime) {
+    appt = await Appointment.findOne({ doctor: req.user._id, date, startTime });
+  }
+  if (!appt) return res.status(404).json({ message: "Appointment not found" });
+  const uid = String(req.user._id);
+  const isDoctor = req.user.role === "doctor" && String(appt.doctor) === uid;
+  const isAdmin = req.user.role === "admin";
+  if (!isDoctor && !isAdmin) return res.status(403).json({ message: "Forbidden" });
+  appt.status = "CANCELLED";
+  await appt.save();
+  res.json(appt);
+});
+
 router.post("/:id/prescription", authenticate, async (req, res) => {
   const { id } = req.params;
   const { text } = req.body;

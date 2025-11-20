@@ -5,6 +5,10 @@ import API from "../api";
 export default function DoctorProfile() {
   const nav = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [online, setOnline] = useState(() => {
+    const v = localStorage.getItem("doctorOnline");
+    return v === null ? true : v === "1";
+  });
   
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState("");
@@ -32,13 +36,16 @@ export default function DoctorProfile() {
     load();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("doctorOnline", online ? "1" : "0");
+  }, [online]);
+
   const name = profile?.user?.name || "Dr. Richard James";
   const specs = profile?.specializations?.join(", ") || "MBBS - General physician";
   const about = profile?.about || "Aims to deliver outstanding healthcare by adhering to compassionate medical care. Focuses on preventive medicine, timely diagnosis, and comprehensive treatment for better outcomes.";
   const fee = profile?.consultationFees ?? 540;
   const address = profile?.clinic?.address || "7/1, Cross, Basavand, Clinic Road, London";
   const city = profile?.clinic?.city || "London";
-  const available = true;
   const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=640&auto=format&fit=crop";
 
   const startEdit = () => {
@@ -129,8 +136,14 @@ export default function DoctorProfile() {
                 <div className="mt-4 text-sm text-slate-700">Appointment Fee: ₹{fee}</div>
                 <div className="mt-1 text-sm text-slate-700">Address: {address}</div>
                 <div className="mt-1 text-sm text-slate-700">City: {city}</div>
-                <div className="mt-2">
-                  <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">{available ? "Available" : "Unavailable"}</span>
+                <div className="mt-3 flex items-center gap-3">
+                  <span className={`inline-block text-xs px-2 py-1 rounded ${online ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-700"}`}>{online ? "Online" : "Offline"}</span>
+                  <button
+                    onClick={() => setOnline((v) => !v)}
+                    className={`text-xs px-3 py-1 rounded-full border ${online ? "border-green-600 text-green-700" : "border-slate-600 text-slate-700"}`}
+                  >
+                    {online ? "Go Offline" : "Go Online"}
+                  </button>
                 </div>
                 <button onClick={startEdit} className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">Edit</button>
               </div>
