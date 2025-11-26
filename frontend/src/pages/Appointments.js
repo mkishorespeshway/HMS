@@ -111,7 +111,7 @@ export default function Appointments() {
           const { id, url } = e.data || {};
           const apptId = String(id || '');
           const link = String(url || '').replace(/[`'\"]/g, '').trim();
-          if (!apptId || !link || !link.includes('meet.google.com') || link.endsWith('/new')) return;
+          if (!apptId || !link || !/^https?:\/\//.test(link)) return;
           try { localStorage.setItem(`meetlink_${apptId}`, link); } catch(_) {}
           setList((prev) => prev.map((x) => (String(x._id || x.id) === apptId ? { ...x, meetingLink: link } : x)));
         } catch (_) {}
@@ -256,7 +256,7 @@ export default function Appointments() {
           const msg = ev?.data || {};
           const id = String(msg.id || '');
           const url = String(msg.url || '');
-          if (!id || !url || !url.includes('meet.google.com')) return;
+          if (!id || !url || !/^https?:\/\//.test(url)) return;
           try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
         } catch (_) {}
       };
@@ -356,15 +356,15 @@ export default function Appointments() {
       const existing = String(appt?.meetingLink || '').replace(/[`'\"]/g, '').trim();
       const stored = id ? localStorage.getItem(`meetlink_${id}`) : null;
       const s = stored ? String(stored).replace(/[`'\"]/g, '').trim() : '';
-      if (s && s.includes('meet.google.com') && !s.endsWith('/new')) return s;
-      if (existing && existing.includes('meet.google.com') && !existing.endsWith('/new')) return existing;
+      if (s && /^https?:\/\//.test(s)) return s;
+      if (existing && /^https?:\/\//.test(existing)) return existing;
       try {
         const wr = JSON.parse(localStorage.getItem(`wr_${id}_chat`) || '[]');
         const fu = JSON.parse(localStorage.getItem(`fu_${id}_chat`) || '[]');
         const all = ([]).concat(Array.isArray(wr) ? wr : [], Array.isArray(fu) ? fu : []);
         for (let i = all.length - 1; i >= 0; i--) {
           const t = String(all[i]?.text || '').replace(/[`'\"]/g, '').trim();
-          if (t.includes('meet.google.com') && !t.endsWith('/new')) return t;
+          if (/^https?:\/\//.test(t)) return t;
         }
       } catch (_) {}
       return '';
@@ -483,7 +483,7 @@ export default function Appointments() {
                             }
                             const link = meetLinkFor(a);
                             const url = String(link).replace(/[`'\"]/g, '').trim();
-                            if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
+                            if (!url || !/^https?:\/\//.test(url)) {
                               return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Waiting for doctor to set meeting link</span>;
                             }
                             return (

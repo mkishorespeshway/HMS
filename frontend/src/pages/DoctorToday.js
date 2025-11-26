@@ -313,8 +313,8 @@ export default function DoctorToday() {
       const stored = id ? localStorage.getItem(`meetlink_${id}`) : null;
       const s = stored ? String(stored).replace(/[`'\"]/g, '').trim() : '';
       const e = String(existing).replace(/[`'\"]/g, '').trim();
-      if (s && s.includes('meet.google.com') && !s.endsWith('/new')) return s;
-      if (e && e.includes('meet.google.com') && !e.endsWith('/new')) return e;
+      if (s && /^https?:\/\//.test(s)) return s;
+      if (e && /^https?:\/\//.test(e)) return e;
       return '';
     } catch (_) { return ''; }
   };
@@ -323,9 +323,9 @@ export default function DoctorToday() {
     try {
       const id = String(appt?._id || appt?.id || '');
       if (!id) return;
-      const url = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
+      const url = window.prompt('Paste meeting link (https://...)');
       if (!url) return;
-      if (!String(url).includes('meet.google.com') || String(url).endsWith('/new')) { alert('Invalid Google Meet link'); return; }
+      if (!/^https?:\/\//.test(String(url))) { alert('Invalid meeting link'); return; }
       localStorage.setItem(`meetlink_${id}`, String(url));
       setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, meetingLink: String(url) } : x)));
       const clean = String(url).replace(/[`'\"]/g, '').trim();
@@ -667,28 +667,26 @@ export default function DoctorToday() {
               <div className="col-span-12 md:col-span-7 border-r">
                 {joinMode !== 'chat' ? (
                   <div className="p-4">
-                    <div className="text-sm text-slate-700 mb-2">Open Google Meet in a new tab to start the call.</div>
+                    <div className="text-sm text-slate-700 mb-2">Open meeting in a new tab to start the call.</div>
                     <button onClick={async () => {
                       let link = meetLinkFor(consult || {});
                       let url = String(link).replace(/[`'\"]/g, '').trim();
                       const id = String(consult._id || consult.id);
-                      if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
+                      if (!url || !/^https?:\/\//.test(url)) {
                         try {
                           const resp = await API.post(`/appointments/${id}/meet-link/generate`);
                           url = String(resp?.data?.url || '').trim();
-                          if (url && url.includes('meet.google.com') && !url.endsWith('/new')) {
-                            try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
-                          }
+                          if (!/^https?:\/\//.test(url)) { alert('Failed to generate meeting link'); return; }
+                          try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
                         } catch (e) {
                           alert(e.response?.data?.message || e.message || 'Failed to generate meeting link');
                           return;
                         }
-                      } else {
-                        try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
                       }
+                      try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
                       try { meetChanRef.current && meetChanRef.current.postMessage({ id, url }); } catch(_) {}
                       window.open(url, '_blank');
-                    }} className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white">Open Google Meet</button>
+                    }} className="px-3 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white">Open Meeting</button>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         onClick={() => { window.open(`/prescription/${consult._id || consult.id}?print=1`, '_blank'); }}

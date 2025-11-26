@@ -652,14 +652,18 @@ export default function DoctorDashboard() {
                                   if (!isOnline) { alert('You are offline. Set status to ONLINE to start consultation.'); return; }
                                   const id = String(a._id || a.id || '');
                                   const stored = id ? localStorage.getItem(`meetlink_${id}`) : '';
-                                  let pick = (stored && stored.includes('meet.google.com')) ? stored : String(a.meetingLink || '');
+                                  let pick = (stored && /^https?:\/\//.test(stored)) ? stored : String(a.meetingLink || '');
                                   let url = String(pick).replace(/[`'\"]/g, '').trim();
-                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
-                                    const manual = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
-                                    url = String(manual || '').replace(/[`'\"]/g, '').trim();
-                                    if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Invalid Google Meet link'); return; }
-                                    try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
-                                    try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
+                                  if (!url || !/^https?:\/\//.test(url)) {
+                                    try {
+                                      const resp = await API.post(`/appointments/${id}/meet-link/generate`);
+                                      url = String(resp?.data?.url || '').trim();
+                                      if (!/^https?:\/\//.test(url)) { alert('Failed to generate meeting link'); return; }
+                                      try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
+                                    } catch (e) {
+                                      alert(e.response?.data?.message || e.message || 'Failed to generate meeting link');
+                                      return;
+                                    }
                                   } else {
                                     try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
                                   }
@@ -691,10 +695,15 @@ export default function DoctorDashboard() {
                                 onClick={async () => {
                                   const id = String(a._id || a.id || '');
                                   let url = String(localStorage.getItem(`meetlink_${id}`) || a.meetingLink || '').replace(/[`'\"]/g, '').trim();
-                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
-                                    const manual = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
-                                    url = String(manual || '').replace(/[`'\"]/g, '').trim();
-                                    if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Invalid Google Meet link'); return; }
+                                  if (!url || !/^https?:\/\//.test(url)) {
+                                    try {
+                                      const resp = await API.post(`/appointments/${id}/meet-link/generate`);
+                                      url = String(resp?.data?.url || '').trim();
+                                      if (!/^https?:\/\//.test(url)) { alert('Failed to generate meeting link'); return; }
+                                    } catch (e) {
+                                      alert(e.response?.data?.message || e.message || 'Failed to generate meeting link');
+                                      return;
+                                    }
                                   }
                                   try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
                                   try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}

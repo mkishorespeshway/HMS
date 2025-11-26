@@ -5,6 +5,7 @@ const Appointment = require("../models/Appointment");
 const DoctorProfile = require("../models/DoctorProfile");
 const { generateSlots } = require("../utils/slotGenerator");
 const { sendMail } = require("../utils/mailer");
+const { createMeetLink } = require("../utils/meeting");
 
 // -------------------------------
 // Get available slots for a doctor
@@ -89,7 +90,7 @@ router.put('/:id/meet-link', authenticate, async (req, res) => {
   const { url } = req.body || {};
   if (!id || !url || typeof url !== 'string') return res.status(400).json({ message: 'id and url required' });
   const link = String(url).replace(/[`'\"]/g, '').trim();
-  if (!link.includes('meet.google.com') || link.endsWith('/new')) return res.status(400).json({ message: 'Invalid Google Meet link' });
+  if (!/^https?:\/\//.test(link)) return res.status(400).json({ message: 'Invalid meeting link' });
   const appt = await Appointment.findById(id).populate('patient', 'email name');
   if (!appt) return res.status(404).json({ message: 'Appointment not found' });
   if (req.user.role !== 'doctor' || String(appt.doctor) !== String(req.user._id)) return res.status(403).json({ message: 'Only the doctor can set link' });
@@ -102,6 +103,23 @@ router.put('/:id/meet-link', authenticate, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.post('/:id/meet-link/generate', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const appt = await Appointment.findById(id).populate('patient', 'email name');
+  if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+  if (req.user.role !== 'doctor' || String(appt.doctor) !== String(req.user._id)) return res.status(403).json({ message: 'Only the doctor can generate link' });
+  try {
+    const url = await createMeetLink({ doctorId: appt.doctor, date: appt.date, startTime: appt.startTime, endTime: appt.endTime });
+    if (!url || !/^https?:\/\//.test(url)) return res.status(500).json({ message: 'Failed to generate meeting link' });
+    appt.meetingLink = url;
+    await appt.save();
+    try { if (appt.patient?.email) await sendMail(appt.patient.email, 'Join Meeting', `Doctor has started your consultation. Join here: ${url}`); } catch (_) {}
+    return res.json({ url });
+  } catch (e) {
+    return res.status(500).json({ message: e.message || 'Failed to generate meeting link' });
+  }
+});
+
 router.post("/:id/pay", authenticate, async (req, res) => {
     const { id } = req.params;
     const appt = await Appointment.findById(id);
@@ -110,6 +128,12 @@ router.post("/:id/pay", authenticate, async (req, res) => {
     if (appt.paymentStatus === "PAID") return res.json(appt);
     appt.paymentStatus = "PAID";
     appt.status = "CONFIRMED";
+    if (appt.type === 'online' && !appt.meetingLink) {
+      try {
+        const link = await createMeetLink({ doctorId: appt.doctor, date: appt.date, startTime: appt.startTime, endTime: appt.endTime });
+        if (link) appt.meetingLink = link;
+      } catch (_) {}
+    }
     await appt.save();
 
     const populated = await Appointment.findById(id)
@@ -118,12 +142,18 @@ router.post("/:id/pay", authenticate, async (req, res) => {
 
     const when = `${populated.date} ${populated.startTime}-${populated.endTime}`;
     const subject = "Appointment Confirmed";
-    const textPatient = `Your appointment with ${populated.doctor.name} is confirmed for ${when}.`;
-    const textDoctor = `New appointment confirmed with ${populated.patient.name} for ${when}.`;
+    const joinLine = populated.meetingLink ? `\nJoin: ${populated.meetingLink}` : "";
+    const textPatient = `Your appointment with ${populated.doctor.name} is confirmed for ${when}.${joinLine}`;
+    const textDoctor = `New appointment confirmed with ${populated.patient.name} for ${when}.${joinLine}`;
     try {
         if (populated.patient.email) await sendMail(populated.patient.email, subject, textPatient);
         if (populated.doctor.email) await sendMail(populated.doctor.email, subject, textDoctor);
     } catch (e) {}
+
+    try {
+      const io = req.app.get('io');
+      if (io) io.emit('appointment:new', populated);
+    } catch (_) {}
 
     res.json(populated);
 });
