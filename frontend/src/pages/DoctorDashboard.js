@@ -312,7 +312,15 @@ export default function DoctorDashboard() {
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 md:col-span-3">
           <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className="text-indigo-700 font-semibold mb-4">Prescripto</div>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-indigo-700 font-semibold">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>HospoZen</span>
+              </div>
+            </div>
             <nav className="space-y-2 text-slate-700">
               <div className="px-3 py-2 rounded-md bg-indigo-50 text-indigo-700">Dashboard</div>
               <Link to="/doctor/today" className="block px-3 py-2 rounded-md hover:bg-slate-50">Appointments</Link>
@@ -378,7 +386,27 @@ export default function DoctorDashboard() {
                         <div className="font-semibold text-slate-900">{a.patient?.name || 'Patient'}</div>
                         <div className="text-xs text-slate-600">{a.date} • {a.startTime} • {a.type === 'online' ? 'Online' : 'Clinic'}</div>
                       </div>
-                      <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
+                        {String(a.status).toUpperCase() === 'PENDING' && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => accept(a._id || a.id)}
+                              className="h-6 w-6 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center"
+                              title="Accept"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => reject(a._id || a.id)}
+                              className="h-6 w-6 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center"
+                              title="Reject"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -616,48 +644,68 @@ export default function DoctorDashboard() {
                             return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Available 5 min before</span>;
                           }
                           return (
-                            <button
-                              onClick={async () => {
-                                const docId = String(a.doctor?._id || a.doctor || '');
-                                const isOnline = localStorage.getItem(`doctorOnlineById_${docId}`) === '1';
-                                if (!isOnline) { alert('You are offline. Set status to ONLINE to start consultation.'); return; }
-                                const id = String(a._id || a.id || '');
-                                const stored = id ? localStorage.getItem(`meetlink_${id}`) : '';
-                                let pick = (stored && stored.includes('meet.google.com')) ? stored : String(a.meetingLink || '');
-                                let url = String(pick).replace(/[`'\"]/g, '').trim();
-                                if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
-                                  const manual = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
-                                  url = String(manual || '').replace(/[`'\"]/g, '').trim();
-                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Invalid Google Meet link'); return; }
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={async () => {
+                                  const docId = String(a.doctor?._id || a.doctor || '');
+                                  const isOnline = localStorage.getItem(`doctorOnlineById_${docId}`) === '1';
+                                  if (!isOnline) { alert('You are offline. Set status to ONLINE to start consultation.'); return; }
+                                  const id = String(a._id || a.id || '');
+                                  const stored = id ? localStorage.getItem(`meetlink_${id}`) : '';
+                                  let pick = (stored && stored.includes('meet.google.com')) ? stored : String(a.meetingLink || '');
+                                  let url = String(pick).replace(/[`'\"]/g, '').trim();
+                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
+                                    const manual = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
+                                    url = String(manual || '').replace(/[`'\"]/g, '').trim();
+                                    if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Invalid Google Meet link'); return; }
+                                    try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
+                                    try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
+                                  } else {
+                                    try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
+                                  }
+                                  try {
+                                    const chan = new BroadcastChannel('meetlink');
+                                    chan.postMessage({ id, url });
+                                    try { chan.close(); } catch(_) {}
+                                  } catch (_) {}
+                                  try {
+                                    const key = `wr_${id}_chat`;
+                                    const chat = JSON.parse(localStorage.getItem(key) || '[]');
+                                    const next = Array.isArray(chat) ? [...chat, String(url)] : [String(url)];
+                                    localStorage.setItem(key, JSON.stringify(next));
+                                  } catch (_) {}
+                                  try {
+                                    const uid = localStorage.getItem('userId') || '';
+                                    if (uid) {
+                                      localStorage.setItem(`doctorBusyById_${uid}`, '1');
+                                      API.put('/doctors/me/status', { isOnline: true, isBusy: true }).catch(() => {});
+                                    }
+                                  } catch(_) {}
+                                  window.open(url, '_blank');
+                                }}
+                                className="px-3 py-1 rounded-md border border-green-600 text-green-700"
+                              >
+                                Join
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const id = String(a._id || a.id || '');
+                                  let url = String(localStorage.getItem(`meetlink_${id}`) || a.meetingLink || '').replace(/[`'\"]/g, '').trim();
+                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
+                                    const manual = window.prompt('Paste Google Meet link (e.g., https://meet.google.com/xxx-yyyy-zzz)');
+                                    url = String(manual || '').replace(/[`'\"]/g, '').trim();
+                                    if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Invalid Google Meet link'); return; }
+                                  }
                                   try { localStorage.setItem(`meetlink_${id}`, url); } catch(_) {}
                                   try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
-                                } else {
-                                  try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
-                                }
-                                try {
-                                  const chan = new BroadcastChannel('meetlink');
-                                  chan.postMessage({ id, url });
-                                  try { chan.close(); } catch(_) {}
-                                } catch (_) {}
-                                try {
-                                  const key = `wr_${id}_chat`;
-                                  const chat = JSON.parse(localStorage.getItem(key) || '[]');
-                                  const next = Array.isArray(chat) ? [...chat, String(url)] : [String(url)];
-                                  localStorage.setItem(key, JSON.stringify(next));
-                                } catch (_) {}
-                                try {
-                                  const uid = localStorage.getItem('userId') || '';
-                                  if (uid) {
-                                    localStorage.setItem(`doctorBusyById_${uid}`, '1');
-                                    API.put('/doctors/me/status', { isOnline: true, isBusy: true }).catch(() => {});
-                                  }
-                                } catch(_) {}
-                                window.open(url, '_blank');
-                              }}
-                              className="px-3 py-1 rounded-md border border-green-600 text-green-700"
-                            >
-                              Join
-                            </button>
+                                  try { const chan = new BroadcastChannel('meetlink'); chan.postMessage({ id, url }); chan.close(); } catch(_) {}
+                                  alert('Meeting link set');
+                                }}
+                                className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700"
+                              >
+                                Set Link
+                              </button>
+                            </div>
                           );
                         })()
                       )}

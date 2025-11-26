@@ -269,11 +269,11 @@ export default function DoctorToday() {
     }
   }, [detailsAppt, list]);
 
-  const accept = async (id, date, startTime) => {
+  const accept = async (id) => {
     const apptId = id || "";
     if (!apptId) { alert("Invalid appointment"); return; }
     try {
-      await API.put(`/appointments/${String(apptId)}/accept`, { date, startTime });
+      await API.put(`/appointments/${String(apptId)}/accept`);
       setList((prev) => prev.map((x) => (String(x._id || x.id) === String(apptId) ? { ...x, status: "CONFIRMED" } : x)));
       load();
     } catch (e) {
@@ -448,7 +448,8 @@ export default function DoctorToday() {
                 end.setHours(eh, em, 0, 0);
                 const now = Date.now();
                 const docId = String(a.doctor?._id || a.doctor || '');
-                const isOnline = localStorage.getItem(`doctorOnlineById_${docId}`) === '1';
+                const onlineFlag = localStorage.getItem(`doctorOnlineById_${docId}`);
+                const isExplicitOffline = onlineFlag === '0';
                 const open = (mode) => {
                   let url = meetLinkFor(a);
                   if (!url) {
@@ -456,7 +457,7 @@ export default function DoctorToday() {
                     url = meetLinkFor(a);
                     if (!url) { alert('Meeting link not set. Click "Set Link" and paste a Google Meet URL.'); return; }
                   }
-                  if (!isOnline) { alert('You are offline. Set status to ONLINE to start consultation.'); return; }
+                  if (isExplicitOffline) { alert('You are offline. Set status to ONLINE to start consultation.'); return; }
                   try {
                     const uid = localStorage.getItem('userId') || '';
                     if (uid) {
@@ -496,6 +497,14 @@ export default function DoctorToday() {
               className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700"
             >
               Write Prescription
+            </button>
+            <button
+              type="button"
+              onClick={() => reject(a._id || a.id, a.date, a.startTime)}
+              className="px-3 py-1 rounded-md border border-red-600 text-red-700"
+              title="Reject"
+            >
+              Reject
             </button>
             <button
               type="button"
@@ -567,7 +576,15 @@ export default function DoctorToday() {
       <div className="grid grid-cols-12 gap-6">
         <aside className="col-span-12 md:col-span-3">
           <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className="text-indigo-700 font-semibold mb-4">Prescripto</div>
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-indigo-700 font-semibold">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>HospoZen</span>
+              </div>
+            </div>
             <nav className="space-y-2 text-slate-700">
               <Link to="/doctor/dashboard" className="block px-3 py-2 rounded-md hover:bg-slate-50">Dashboard</Link>
               <div className="px-3 py-2 rounded-md bg-indigo-50 text-indigo-700">Appointments</div>
@@ -882,6 +899,15 @@ export default function DoctorToday() {
                             ].filter(Boolean);
                             const text = parts.join("\n");
                             await API.post(`/appointments/${id}/prescription`, { text });
+                            try {
+                              const key = String(id);
+                              const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
+                              const label = `Prescription ${consult.date} ${consult.startTime}`;
+                              const item = { name: label, url: `${window.location.origin}/prescription/${key}`, by: "doctor" };
+                              const next = Array.isArray(prev) ? [...prev, item] : [item];
+                              localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
+                              try { const chan = new BroadcastChannel('prescriptions'); chan.postMessage({ id: key, item }); chan.close(); } catch (_) {}
+                            } catch (_) {}
                             alert('Saved & sent to patient');
                             try { window.open(`/prescription/${id}?print=1`, '_blank'); } catch(_) {}
                           } catch (e) {

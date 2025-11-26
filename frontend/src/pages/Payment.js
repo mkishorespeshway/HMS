@@ -44,7 +44,7 @@ export default function Payment() {
       key,
       amount,
       currency: "INR",
-      name: "Prescripto",
+      name: "HospoZen",
       description: `Appointment with ${appt.doctor?.name || "Doctor"}`,
       handler: async (response) => {
         try {

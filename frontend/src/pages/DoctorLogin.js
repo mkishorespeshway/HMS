@@ -41,7 +41,13 @@ export default function DoctorLogin() {
     <div className="min-h-screen bg-white">
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="text-lg font-semibold text-indigo-700">Prescripto</Link>
+          <Link to="/" className="flex items-center gap-2 text-indigo-700">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+              <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span className="text-lg font-semibold">HospoZen</span>
+          </Link>
           <nav className="flex items-center gap-6 text-slate-700">
             <Link to="/" className="hover:text-indigo-600">Home</Link>
             <Link to="/admin/login" className="hover:text-indigo-600">Admin</Link>

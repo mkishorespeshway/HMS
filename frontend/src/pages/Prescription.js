@@ -66,24 +66,16 @@ return (
           <button
             onClick={async () => {
               const key = String(id);
-              const wr = JSON.parse(localStorage.getItem(`wr_${key}_files`) || '[]');
-              const all = Array.isArray(wr) ? wr : [];
-              const pick = all.length ? all[all.length - 1] : null;
-              if (pick && pick.url) {
-                try {
-                  const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
-                  const label = String(pick.name || `Prescription ${when}`);
-                  const item = { name: label, url: String(pick.url), by: "doctor" };
-                  const next = Array.isArray(prev) ? [...prev, item] : [item];
-                  localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
-                  try {
-                    const chan = new BroadcastChannel('prescriptions');
-                    chan.postMessage({ id: key, item });
-                    chan.close();
-                  } catch (_) {}
-                } catch (_) {}
-              }
               const viewUrl = `${window.location.origin}/prescription/${id}`;
+              try {
+                const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
+                const label = `Prescription ${when}`;
+                const item = { name: label, url: viewUrl, by: "doctor" };
+                const next = Array.isArray(prev) ? [...prev, item] : [item];
+                localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
+                try { const chan = new BroadcastChannel('prescriptions'); chan.postMessage({ id: key, item }); chan.close(); } catch (_) {}
+              } catch (_) {}
+              try { await API.post(`/appointments/${id}/prescription`, { text: appt?.prescriptionText || "" }); } catch (_) {}
               try {
                 if (navigator.share) {
                   await navigator.share({ title: 'Prescription', url: viewUrl });

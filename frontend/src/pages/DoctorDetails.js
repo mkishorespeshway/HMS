@@ -119,7 +119,13 @@ export default function DoctorDetails() {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="text-lg font-semibold text-indigo-700">Prescripto</Link>
+            <Link to="/" className="flex items-center gap-2 text-indigo-700">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span className="text-lg font-semibold">HospoZen</span>
+            </Link>
             <div className="flex items-center gap-6 text-slate-700">
               <nav className="flex items-center gap-6">
                 <Link to="/" className="hover:text-indigo-600">Home</Link>
@@ -373,7 +379,13 @@ export default function DoctorDetails() {
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-3 gap-8 items-start">
             <div>
-              <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">Prescripto</div>
+              <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>HospoZen</span>
+              </div>
               <p className="mt-3 text-slate-600 text-sm">
                 Lorem Ipsum is simply dummy text of the printing and typesetting industry.
                 It has been the industry's standard dummy text ever since the 1500s.

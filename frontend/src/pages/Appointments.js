@@ -5,11 +5,34 @@ import API from "../api";
 export default function Appointments() {
   const nav = useNavigate();
   const location = useLocation();
-  const isPrescriptionsView = location.pathname.includes('/prescriptions');
+  const isPrescriptionsView = location.pathname.includes('/prescriptions') || (new URLSearchParams(location.search).get('view') === 'prescriptions');
   const [list, setList] = useState([]);
+  const [presRefresh, setPresRefresh] = useState(0);
   const presItems = useMemo(() => {
-    return [];
-  }, [list, isPrescriptionsView]);
+    const items = [];
+    (list || []).forEach((a) => {
+      try {
+        const id = String(a._id || a.id);
+        const prev = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || '[]');
+        const arr = Array.isArray(prev) ? prev : [];
+        arr.forEach((it) => {
+          if (String(it?.by || '') !== 'doctor') return;
+          const name = String(it?.name || '').trim();
+          const url = String(it?.url || '').trim();
+          if (!url || !url.includes('/prescription/')) return;
+          items.push({
+            _id: id,
+            doctor: a.doctor?.name ? `Dr. ${a.doctor?.name}` : '',
+            date: a.date || '',
+            time: a.startTime || '',
+            name,
+            url
+          });
+        });
+      } catch (_) {}
+    });
+    return items.sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
+  }, [list, isPrescriptionsView, presRefresh]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState(new Map());
@@ -67,6 +90,17 @@ export default function Appointments() {
     };
     load();
   }, [nav]);
+
+  useEffect(() => {
+    let chan = null;
+    try {
+      chan = new BroadcastChannel('prescriptions');
+      chan.onmessage = () => { setPresRefresh((n) => n + 1); };
+    } catch (_) {}
+    return () => { try { chan && chan.close(); } catch(_) {} };
+  }, []);
+
+  
 
   useEffect(() => {
     try {
@@ -447,19 +481,14 @@ export default function Appointments() {
                             if (now < early) {
                               return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Available 5 min before</span>;
                             }
-                            const prof = profiles.get(docId);
-                            const lsOnline = localStorage.getItem(`doctorOnlineById_${docId}`) === '1';
-                            const lsBusy = localStorage.getItem(`doctorBusyById_${docId}`) === '1';
-                            const isOnline = typeof prof?.isOnline === 'boolean' ? !!prof?.isOnline : lsOnline;
-                            const isBusy = typeof prof?.isBusy === 'boolean' ? !!prof?.isBusy : lsBusy;
-                            if (!isOnline) return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Doctor offline</span>;
-                            if (isBusy) return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Doctor busy</span>;
-                              return (
+                            const link = meetLinkFor(a);
+                            const url = String(link).replace(/[`'\"]/g, '').trim();
+                            if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) {
+                              return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Waiting for doctor to set meeting link</span>;
+                            }
+                            return (
                               <button
                                 onClick={() => {
-                                  const link = meetLinkFor(a);
-                                  const url = String(link).replace(/[`'\"]/g, '').trim();
-                                  if (!url || !url.includes('meet.google.com') || url.endsWith('/new')) { alert('Waiting for doctor to set meeting link'); return; }
                                   window.open(url, '_blank');
                                 }}
                                 className="border border-green-600 text-green-700 px-3 py-1 rounded-md"
@@ -557,7 +586,13 @@ export default function Appointments() {
       <div className="mt-8">
         <div className="grid md:grid-cols-3 gap-8 items-start">
           <div>
-            <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">Prescripto</div>
+            <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>HospoZen</span>
+            </div>
             <p className="mt-3 text-slate-600 text-sm">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
           </div>
           <div>
@@ -578,7 +613,7 @@ export default function Appointments() {
           </div>
         </div>
         <hr className="my-6 border-slate-200" />
-        <div className="text-center text-slate-600 text-sm">Copyright 2024 © Prescripto.com - All Right Reserved.</div>
+        <div className="text-center text-slate-600 text-sm">Copyright 2024 © HospoZen.com - All Right Reserved.</div>
       </div>
       {waitingAppt && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

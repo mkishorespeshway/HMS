@@ -28,7 +28,7 @@ export default function Contact() {
               <p className="text-slate-700">admin@hms.local</p>
             </div>
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mt-4">
-              <h3 className="text-sm font-semibold text-slate-900">CAREERS AT PRESCRIPTO</h3>
+              <h3 className="text-sm font-semibold text-slate-900">CAREERS AT HOSPOZEN</h3>
               <p className="mt-2 text-slate-700">Learn more about our team and job openings.</p>
               <Link to="/about" className="mt-3 inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">Explore Jobs</Link>
             </div>
@@ -39,7 +39,13 @@ export default function Contact() {
       <section className="max-w-7xl mx-auto px-4 mt-12 pb-16">
         <div className="grid md:grid-cols-3 gap-8">
           <div>
-            <div className="text-indigo-700 font-semibold">Prescripto</div>
+            <div className="flex items-center gap-2 text-indigo-700 font-semibold">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
+                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span>HospoZen</span>
+            </div>
             <p className="mt-2 text-slate-600">We make it easy to find and book appointments quickly.</p>
           </div>
           <div>
@@ -56,7 +62,7 @@ export default function Contact() {
             <p className="text-slate-700">admin@hms.local</p>
           </div>
         </div>
-        <div className="mt-10 text-center text-slate-500">Copyright © 2025 Prescripto — All Rights Reserved.</div>
+        <div className="mt-10 text-center text-slate-500">Copyright © 2025 HospoZen — All Rights Reserved.</div>
       </section>
     </div>
   );
