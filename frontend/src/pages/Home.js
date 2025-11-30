@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "../components/Logo";
 import { useEffect, useRef, useState } from "react";
 import API from "../api";
 
@@ -138,28 +139,15 @@ export default function Home() {
           {error && <div className="text-center text-sm text-red-600 mt-3">{error}</div>}
           <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {(() => {
-              const getExp = (d) => {
-                const v = d.experienceYears ?? d.experience ?? d.years;
-                const n = Number(v);
-                return Number.isFinite(n) ? n : 0;
-              };
-              const getRating = (d) => {
-                const r = d.ratingAvg ?? d.rating ?? (d.ratings && d.ratings.avg) ?? (d.reviews && d.reviews.avg);
-                const n = Number(r);
-                return Number.isFinite(n) ? n : null;
-              };
-              const filtered = (list || []).filter((d) => {
-                const expOk = getExp(d) >= 3;
-                const rating = getRating(d);
-                const ratingOk = rating === null ? true : rating >= 4;
-                return expOk && ratingOk;
-              }).sort((a, b) => {
-                const ea = getExp(a); const eb = getExp(b);
-                const ra = getRating(a) ?? 0; const rb = getRating(b) ?? 0;
-                if (rb !== ra) return rb - ra;
-                return eb - ea;
+              const sorted = (list || []).slice().sort((a, b) => {
+                const tb = new Date(b.createdAt || 0).getTime();
+                const ta = new Date(a.createdAt || 0).getTime();
+                if (tb !== ta) return tb - ta;
+                const nb = String(b.user?.name || "");
+                const na = String(a.user?.name || "");
+                return nb.localeCompare(na);
               });
-              return filtered.map((d) => (
+              return sorted.map((d) => (
                 <div key={d._id} className="bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm overflow-hidden">
                   <div className="relative">
                     {String(d.photoBase64 || "").startsWith("data:image") ? (
@@ -227,10 +215,7 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 items-start">
             <div>
               <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={24} />
                 <span>HospoZen</span>
               </div>
               <p className="mt-3 text-slate-600 text-sm">

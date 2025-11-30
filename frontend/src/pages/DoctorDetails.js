@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import API from "../api";
+import Logo from "../components/Logo";
 
 
 export default function DoctorDetails() {
@@ -20,6 +21,8 @@ export default function DoctorDetails() {
   const token = localStorage.getItem('token');
   const uid = localStorage.getItem('userId');
   const photo = uid ? localStorage.getItem(`userPhotoBase64ById_${uid}`) : '';
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin/doctors/");
 
   useEffect(() => {
     API.get(`/doctors`, { params: { user: id } }).then((res) => setDoctor(res.data[0]));
@@ -116,59 +119,77 @@ export default function DoctorDetails() {
 
   return (
     <>
-      <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2 text-indigo-700">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <span className="text-lg font-semibold">HospoZen</span>
-            </Link>
-            <div className="flex items-center gap-6 text-slate-700">
-              <nav className="flex items-center gap-6">
-                <Link to="/" className="hover:text-indigo-600">Home</Link>
-                <Link to="/search" className="hover:text-indigo-600">All Doctors</Link>
-                <Link to="/about" className="hover:text-indigo-600">About</Link>
-                <Link to="/contact" className="hover:text-indigo-600">Contact</Link>
+      {isAdminRoute ? (
+        <header className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center gap-2 text-indigo-700">
+                <Logo size={24} />
+                <span className="text-lg font-semibold">HospoZen</span>
+              </div>
+              <nav className="flex items-center gap-6 text-slate-700">
+                <button
+                  onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userId'); nav('/admin/login'); }}
+                  className="px-3 py-1 rounded-full border border-slate-300"
+                >
+                  Logout
+                </button>
               </nav>
-              {token ? (
-                <div className="relative">
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt="User"
-                      className="h-9 w-9 rounded-full object-cover border border-slate-300 cursor-pointer"
-                      onClick={() => setMenuOpen((v) => !v)}
-                    />
-                  ) : (
-                    <div
-                      className="h-9 w-9 rounded-full border border-slate-300 bg-white cursor-pointer"
-                      onClick={() => setMenuOpen((v) => !v)}
-                    />
-                  )}
-                  {menuOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-md shadow-md text-sm">
-                      <Link to="/profile" className="block px-3 py-2 hover:bg-slate-50">My Profile</Link>
-                      <Link to="/appointments" className="block px-3 py-2 hover:bg-slate-50">My Appointments</Link>
-                      <Link to="/prescriptions" className="block px-3 py-2 hover:bg-slate-50">Prescriptions</Link>
-                      <button
-                        onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userId'); nav('/login'); }}
-                        className="block w-full text-left px-3 py-2 hover:bg-slate-50"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full">Create Account</Link>
-              )}
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      ) : (
+        <header className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              <Link to="/" className="flex items-center gap-2 text-indigo-700">
+                <Logo size={24} />
+                <span className="text-lg font-semibold">HospoZen</span>
+              </Link>
+              <div className="flex items-center gap-6 text-slate-700">
+                <nav className="flex items-center gap-6">
+                  <Link to="/" className="hover:text-indigo-600">Home</Link>
+                  <Link to="/search" className="hover:text-indigo-600">All Doctors</Link>
+                  <Link to="/about" className="hover:text-indigo-600">About</Link>
+                  <Link to="/contact" className="hover:text-indigo-600">Contact</Link>
+                </nav>
+                {token ? (
+                  <div className="relative">
+                    {photo ? (
+                      <img
+                        src={photo}
+                        alt="User"
+                        className="h-9 w-9 rounded-full object-cover border border-slate-300 cursor-pointer"
+                        onClick={() => setMenuOpen((v) => !v)}
+                      />
+                    ) : (
+                      <div
+                        className="h-9 w-9 rounded-full border border-slate-300 bg-white cursor-pointer"
+                        onClick={() => setMenuOpen((v) => !v)}
+                      />
+                    )}
+                    {menuOpen && (
+                      <div className="absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-md shadow-md text-sm">
+                        <Link to="/profile" className="block px-3 py-2 hover:bg-slate-50">My Profile</Link>
+                        <Link to="/appointments" className="block px-3 py-2 hover:bg-slate-50">My Appointments</Link>
+                        <Link to="/prescriptions" className="block px-3 py-2 hover:bg-slate-50">Prescriptions</Link>
+                        <button
+                          onClick={() => { localStorage.removeItem('token'); localStorage.removeItem('userId'); nav('/login'); }}
+                          className="block w-full text-left px-3 py-2 hover:bg-slate-50"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full">Create Account</Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+      )}
       <div className="max-w-7xl mx-auto px-4 mt-8">
       <div className="bg-white border border-slate-200 rounded-xl p-6">
         <div className="grid md:grid-cols-3 gap-6 items-start">
@@ -209,14 +230,11 @@ export default function DoctorDetails() {
         </div>
       </div>
 
+      {!isAdminRoute && (
       <div className="mt-8">
         <div className="bg-white border border-slate-200 rounded-xl p-6">
           <div className="text-slate-900 font-semibold mb-4">Booking slots</div>
           <div className="flex items-center gap-4 mb-4">
-            <button
-              onClick={() => setType((v) => (v === "offline" ? "online" : "offline"))}
-              className={`h-9 w-16 rounded-full ${type === "offline" ? "bg-indigo-600" : "bg-slate-300"}`}
-            />
             <select
               value={type}
               onChange={(e) => setType(e.target.value === 'online' ? 'online' : 'offline')}
@@ -347,7 +365,9 @@ export default function DoctorDetails() {
           </button>
         </div>
       </div>
+      )}
 
+      {!isAdminRoute && (
       <div className="mt-8">
         <h3 className="text-2xl font-semibold text-slate-900 text-center">Related Doctors</h3>
         <p className="text-slate-600 text-center mt-2">Simply browse through our extensive list of trusted doctors.</p>
@@ -374,16 +394,15 @@ export default function DoctorDetails() {
           ))}
         </div>
       </div>
+      )}
 
+      {!isAdminRoute && (
       <section className="mt-8">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <div className="grid md:grid-cols-3 gap-8 items-start">
             <div>
               <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={24} />
                 <span>HospoZen</span>
               </div>
               <p className="mt-3 text-slate-600 text-sm">
@@ -412,6 +431,7 @@ export default function DoctorDetails() {
           <div className="text-center text-slate-600 text-sm">Copyright 2024 © GreatStack.dev - All Right Reserved.</div>
         </div>
       </section>
+      )}
       </div>
     </>
   );

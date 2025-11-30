@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import Logo from "../components/Logo";
 import API from "../api";
 
 export default function Appointments() {
@@ -386,10 +387,29 @@ export default function Appointments() {
             {(isPrescriptionsView ? presItems : list).map((a) => (
               <div key={a._id} className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="h-14 w-14 rounded-md border bg-white" />
+                  {(() => {
+                    try {
+                      const docId = String(a.doctor?._id || a.doctor || '');
+                      const prof = profiles.get(docId);
+                      const src = prof?.photoBase64;
+                      if (src && String(src).startsWith('data:image')) {
+                        return <img src={src} alt="Doctor" className="h-14 w-14 rounded-md object-cover border" />;
+                      }
+                    } catch (_) {}
+                    return <div className="h-14 w-14 rounded-md border bg-white" />;
+                  })()}
                   <div>
                     <div className="font-semibold">{isPrescriptionsView ? (a.doctor || '') : (a.doctor?.name ? `Dr. ${a.doctor?.name}` : '')}</div>
                     <div className="text-sm text-slate-700">Date & Time: <span className="text-slate-900">{isPrescriptionsView ? `${a.date} | ${a.time}` : `${a.date} | ${a.startTime}`}</span></div>
+                    {!isPrescriptionsView && (() => {
+                      try {
+                        const docId = String(a.doctor?._id || a.doctor || '');
+                        const prof = profiles.get(docId);
+                        const addr = [prof?.clinic?.address, prof?.clinic?.city].filter(Boolean).join(', ');
+                        if (!addr) return null;
+                        return <div className="text-xs text-slate-600">Address: <span className="text-slate-900">{addr}</span></div>;
+                      } catch (_) { return null; }
+                    })()}
                     {isPrescriptionsView && <div className="text-xs text-slate-600 truncate">{a.name}</div>}
                   </div>
                 </div>
@@ -587,10 +607,7 @@ export default function Appointments() {
         <div className="grid md:grid-cols-3 gap-8 items-start">
           <div>
             <div className="flex items-center gap-2 text-indigo-700 font-semibold text-lg">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <Logo size={24} />
               <span>HospoZen</span>
             </div>
             <p className="mt-3 text-slate-600 text-sm">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>

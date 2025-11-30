@@ -13,11 +13,39 @@ export default function Register() {
   const [address, setAddress] = useState("");
   const [photoBase64, setPhotoBase64] = useState("");
   const role = "patient";
+  const [showPass, setShowPass] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const nav = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
+    const today = new Date();
+    const calcAge = (d) => {
+      if (!d) return "";
+      const b = new Date(d);
+      if (Number.isNaN(b.getTime())) return "";
+      let a = today.getFullYear() - b.getFullYear();
+      const m = today.getMonth() - b.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < b.getDate())) a--;
+      return String(a);
+    };
+    const errs = {};
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = "Enter a valid email";
+    const phoneSan = String(phone || "").replace(/\D/g, "");
+    if (!/^[6-9]\d{9}$/.test(phoneSan)) errs.phone = "Phone must start 6-9 and be 10 digits";
+    const passOk = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,12}$/.test(String(password || ""));
+    if (!passOk) errs.password = "Password 6-12 chars, letters & numbers";
+    if (age === "" || Number.isNaN(Number(age))) errs.age = "Enter numeric age";
+    if (dob) {
+      const d = new Date(dob);
+      if (Number.isNaN(d.getTime())) errs.dob = "Enter a valid date";
+      else if (d > today) errs.dob = "Date cannot be in future";
+      const expected = calcAge(dob);
+      if (expected !== "" && String(expected) !== String(age)) errs.age = "Age must match date of birth";
+    }
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
 
     try {
       const res = await API.post("/auth/register", {
@@ -61,19 +89,28 @@ export default function Register() {
           />
           <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
           <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+            type="email"
+            required
+            className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
+          {errors.email ? (<div className="text-red-600 text-xs mb-3">{errors.email}</div>) : (<div className="mb-3" />)}
           <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-          <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative mb-1">
+            <input
+              className="border border-slate-300 rounded-md p-2 w-full focus:outline-none focus:ring-4 focus:ring-indigo-100 pr-10"
+              placeholder="Password"
+              type={showPass ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600">
+              {showPass ? "🙈" : "👁"}
+            </button>
+          </div>
+          {errors.password ? (<div className="text-red-600 text-xs mb-3">{errors.password}</div>) : (<div className="mb-3" />)}
           <label className="block text-sm font-medium text-slate-700 mb-1">Upload Image</label>
           <input
             type="file"
@@ -89,11 +126,17 @@ export default function Register() {
           />
           <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
           <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+            className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
             placeholder="Phone Number"
+            inputMode="numeric"
+            maxLength={10}
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setPhone(v);
+            }}
           />
+          {errors.phone ? (<div className="text-red-600 text-xs mb-3">{errors.phone}</div>) : (<div className="mb-3" />)}
           <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
           <textarea
             rows={3}
@@ -119,20 +162,40 @@ export default function Register() {
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
               <input
-                className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                type="number"
+                min="0"
+                max="120"
+                className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
                 placeholder="Age"
                 value={age}
-                onChange={(e) => setAge(e.target.value)}
+                onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ""))}
               />
+              {errors.age ? (<div className="text-red-600 text-xs mb-3">{errors.age}</div>) : (<div className="mb-3" />)}
             </div>
           </div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
-          <input
-            type="date"
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            value={dob}
-            onChange={(e) => setDob(e.target.value)}
-          />
+          {(() => {
+            const t = new Date();
+            const yyyy = t.getFullYear();
+            const mm = String(t.getMonth() + 1).padStart(2, "0");
+            const dd = String(t.getDate()).padStart(2, "0");
+            const maxDate = `${yyyy}-${mm}-${dd}`;
+            return (
+              <>
+                <input
+                  type="date"
+                  max={maxDate}
+                  className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                  value={dob}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setDob(v);
+                  }}
+                />
+                {errors.dob ? (<div className="text-red-600 text-xs mb-3">{errors.dob}</div>) : (<div className="mb-3" />)}
+              </>
+            );
+          })()}
           <input type="hidden" value={role} readOnly />
           <div className="mb-4 text-sm text-slate-600">Creating a patient account</div>
           <button className="group w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md flex items-center justify-center gap-2">

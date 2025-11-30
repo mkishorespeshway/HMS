@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 import API from "../api";
 
 const SPECIALTIES = [
@@ -143,10 +144,7 @@ export default function SearchDoctors() {
             <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="mb-4">
               <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={24} />
                 <span>HospoZen</span>
               </div>
             </div>
@@ -200,7 +198,7 @@ export default function SearchDoctors() {
                     {typeof d.consultationFees === 'number' && (
                       <div className="text-sm text-slate-700">Fee: ₹{d.consultationFees}</div>
                     )}
-                    <Link to={`/doctor/${d.user._id}`} className="mt-3 inline-block text-indigo-600 hover:text-indigo-800">View Profile</Link>
+                    <Link to={`/admin/doctors/${d.user._id}`} className="mt-3 inline-block text-indigo-600 hover:text-indigo-800">View Profile</Link>
                   </div>
                 </div>
               ))}

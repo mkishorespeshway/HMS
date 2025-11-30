@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Logo from "../components/Logo";
 
 export default function Contact() {
   return (
@@ -40,10 +41,7 @@ export default function Contact() {
         <div className="grid md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <Logo size={24} />
               <span>HospoZen</span>
             </div>
             <p className="mt-2 text-slate-600">We make it easy to find and book appointments quickly.</p>

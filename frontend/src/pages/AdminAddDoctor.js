@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../api";
+import Logo from "../components/Logo";
 
 export default function AdminAddDoctor() {
   const nav = useNavigate();
@@ -19,14 +20,29 @@ export default function AdminAddDoctor() {
     password: "",
     photoBase64: "",
   });
+  const [showPass, setShowPass] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
+    let v = value;
+    if (name === "phone") v = String(value).replace(/\D/g, "").slice(0, 10);
+    if (name === "fees" || name === "slotDurationMins" || name === "experienceYears") v = String(value).replace(/\D/g, "");
+    setForm((f) => ({ ...f, [name]: v }));
   };
 
   const submit = async (e) => {
     e.preventDefault();
+    const errs = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(form.email || ""))) errs.email = "Enter a valid email";
+    if (!/^[6-9]\d{9}$/.test(String(form.phone || ""))) errs.phone = "Phone must start 6-9 and be 10 digits";
+    if (form.fees && !/^\d+$/.test(String(form.fees))) errs.fees = "Fees must be digits";
+    if (form.slotDurationMins && !/^\d+$/.test(String(form.slotDurationMins))) errs.slot = "Slot must be digits";
+    if (form.experienceYears && !/^\d+$/.test(String(form.experienceYears))) errs.exp = "Experience must be digits";
+    const passOk = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,12}$/.test(String(form.password || ""));
+    if (!passOk) errs.password = "Password 6-12 chars, letters & numbers";
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
     try {
       const payload = {
         name: form.name,
@@ -59,10 +75,7 @@ export default function AdminAddDoctor() {
           <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="mb-4">
               <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={24} />
                 <span>HospoZen</span>
               </div>
             </div>
@@ -92,41 +105,37 @@ export default function AdminAddDoctor() {
           <input name="name" value={form.name} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Dr. John Doe" />
 
           <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-          <input name="email" value={form.email} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="doctor@example.com" />
+          <input type="email" name="email" value={form.email} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="doctor@example.com" />
+          {errors.email ? (<div className="text-red-600 text-xs mb-3">{errors.email}</div>) : (<div className="mb-3" />)}
 
           <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-          <input name="phone" value={form.phone} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="+91-XXXXXXXXXX" />
+          <input name="phone" inputMode="numeric" maxLength={10} value={form.phone} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="XXXXXXXXXX" />
+          {errors.phone ? (<div className="text-red-600 text-xs mb-3">{errors.phone}</div>) : (<div className="mb-3" />)}
 
           <label className="block text-sm font-medium text-slate-700 mb-1">Specializations</label>
           {(() => {
-            const SPECIALTIES = [
+            const SPECIALTIES = Array.from(new Set([
               "General Physician",
               "Gynecologist",
               "Dermatologist",
               "Pediatrician",
               "Neurologist",
               "Cardiologist",
-              "Dermatologist",
-               "eneral Physician",
-              "Gynecologist",
-              "Pediatrician",
               "Orthopedic Surgeon",
-              "Cardiologist",
-              "Neurologist",
-            "Gastroenterologist",
-             "ENT Specialist",
-             "Dentist",
-            "Psychiatrist",
-            "Diabetologist",
-            "Endocrinologist",
-            "Pulmonologist",
-            "Nephrologist",
-            "Urologist",
-            "Ophthalmologist",
-            "Oncologist",
-            "Rheumatologist",
-            "Physiotherapist" 
-            ];
+              "Gastroenterologist",
+              "ENT Specialist",
+              "Dentist",
+              "Psychiatrist",
+              "Diabetologist",
+              "Endocrinologist",
+              "Pulmonologist",
+              "Nephrologist",
+              "Urologist",
+              "Ophthalmologist",
+              "Oncologist",
+              "Rheumatologist",
+              "Physiotherapist"
+            ]));
             return (
               <select
                 defaultValue=""
@@ -166,22 +175,29 @@ export default function AdminAddDoctor() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Consultation Fees</label>
-              <input name="fees" value={form.fees} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="₹" />
+              <input name="fees" inputMode="numeric" value={form.fees} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="e.g., 500" />
+              {errors.fees ? (<div className="text-red-600 text-xs mb-3">{errors.fees}</div>) : (<div className="mb-3" />)}
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Slot Duration (mins)</label>
-              <input name="slotDurationMins" value={form.slotDurationMins} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" />
+              <input name="slotDurationMins" inputMode="numeric" value={form.slotDurationMins} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="e.g., 15" />
+              {errors.slot ? (<div className="text-red-600 text-xs mb-3">{errors.slot}</div>) : (<div className="mb-3" />)}
             </div>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Experience (years)</label>
-              <input name="experienceYears" value={form.experienceYears} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="e.g., 5" />
+              <input name="experienceYears" inputMode="numeric" value={form.experienceYears} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="e.g., 5" />
+              {errors.exp ? (<div className="text-red-600 text-xs mb-3">{errors.exp}</div>) : (<div className="mb-3" />)}
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-              <input name="password" type="password" value={form.password} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Set doctor password" />
+              <div className="relative mb-1">
+                <input name="password" type={showPass ? "text" : "password"} value={form.password} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full pr-10" placeholder="Set doctor password" />
+                <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600">{showPass ? "🙈" : "👁"}</button>
+              </div>
+              {errors.password ? (<div className="text-red-600 text-xs mb-3">{errors.password}</div>) : (<div className="mb-3" />)}
             </div>
           </div>
 

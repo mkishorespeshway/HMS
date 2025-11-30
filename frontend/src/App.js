@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import Logo from "./components/Logo";
 import { useState } from "react";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -7,7 +8,6 @@ import Register from "./pages/Register";
  
 import DoctorDetails from "./pages/DoctorDetails";
 import Payment from "./pages/Payment";
-import DoctorToday from "./pages/DoctorToday";
 import DoctorDashboard from "./pages/DoctorDashboard";
 import DoctorProfile from "./pages/DoctorProfile";
 import Prescription from "./pages/Prescription";
@@ -39,10 +39,7 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 text-indigo-700">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-              <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Logo size={28} />
             <span className="text-lg font-semibold">HospoZen</span>
           </Link>
           <nav className="flex items-center gap-6 text-slate-700">
@@ -106,10 +103,10 @@ return (
 <Route path="/doctor/login" element={<DoctorLogin />} />
 <Route path="/register" element={<Register />} />
 <Route path="/search" element={<SearchDoctors />} />
-<Route path="/doctor/:id" element={<DoctorDetails />} />
+        <Route path="/doctor/:id" element={<DoctorDetails />} />
+        <Route path="/admin/doctors/:id" element={<DoctorDetails />} />
         <Route path="/book/:id" element={<Navigate to="/search" />} />
         <Route path="/pay/:id" element={<Payment />} />
-        <Route path="/doctor/today" element={<DoctorToday />} />
         <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
         <Route path="/doctor/profile" element={<DoctorProfile />} />
         <Route path="/prescription/:id" element={<Prescription />} />

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 import API from "../api";
 
 export default function DoctorDashboard() {
@@ -261,7 +262,6 @@ export default function DoctorDashboard() {
     const now = Date.now();
     const arr = (list || []).filter((a) => {
       const s = String(a.status).toUpperCase();
-      if (a.type !== 'online') return false;
       if (!(s === "PENDING" || s === "CONFIRMED")) return false;
       const ts = apptStartTs(a);
       return ts > now;
@@ -271,7 +271,7 @@ export default function DoctorDashboard() {
   }, [list]);
 
   const completed = useMemo(() => {
-    const arr = (list || []).filter((a) => a.type === 'online' && String(a.status).toUpperCase() === "COMPLETED");
+    const arr = (list || []).filter((a) => String(a.status).toUpperCase() === "COMPLETED");
     arr.sort((x, y) => apptStartTs(y) - apptStartTs(x));
     return arr.slice(0, 6);
   }, [list]);
@@ -314,16 +314,20 @@ export default function DoctorDashboard() {
           <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="mb-4">
               <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={24} />
                 <span>HospoZen</span>
               </div>
             </div>
             <nav className="space-y-2 text-slate-700">
               <div className="px-3 py-2 rounded-md bg-indigo-50 text-indigo-700">Dashboard</div>
-              <Link to="/doctor/today" className="block px-3 py-2 rounded-md hover:bg-slate-50">Appointments</Link>
+              <button
+                onClick={() => {
+                  try { document.getElementById('all-appointments')?.scrollIntoView({ behavior: 'smooth' }); } catch(_) {}
+                }}
+                className="block w-full text-left px-3 py-2 rounded-md hover:bg-slate-50"
+              >
+                Appointments
+              </button>
               <Link to="/doctor/profile" className="block px-3 py-2 rounded-md hover:bg-slate-50">Profile</Link>
             </nav>
           </div>
@@ -496,6 +500,40 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
+          <div id="all-appointments" className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+            <div className="flex items-center gap-2 text-slate-700 mb-3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7 2a1 1 0 000 2h1v2h8V4h1a1 1 0 100-2H7zM5 8a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2H5zm3 3h8v2H8v-2zm0 4h8v2H8v-2z" fill="#4B5563"/>
+              </svg>
+              <span>All Appointments</span>
+            </div>
+            {loading && <div className="text-slate-600">Loading...</div>}
+            {error && !loading && <div className="text-red-600 mb-3 text-sm">{error}</div>}
+            <div className="space-y-2">
+              {(list || []).length === 0 && !loading ? (
+                <div className="text-slate-600">No appointments</div>
+              ) : (
+                (list || []).slice().sort((x, y) => apptStartTs(y) - apptStartTs(x)).map((a) => (
+                  <div key={a._id} className="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2">
+                    <div>
+                      <div className="font-semibold text-slate-900">{a.patient?.name || 'Patient'}</div>
+                      <div className="text-xs text-slate-600">{a.date} • {a.startTime} • {a.type === 'online' ? 'Online' : 'Clinic'}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {(() => {
+                        const s = String(a.status).toUpperCase();
+                        const cls = s === 'PENDING' ? 'bg-amber-100 text-amber-700' : s === 'CONFIRMED' ? 'bg-indigo-100 text-indigo-700' : s === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                        const txt = s === 'PENDING' ? 'Pending' : s === 'CONFIRMED' ? 'Confirmed' : s === 'COMPLETED' ? 'Completed' : 'Cancelled';
+                        return <span className={`inline-block text-xs px-2 py-1 rounded ${cls}`}>{txt}</span>;
+                      })()}
+                      <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="flex items-center gap-2 text-slate-700 mb-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -611,7 +649,7 @@ export default function DoctorDashboard() {
               {(latestToday || []).length === 0 && !loading ? (
                 <div className="text-slate-600">No appointments today</div>
               ) : (
-                (latestToday || []).filter((a) => a.type === 'online').map((a) => (
+                (latestToday || []).map((a) => (
                   <div key={a._id} className="flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2">
                     <div>
                       <div className="font-semibold text-slate-900">{a.patient?.name || 'Patient'}</div>

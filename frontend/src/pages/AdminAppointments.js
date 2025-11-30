@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 import API from "../api";
 
 export default function AdminAppointments() {
@@ -76,10 +77,7 @@ export default function AdminAppointments() {
           <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="mb-4">
               <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="3" width="18" height="18" rx="5" fill="#0EA5E9"/>
-                  <path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <Logo size={28} />
                 <span>HospoZen</span>
               </div>
             </div>

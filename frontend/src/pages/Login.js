@@ -6,6 +6,7 @@ import API from "../api";
 export default function Login() {
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
+const [show, setShow] = useState(false);
 const nav = useNavigate();
 
 
@@ -48,13 +49,23 @@ return (
             onChange={(e) => setEmail(e.target.value)}
           />
           <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-          <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-4 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              className="border border-slate-300 rounded-md p-2 w-full mb-4 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              placeholder="Password"
+              type={show ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-700"
+              onClick={() => setShow((v) => !v)}
+              aria-label="Toggle password visibility"
+            >
+              👁️
+            </button>
+          </div>
           <button className="group bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full flex items-center justify-center gap-2">
             <span>Login</span>
             <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
