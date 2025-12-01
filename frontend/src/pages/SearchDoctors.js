@@ -215,49 +215,44 @@ export default function SearchDoctors() {
   return (
     <div className="max-w-7xl mx-auto mt-8 px-4">
       <h2 className="text-3xl font-semibold mb-6">All Doctors</h2>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <aside className="md:col-span-1">
-          <div className="bg-white rounded-lg border border-slate-200 p-4">
-            <p className="text-sm text-slate-600 mb-3">Browse through the doctors specialties.</p>
-            <div className="space-y-2">
+      <div className="bg-white rounded-lg border border-slate-200 p-4 mb-6">
+        <div className="grid sm:grid-cols-3 gap-3 items-end">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Specialty</label>
+            <select
+              value={specialization}
+              onChange={(e) => setSpecialization(e.target.value)}
+              className="border border-slate-300 rounded-md p-2 w-full"
+            >
+              <option value="">All Specialties</option>
               {SPECIALTIES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setSpecialization(s)}
-                  className={`w-full text-left px-3 py-2 rounded-md border ${
-                    specialization === s
-                      ? "bg-indigo-50 border-indigo-300 text-indigo-700"
-                      : "border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  {s}
-                </button>
+                <option key={s} value={s}>{s}</option>
               ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-1">Search</label>
+            <div className="flex gap-2">
+              <input
+                className="flex-1 border border-slate-300 rounded-md p-2"
+                placeholder="Search doctor or specialization"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') search(); }}
+              />
+              <button onClick={search} className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white">Search</button>
               <button
-                onClick={() => setSpecialization("")}
-                className="w-full text-left px-3 py-2 rounded-md border border-slate-300 hover:bg-slate-50"
+                onClick={() => { setQ(''); setSpecialization(''); search(); }}
+                className="px-4 py-2 rounded-md border border-slate-300"
               >
-                Clear filter
-              </button>
-            </div>
-            <div className="mt-4">
-          <input
-            className="w-full border border-slate-300 rounded-md p-2"
-            placeholder="Search doctor or specialization"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') search(); }}
-          />
-              <button
-                onClick={search}
-                className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md"
-              >
-                Search
+                Clear
               </button>
             </div>
           </div>
-        </aside>
-        <main className="md:col-span-3">
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-6">
+        <main>
           {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {list.map((d) => (

@@ -351,14 +351,36 @@ export default function DoctorDetails() {
                 const items = mine.data || [];
                 const did = String(doctor?.user?._id || '');
                 const sameDay = (items || []).filter((x) => String(x.date) === String(selectedDate));
+                const nowTs = Date.now();
+                const inCall = sameDay.some((x) => {
+                  const aid = String(x._id || x.id || '');
+                  const sd = new Date(x.date);
+                  const [sh, sm] = String(x.startTime || '00:00').split(':').map((n) => Number(n));
+                  sd.setHours(sh, sm, 0, 0);
+                  const ed = new Date(x.date);
+                  const [eh, em] = String(x.endTime || x.startTime || '00:00').split(':').map((n) => Number(n));
+                  ed.setHours(eh, em, 0, 0);
+                  const active = nowTs >= sd.getTime() && nowTs < ed.getTime();
+                  const sameDoc = String(x.doctor?._id || x.doctor || '') === did;
+                  const jP = aid ? localStorage.getItem(`joinedByPatient_${aid}`) === '1' : false;
+                  const jD1 = aid ? localStorage.getItem(`joinedByDoctor_${aid}`) === '1' : false;
+                  const jD2 = aid ? localStorage.getItem(`doctorJoined_${aid}`) === '1' : false;
+                  const jD = jD1 || jD2;
+                  return sameDoc && active && (jP || jD);
+                });
+                if (inCall) {
+                  alert('You are already in a call with this doctor. Please book a slot for tomorrow.');
+                  return;
+                }
                 const exist = sameDay.find((x) => String(x.doctor?._id || x.doctor || '') === did && String(x.status).toUpperCase() !== 'CANCELLED');
                 if (exist) {
                   const s = String(exist.status).toUpperCase();
                   if (s === 'COMPLETED') {
-                    alert('Consultation completed for today. Please book a slot for tomorrow.');
+                    alert('Your consultation for today is completed. Please book a slot for tomorrow.');
                     return;
                   }
-                  alert('You have already booked a consultation today with this doctor.');
+                  const ok = window.confirm('You already have an appointment with this doctor. Do you want to cancel it?');
+                  if (ok) { nav('/appointments'); }
                   return;
                 }
               } catch (_) {}

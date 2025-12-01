@@ -581,8 +581,9 @@ export default function Appointments() {
                         if (isPrescriptionsView) return a.doctor || '';
                         const docId = String(a.doctor?._id || a.doctor || '');
                         const prof = profiles.get(docId);
+                        const busy = !!prof?.isBusy;
                         const online = !!prof?.isOnline;
-                        const cls = online ? 'bg-green-500' : 'bg-red-500';
+                        const cls = busy ? 'bg-amber-500' : (online ? 'bg-green-500' : 'bg-red-500');
                         return (
                           <span className="inline-flex items-center gap-2">
                             {a.doctor?.name ? `Dr. ${a.doctor?.name}` : ''}
@@ -632,6 +633,7 @@ export default function Appointments() {
                   ) : String(a.status).toUpperCase() === 'COMPLETED' ? (
                     <div className="flex flex-wrap gap-2 items-center">
                       <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Consultation Completed</span>
+                      <button disabled className="border border-slate-200 text-slate-400 px-3 py-1 rounded-md cursor-not-allowed">Session Completed</button>
                       {a.prescriptionText && (
                         <button
                           onClick={() => window.open(`/prescription/${a._id || a.id}`, '_blank')}
@@ -720,43 +722,59 @@ export default function Appointments() {
                                 <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Joined</span>
                               ) : null;
                             })()}
-                                <button
-                                  onClick={() => {
+                                {(() => {
+                                  const id = String(a._id || a.id || '');
+                                  const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null;
+                                  const joinedPatient = jp === '1';
+                                  const leftPatient = jp === '0';
+                                  const joinedDoctor = id ? localStorage.getItem(`doctorJoined_${id}`) === '1' : false;
+                                  const joined = joinedPatient || joinedDoctor;
+                                  if (joined) {
+                                    return <span className="inline-block text-xs px-2 py-1 rounded bg-green-50 text-green-700">You are now connected to the consultation.</span>;
+                                  }
+                                  if (leftPatient) {
+                                    return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">You have left the meeting. You can rejoin anytime until the session ends.</span>;
+                                  }
+                                  return <span className="inline-block text-xs px-2 py-1 rounded bg-amber-100 text-amber-700">Meeting not started yet. Click Join Meet to enter the consultation.</span>;
+                                })()}
+                                {(() => {
+                                  const id = String(a._id || a.id || '');
+                                  const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null;
+                                  const joinedPatient = jp === '1';
+                                  const leftPatient = jp === '0';
+                                  const joinedDoctor = id ? localStorage.getItem(`doctorJoined_${id}`) === '1' : false;
+                                  const joined = joinedPatient || joinedDoctor;
+                                  const openAndMonitor = () => {
                                     try {
-                                      const id = String(a._id || a.id);
-                                      localStorage.setItem(`joinedByPatient_${id}`, '1');
+                                      const idX = String(a._id || a.id);
+                                      localStorage.setItem(`joinedByPatient_${idX}`, '1');
                                       setList((prev) => prev.slice());
                                     } catch(_) {}
                                     const win = window.open(url, '_blank');
                                     try { socketRef.current && socketRef.current.emit('meet:update', { apptId: String(a._id || a.id), actor: 'patient', event: 'join' }); } catch(_) {}
                                     try {
-                                      const id = String(a._id || a.id);
+                                      const idX = String(a._id || a.id);
                                       const monitor = setInterval(() => {
                                         if (!win || win.closed) {
                                           clearInterval(monitor);
-                                          try { localStorage.setItem(`joinedByPatient_${id}`, '0'); setList((prev) => prev.slice()); } catch(_) {}
-                                          try {
-                                            const now = Date.now();
-                                            const d = new Date(a.date);
-                                            const [sh, sm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
-                                            d.setHours(sh, sm, 0, 0);
-                                            const end = new Date(a.date);
-                                            const [eh, em] = String(a.endTime || a.startTime || '00:00').split(':').map((x) => Number(x));
-                                            end.setHours(eh, em, 0, 0);
-                                            const active = now >= d.getTime() && now < end.getTime();
-                                            if (active) {
-                                              setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, status: 'CONFIRMED' } : x)));
-                                            }
-                                            try { socketRef.current && socketRef.current.emit('meet:update', { apptId: id, actor: 'patient', event: 'exit' }); } catch(_) {}
-                                          } catch (_) {}
+                                          try { localStorage.setItem(`joinedByPatient_${idX}`, '0'); setList((prev) => prev.slice()); } catch(_) {}
+                                          try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: 'exit' }); } catch(_) {}
                                         }
                                       }, 1000);
                                     } catch(_) {}
-                                  }}
-                                  className="border border-green-600 text-green-700 px-3 py-1 rounded-md"
-                                >
-                                  Join Meeting
-                                </button>
+                                  };
+                                  if (joined) {
+                                    return <button disabled className="border border-slate-200 text-slate-400 px-3 py-1 rounded-md cursor-not-allowed">Joined</button>;
+                                  }
+                                  if (leftPatient) {
+                                    return (
+                                      <button onClick={openAndMonitor} className="border border-indigo-600 text-indigo-700 px-3 py-1 rounded-md">Rejoin</button>
+                                    );
+                                  }
+                                  return (
+                                    <button onClick={openAndMonitor} className="border border-green-600 text-green-700 px-3 py-1 rounded-md">Join Meet</button>
+                                  );
+                                })()}
                               </>
                             );
                           } catch (_) { return null; }
