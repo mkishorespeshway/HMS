@@ -58,7 +58,8 @@ export default function DoctorDashboard() {
           if (alt.length) items = alt;
         }
 
-        const todayStr = new Date().toISOString().slice(0, 10);
+        const _d0 = new Date();
+        const todayStr = `${_d0.getFullYear()}-${String(_d0.getMonth()+1).padStart(2,'0')}-${String(_d0.getDate()).padStart(2,'0')}`;
         let filtered = (items || []).filter((a) => a.date === todayStr);
         try {
           const todayRes = await API.get('/appointments/today');
@@ -102,6 +103,14 @@ export default function DoctorDashboard() {
   }, []);
 
   useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await API.get('/notifications', { params: { unread: 1 } });
+        const items = Array.isArray(data) ? data : [];
+        const unread = items.filter((x) => !x.read).length;
+        setBellCount(unread);
+      } catch (_) {}
+    })();
     try {
       const chan = new BroadcastChannel('chatmsg');
       const onMsg = (e) => {
@@ -291,6 +300,7 @@ export default function DoctorDashboard() {
                 const link = p?.link || '';
                 const apptId = p?.apptId ? String(p.apptId) : null;
                 if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
+                setBellCount((c) => c + 1);
                 addNotif(text, apptId, link);
                 if (panelOpen) {
                   const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId };
@@ -344,7 +354,8 @@ export default function DoctorDashboard() {
     try {
       await API.put(`/appointments/${id}/accept`);
       setList((prev) => prev.map((a) => (String(a._id || a.id) === String(id) ? { ...a, status: "CONFIRMED" } : a)));
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const _d1 = new Date();
+      const todayStr = `${_d1.getFullYear()}-${String(_d1.getMonth()+1).padStart(2,'0')}-${String(_d1.getDate()).padStart(2,'0')}`;
       setLatestToday((prev) => prev.map((a) => (String(a._id || a.id) === String(id) ? { ...a, status: "CONFIRMED" } : a)).filter((a) => a.date === todayStr));
     } catch (e) {
       alert(e.response?.data?.message || e.message || "Failed to accept");
@@ -356,7 +367,8 @@ export default function DoctorDashboard() {
     try {
       await API.put(`/appointments/${id}/reject`);
       setList((prev) => prev.map((a) => (String(a._id || a.id) === String(id) ? { ...a, status: "CANCELLED" } : a)));
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const _d2 = new Date();
+      const todayStr = `${_d2.getFullYear()}-${String(_d2.getMonth()+1).padStart(2,'0')}-${String(_d2.getDate()).padStart(2,'0')}`;
       setLatestToday((prev) => prev.map((a) => (String(a._id || a.id) === String(id) ? { ...a, status: "CANCELLED" } : a)).filter((a) => a.date === todayStr));
     } catch (e) {
       alert(e.response?.data?.message || e.message || "Failed to reject");
@@ -419,7 +431,8 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     const t = setInterval(() => {
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const _d3 = new Date();
+      const todayStr = `${_d3.getFullYear()}-${String(_d3.getMonth()+1).padStart(2,'0')}-${String(_d3.getDate()).padStart(2,'0')}`;
       const src = [...(list || []), ...(latestToday || [])];
       const targetMs = 5 * 60 * 1000;
       const windowMs = 60 * 1000;
@@ -514,7 +527,9 @@ export default function DoctorDashboard() {
                     const { data } = await API.get('/notifications');
                     const items = Array.isArray(data) ? data : [];
                     setPanelItems(items);
-                    setPanelUnread(items.filter((x) => !x.read).length);
+                    const unread = items.filter((x) => !x.read).length;
+                    setPanelUnread(unread);
+                    setBellCount(unread);
                     setPanelLoading(false);
                   }
                 } catch (_) { setPanelLoading(false); }
@@ -556,7 +571,25 @@ export default function DoctorDashboard() {
                       <div key={n._id || n.id} className="px-4 py-3 border-b hover:bg-slate-50">
                         <div className="flex items-start justify-between">
                           <button
-                            onClick={() => { try { if (n.link) nav(n.link); if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId)); setPanelOpen(false); } catch(_) {} }}
+                            onClick={async () => {
+                              try {
+                                if (n.type === 'chat') {
+                                  const id = String(n.apptId || '');
+                                  if (id) {
+                                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                                    const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
+                                    setChatAppt(a || { _id: id, id, patient: { name: '' } });
+                                  }
+                                } else if (n.link) {
+                                  nav(n.link);
+                                }
+                                setPanelOpen(false);
+                                try { await API.put(`/notifications/${n._id || n.id}/read`); } catch(_) {}
+                                setPanelItems((prev) => prev.map((x) => (String(x._id || x.id) === String(n._id || n.id) ? { ...x, read: true } : x)));
+                                setPanelUnread((c) => Math.max(0, c - 1));
+                                setBellCount((c) => Math.max(0, c - 1));
+                              } catch(_) {}
+                            }}
                             className="text-left text-sm text-slate-900"
                           >
                             {n.message}
@@ -577,11 +610,13 @@ export default function DoctorDashboard() {
             {notifs.map((n) => (
               <button key={n.id} onClick={() => {
                 try {
-                  if (n.link) { nav(n.link); } else {
-                    const id = String(n.apptId || localStorage.getItem('lastChatApptId') || '');
+                  if (n.apptId) {
+                    const id = String(n.apptId);
+                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                     const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
-                    setChatAppt(a || (id ? { _id: id, id, patient: { name: '' } } : null));
-                    setBellCount(0);
+                    setChatAppt(a || { _id: id, id, patient: { name: '' } });
+                  } else if (n.link) {
+                    nav(n.link);
                   }
                   setNotifs((prev) => prev.filter((x) => x.id !== n.id));
                 } catch (_) {}

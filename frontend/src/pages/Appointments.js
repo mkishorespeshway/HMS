@@ -187,7 +187,8 @@ export default function Appointments() {
 
   useEffect(() => {
     const t = setInterval(() => {
-      const todayStr = new Date().toISOString().slice(0, 10);
+      const _d0 = new Date();
+      const todayStr = `${_d0.getFullYear()}-${String(_d0.getMonth()+1).padStart(2,'0')}-${String(_d0.getDate()).padStart(2,'0')}`;
       const targetMs = 5 * 60 * 1000;
       const windowMs = 60 * 1000;
       const now = Date.now();

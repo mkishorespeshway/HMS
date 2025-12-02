@@ -46,6 +46,15 @@ function Header() {
   const userName = uid ? localStorage.getItem(`userNameById_${uid}`) || '' : '';
   const showAdminLink = !token && !location.pathname.startsWith('/login');
   useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await API.get('/notifications', { params: { unread: 1 } });
+        const items = Array.isArray(data) ? data : [];
+        const unread = items.filter((x) => !x.read).length;
+        setBell(unread);
+        try { localStorage.setItem('patientBellCount', String(unread)); } catch(_) {}
+      } catch (_) {}
+    })();
     try {
       const chan = new BroadcastChannel('chatmsg');
       const onMsg = (e) => {
@@ -78,6 +87,8 @@ function Header() {
               const id = String(Date.now()) + String(Math.random());
               const text = p?.message || '';
               const link = p?.link || '';
+              const type = p?.type || 'general';
+              const apptId = p?.apptId ? String(p.apptId) : '';
               try {
                 if (p?.type === 'chat' && p?.apptId) localStorage.setItem('lastChatApptId', String(p.apptId));
               } catch(_) {}
@@ -86,10 +97,10 @@ function Header() {
                 try { localStorage.setItem('patientBellCount', String(next)); } catch(_) {}
                 return next;
               });
-              setNotifs((prev) => [{ id, text, link }, ...prev].slice(0, 4));
+              setNotifs((prev) => [{ id, text, link, type, apptId }, ...prev].slice(0, 4));
               setTimeout(() => { setNotifs((prev) => prev.filter((n) => n.id !== id)); }, 6000);
               if (panelOpen) {
-                const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId: p?.apptId ? String(p.apptId) : undefined };
+                const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type, createdAt: new Date().toISOString(), read: false, apptId };
                 setPanelItems((prev) => {
                   const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
                   if (exists) return prev;
@@ -141,7 +152,10 @@ function Header() {
                       const { data } = await API.get('/notifications');
                       const items = Array.isArray(data) ? data : [];
                       setPanelItems(items);
-                      setPanelUnread(items.filter((x) => !x.read).length);
+                      const unread = items.filter((x) => !x.read).length;
+                      setPanelUnread(unread);
+                      setBell(unread);
+                      try { localStorage.setItem('patientBellCount', String(unread)); } catch(_) {}
                       setPanelLoading(false);
                     }
                   } catch (_) { setPanelLoading(false); }
@@ -183,7 +197,22 @@ function Header() {
                         <div key={n._id || n.id} className="px-4 py-3 border-b hover:bg-slate-50">
                           <div className="flex items-start justify-between">
                             <button
-                              onClick={() => { try { if (n.link) nav(n.link); if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId)); setPanelOpen(false); } catch(_) {} }}
+                              onClick={async () => {
+                                try {
+                                  if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId));
+                                  if (n.type === 'chat' && (!n.link || !n.link.includes('alertChat=1'))) {
+                                    nav('/appointments?alertChat=1');
+                                  } else if (n.link) {
+                                    nav(n.link);
+                                  }
+                                  setPanelOpen(false);
+                                  try { await API.put(`/notifications/${n._id || n.id}/read`); } catch(_) {}
+                                  setPanelItems((prev) => prev.map((x) => (String(x._id || x.id) === String(n._id || n.id) ? { ...x, read: true } : x)));
+                                  setPanelUnread((c) => Math.max(0, c - 1));
+                                  setBell((c) => Math.max(0, c - 1));
+                                  try { localStorage.setItem('patientBellCount', String(Math.max(0, Number(localStorage.getItem('patientBellCount') || '0') - 1))); } catch(_) {}
+                                } catch(_) {}
+                              }}
                               className="text-left text-sm text-slate-900"
                             >
                               {n.message}
@@ -201,7 +230,7 @@ function Header() {
               )}
               <div className="fixed right-4 top-4 z-50 space-y-2">
                 {notifs.map((n) => (
-                  <button key={n.id} onClick={() => { try { if (n.link) nav(n.link); } catch(_) {} setNotifs((prev) => prev.filter((x) => x.id !== n.id)); }} className="flex items-center gap-2 bg-white shadow-lg border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
+                  <button key={n.id} onClick={() => { try { if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId)); if (n.type === 'chat' && (!n.link || !n.link.includes('alertChat=1'))) { nav('/appointments?alertChat=1'); } else if (n.link) { nav(n.link); } } catch(_) {} setNotifs((prev) => prev.filter((x) => x.id !== n.id)); }} className="flex items-center gap-2 bg-white shadow-lg border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" fill="#F59E0B"/>
                     </svg>
@@ -226,7 +255,7 @@ function Header() {
                 </button>
               )}
               {open && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg text-sm z-50">
+                <div className="absolute right-0 top-12 w-48 bg-white border border-slate-200 rounded-lg shadow-lg text-sm z-50">
                   <Link to="/profile" className="block px-3 py-2 hover:bg-slate-50">My Profile</Link>
                   <Link to="/appointments" className="block px-3 py-2 hover:bg-slate-50">My Appointments</Link>
                   <Link to="/appointments?view=prescriptions" className="block px-3 py-2 hover:bg-slate-50">Prescriptions</Link>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { } from "react-router-dom";
+import API from "../api";
 
 export default function Profile() {
   const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=256&auto=format&fit=crop";
@@ -58,22 +58,46 @@ export default function Profile() {
     setBirthday(dobVal);
     setAge(ag || "");
     setPhoto(byId || "");
+
+    (async () => {
+      try {
+        const { data } = await API.get('/auth/me');
+        if (data) {
+          if (data.name) setName(String(data.name));
+          if (data.email) setEmail(String(data.email));
+          if (data.phone) setPhone(String(data.phone));
+          if (data.address) setAddress(String(data.address));
+          if (data.gender) setGender(String(data.gender));
+          if (data.birthday) {
+            const d = String(data.birthday);
+            setBirthday(d);
+            setAge(ageFromBirthday(d));
+          }
+          if (String(data.photoBase64 || '').startsWith('data:image')) setPhoto(String(data.photoBase64));
+        }
+      } catch (_) {}
+    })();
   }, []);
 
-  const save = () => {
-    const uid = localStorage.getItem("userId");
-    if (uid) {
-      localStorage.setItem(`userNameById_${uid}`, name || "");
-      localStorage.setItem(`userEmailById_${uid}`, email || "");
-      localStorage.setItem(`userPhoneById_${uid}`, phone || "");
-      localStorage.setItem(`userAddressById_${uid}`, address || "");
-      localStorage.setItem(`userGenderById_${uid}`, gender || "");
-      localStorage.setItem(`userBirthdayById_${uid}`, birthday || "");
-      localStorage.setItem(`userDobById_${uid}`, birthday || "");
-      localStorage.setItem(`userAgeById_${uid}`, age || "");
-      localStorage.setItem(`userPhotoBase64ById_${uid}`, photo || "");
+  const save = async () => {
+    try {
+      await API.put('/auth/me', { name, email, phone, address, gender, birthday, photoBase64: photo });
+      const uid = localStorage.getItem("userId");
+      if (uid) {
+        localStorage.setItem(`userNameById_${uid}`, name || "");
+        localStorage.setItem(`userEmailById_${uid}`, email || "");
+        localStorage.setItem(`userPhoneById_${uid}`, phone || "");
+        localStorage.setItem(`userAddressById_${uid}`, address || "");
+        localStorage.setItem(`userGenderById_${uid}`, gender || "");
+        localStorage.setItem(`userBirthdayById_${uid}`, birthday || "");
+        localStorage.setItem(`userDobById_${uid}`, birthday || "");
+        localStorage.setItem(`userAgeById_${uid}`, ageFromBirthday(birthday) || age || "");
+        localStorage.setItem(`userPhotoBase64ById_${uid}`, photo || "");
+      }
+      setEditing(false);
+    } catch (e) {
+      alert(e.response?.data?.message || e.message || 'Failed to save');
     }
-    setEditing(false);
   };
 
   return (

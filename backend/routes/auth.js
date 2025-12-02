@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { sendMail } = require('../utils/mailer');
+const { authenticate } = require('../middlewares/auth');
 
 
 // Register
@@ -80,3 +81,25 @@ router.post('/reset', async (req, res) => {
 });
 
 module.exports = router;
+
+// Current user profile
+router.get('/me', authenticate, async (req, res) => {
+  try {
+    const u = req.user;
+    res.json({ id: u._id, name: u.name, email: u.email, phone: u.phone, role: u.role, address: u.address || '', gender: u.gender || '', birthday: u.birthday || '', photoBase64: u.photoBase64 || '' });
+  } catch (e) {
+    res.status(500).json({ message: e.message || 'Failed to fetch profile' });
+  }
+});
+
+// Update current user profile
+router.put('/me', authenticate, async (req, res) => {
+  try {
+    const allow = ['name','email','phone','address','gender','birthday','photoBase64'];
+    allow.forEach((k) => { if (typeof req.body[k] !== 'undefined') req.user[k] = req.body[k]; });
+    await req.user.save();
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message || 'Failed to update profile' });
+  }
+});
