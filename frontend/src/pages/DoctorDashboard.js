@@ -23,6 +23,11 @@ export default function DoctorDashboard() {
   const [fuText, setFuText] = useState("");
   const [profile, setProfile] = useState(null);
   const [expiredAppt, setExpiredAppt] = useState(null);
+  const [muteUntil, setMuteUntil] = useState(0);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelItems, setPanelItems] = useState([]);
+  const [panelLoading, setPanelLoading] = useState(false);
+  const [panelUnread, setPanelUnread] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -139,9 +144,9 @@ export default function DoctorDashboard() {
     }
   };
 
-  const addNotif = (text, apptId) => {
+  const addNotif = (text, apptId, link) => {
     const id = String(Date.now()) + String(Math.random());
-    setNotifs((prev) => [{ id, text, apptId }, ...prev].slice(0, 4));
+    setNotifs((prev) => [{ id, text, apptId, link }, ...prev].slice(0, 4));
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
@@ -277,6 +282,25 @@ export default function DoctorDashboard() {
                 try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                 const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id);
                 addNotif(`New message from ${a?.patient?.name || 'patient'}`, id);
+              } catch (_) {}
+            });
+            socket.on('notify', (p) => {
+              try {
+                if (Date.now() < muteUntil) return;
+                const text = p?.message || '';
+                const link = p?.link || '';
+                const apptId = p?.apptId ? String(p.apptId) : null;
+                if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
+                addNotif(text, apptId, link);
+                if (panelOpen) {
+                  const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId };
+                  setPanelItems((prev) => {
+                    const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
+                    if (exists) return prev;
+                    return [item, ...prev].slice(0, 100);
+                  });
+                  setPanelUnread((c) => c + 1);
+                }
               } catch (_) {}
             });
             cleanup.push(() => { try { socket.close(); } catch(_) {} });
@@ -482,11 +506,18 @@ export default function DoctorDashboard() {
         <main className="col-span-12 md:col-span-9">
           <div className="flex items-center justify-end mb-2">
             <button
-              onClick={() => {
-                const id = localStorage.getItem('lastChatApptId') || '';
-                const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
-                setChatAppt(a || (id ? { _id: id, id, patient: { name: '' } } : null));
-                setBellCount(0);
+              onClick={async () => {
+                try {
+                  setPanelOpen((v) => !v);
+                  if (!panelOpen) {
+                    setPanelLoading(true);
+                    const { data } = await API.get('/notifications');
+                    const items = Array.isArray(data) ? data : [];
+                    setPanelItems(items);
+                    setPanelUnread(items.filter((x) => !x.read).length);
+                    setPanelLoading(false);
+                  }
+                } catch (_) { setPanelLoading(false); }
               }}
               className="relative h-9 w-9 rounded-full border border-slate-300 flex items-center justify-center"
               title="Notifications"
@@ -496,15 +527,62 @@ export default function DoctorDashboard() {
                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">{bellCount}</span>
               )}
             </button>
+            {panelOpen && (
+              <div className="absolute right-4 top-12 w-96 bg-white rounded-xl shadow-2xl border border-slate-200 z-50">
+                <div className="bg-indigo-700 text-white px-4 py-3 rounded-t-xl flex items-center justify-between">
+                  <div className="font-semibold">Your Notifications</div>
+                  <div className="text-xs bg-green-500 text-white rounded-full px-2 py-0.5">{panelUnread} New</div>
+                </div>
+                <div className="px-4 py-2 flex items-center justify-between border-b">
+                  <button onClick={() => nav('/doctor/dashboard')} className="text-indigo-700 text-sm">View All</button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={async () => {
+                        try { await API.delete('/notifications'); setPanelItems([]); setPanelUnread(0); setBellCount(0); } catch(_) {}
+                      }}
+                      className="text-white bg-indigo-700 rounded-md px-2 py-1 text-xs"
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+                <div className="max-h-[60vh] overflow-y-auto">
+                  {panelLoading ? (
+                    <div className="p-4 text-sm text-slate-600">Loading…</div>
+                  ) : panelItems.length === 0 ? (
+                    <div className="p-4 text-sm text-slate-600">No notifications</div>
+                  ) : (
+                    panelItems.map((n) => (
+                      <div key={n._id || n.id} className="px-4 py-3 border-b hover:bg-slate-50">
+                        <div className="flex items-start justify-between">
+                          <button
+                            onClick={() => { try { if (n.link) nav(n.link); if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId)); setPanelOpen(false); } catch(_) {} }}
+                            className="text-left text-sm text-slate-900"
+                          >
+                            {n.message}
+                          </button>
+                          {!n.read && (
+                            <button onClick={async () => { try { await API.put(`/notifications/${n._id || n.id}/read`); setPanelItems((prev) => prev.map((x) => (String(x._id || x.id) === String(n._id || n.id) ? { ...x, read: true } : x))); setPanelUnread((c) => Math.max(0, c - 1)); } catch(_) {} }} className="text-xs text-slate-600">Mark As Read</button>
+                          )}
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1">{new Date(n.createdAt).toLocaleString()}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           <div className="fixed right-4 top-4 z-50 space-y-2">
             {notifs.map((n) => (
               <button key={n.id} onClick={() => {
                 try {
-                  const id = String(n.apptId || localStorage.getItem('lastChatApptId') || '');
-                  const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
-                  setChatAppt(a || (id ? { _id: id, id, patient: { name: '' } } : null));
-                  setBellCount(0);
+                  if (n.link) { nav(n.link); } else {
+                    const id = String(n.apptId || localStorage.getItem('lastChatApptId') || '');
+                    const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
+                    setChatAppt(a || (id ? { _id: id, id, patient: { name: '' } } : null));
+                    setBellCount(0);
+                  }
                   setNotifs((prev) => prev.filter((x) => x.id !== n.id));
                 } catch (_) {}
               }} className="flex items-center gap-2 bg-white shadow-lg border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">

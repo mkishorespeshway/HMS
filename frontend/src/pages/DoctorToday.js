@@ -888,7 +888,7 @@ export default function DoctorToday() {
                         className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm"
                       />
                       <button
-                        onClick={() => { if (chatText.trim()) { setChat((prev) => [...prev, chatText.trim()]); try { const id = String((consult && (consult._id || consult.id)) || (detailsAppt && (detailsAppt._id || detailsAppt.id)) || ''); if (id) { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'general' }); localStorage.setItem('lastChatApptId', id); } } catch(_) {} setChatText(""); } }}
+                        onClick={() => { if (chatText.trim()) { const text = chatText.trim(); setChat((prev) => [...prev, text]); try { const id = String((consult && (consult._id || consult.id)) || (detailsAppt && (detailsAppt._id || detailsAppt.id)) || ''); if (id) { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'general', text }); localStorage.setItem('lastChatApptId', id); const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor', text }); chan.close(); } } catch(_) {} setChatText(""); } }}
                         className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
                       >
                         Send
@@ -1183,11 +1183,12 @@ export default function DoctorToday() {
                       if (!detailsAppt) return;
                       if (wrText.trim()) {
                         const id = String(detailsAppt._id || detailsAppt.id);
-                        const next = [...wrChat, wrText.trim()];
+                        const text = wrText.trim();
+                        const next = [...wrChat, text];
                         setWrChat(next);
                         try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
-                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor' }); chan.close(); } catch(_) {}
-                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'pre' }); } catch(_) {}
+                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor', text }); chan.close(); } catch(_) {}
+                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'pre', text }); } catch(_) {}
                         setWrText("");
                       }
                     }}
@@ -1236,11 +1237,12 @@ export default function DoctorToday() {
                   <button
                     onClick={() => {
                       if (fuText.trim()) {
-                        const next = [...fuChat, fuText.trim()];
+                        const text = fuText.trim();
+                        const next = [...fuChat, text];
                         setFuChat(next);
                         const keyBase = `fu_${String(followAppt._id || followAppt.id)}`;
                         try { localStorage.setItem(`${keyBase}_chat`, JSON.stringify(next)); } catch(_) {}
-                        try { const id = String(followAppt._id || followAppt.id); localStorage.setItem('lastChatApptId', id); const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor' }); chan.close(); socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'followup' }); } catch(_) {}
+                        try { const id = String(followAppt._id || followAppt.id); localStorage.setItem('lastChatApptId', id); const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor', text }); chan.close(); socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'followup', text }); } catch(_) {}
                         setFuText("");
                       }
                     }}

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import Logo from "./components/Logo";
+import API from "./api";
 import { useState, useEffect } from "react";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -32,10 +33,17 @@ function Header() {
   const [bell, setBell] = useState(() => {
     try { return Number(localStorage.getItem('patientBellCount') || 0) || 0; } catch(_) { return 0; }
   });
+  const [notifs, setNotifs] = useState([]);
+  const [muteUntil, setMuteUntil] = useState(0);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelItems, setPanelItems] = useState([]);
+  const [panelLoading, setPanelLoading] = useState(false);
+  const [panelUnread, setPanelUnread] = useState(0);
   const hideHeader = location.pathname.startsWith('/admin') || location.pathname.startsWith('/doctor') || location.pathname.startsWith('/prescription');
   const token = localStorage.getItem('token');
   const uid = localStorage.getItem('userId');
   const photo = uid ? localStorage.getItem(`userPhotoBase64ById_${uid}`) : '';
+  const userName = uid ? localStorage.getItem(`userNameById_${uid}`) || '' : '';
   const showAdminLink = !token && !location.pathname.startsWith('/login');
   useEffect(() => {
     try {
@@ -56,6 +64,56 @@ function Header() {
       return () => { try { chan.close(); } catch(_) {} };
     } catch(_) {}
   }, []);
+  useEffect(() => {
+    const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+    const w = window;
+    const cleanup = [];
+    const onReady = () => {
+      try {
+        const socket = w.io ? w.io(origin, { transports: ['websocket','polling'], auth: { token: localStorage.getItem('token') || '' } }) : null;
+        if (socket) {
+          socket.on('notify', (p) => {
+            try {
+              if (Date.now() < muteUntil) return;
+              const id = String(Date.now()) + String(Math.random());
+              const text = p?.message || '';
+              const link = p?.link || '';
+              try {
+                if (p?.type === 'chat' && p?.apptId) localStorage.setItem('lastChatApptId', String(p.apptId));
+              } catch(_) {}
+              setBell((c) => {
+                const next = c + 1;
+                try { localStorage.setItem('patientBellCount', String(next)); } catch(_) {}
+                return next;
+              });
+              setNotifs((prev) => [{ id, text, link }, ...prev].slice(0, 4));
+              setTimeout(() => { setNotifs((prev) => prev.filter((n) => n.id !== id)); }, 6000);
+              if (panelOpen) {
+                const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId: p?.apptId ? String(p.apptId) : undefined };
+                setPanelItems((prev) => {
+                  const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
+                  if (exists) return prev;
+                  return [item, ...prev].slice(0, 100);
+                });
+                setPanelUnread((c) => c + 1);
+              }
+            } catch (_) {}
+          });
+          cleanup.push(() => { try { socket.close(); } catch(_) {} });
+        }
+      } catch (_) {}
+    };
+    if (!w.io) {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+      s.onload = onReady;
+      document.body.appendChild(s);
+      cleanup.push(() => { try { document.body.removeChild(s); } catch(_) {} });
+    } else {
+      onReady();
+    }
+    return () => { cleanup.forEach((fn) => fn()); };
+  }, []);
   if (hideHeader) return null;
   return (
     <header className="bg-white border-b">
@@ -75,7 +133,19 @@ function Header() {
           {token ? (
             <div className="relative flex items-center gap-3">
               <button
-                onClick={() => { setBell(0); try { localStorage.setItem('patientBellCount', '0'); } catch(_) {}; nav('/appointments?alertChat=1'); }}
+                onClick={async () => {
+                  try {
+                    setPanelOpen((v) => !v);
+                    if (!panelOpen) {
+                      setPanelLoading(true);
+                      const { data } = await API.get('/notifications');
+                      const items = Array.isArray(data) ? data : [];
+                      setPanelItems(items);
+                      setPanelUnread(items.filter((x) => !x.read).length);
+                      setPanelLoading(false);
+                    }
+                  } catch (_) { setPanelLoading(false); }
+                }}
                 className="relative h-9 w-9 rounded-full border border-slate-300 flex items-center justify-center"
                 title="Notifications"
               >
@@ -84,6 +154,61 @@ function Header() {
                   <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">{bell}</span>
                 )}
               </button>
+              {panelOpen && (
+                <div className="absolute right-0 top-12 w-96 bg-white rounded-xl shadow-2xl border border-slate-200 z-50">
+                  <div className="bg-indigo-700 text-white px-4 py-3 rounded-t-xl flex items-center justify-between">
+                    <div className="font-semibold">Your Notifications</div>
+                    <div className="text-xs bg-green-500 text-white rounded-full px-2 py-0.5">{panelUnread} New</div>
+                  </div>
+                  <div className="px-4 py-2 flex items-center justify-between border-b">
+                    <button onClick={() => nav('/appointments?alertChat=1')} className="text-indigo-700 text-sm">View All</button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={async () => {
+                          try { await API.delete('/notifications'); setPanelItems([]); setPanelUnread(0); setBell(0); localStorage.setItem('patientBellCount','0'); } catch(_) {}
+                        }}
+                        className="text-white bg-indigo-700 rounded-md px-2 py-1 text-xs"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                  <div className="max-h-[60vh] overflow-y-auto">
+                    {panelLoading ? (
+                      <div className="p-4 text-sm text-slate-600">Loading…</div>
+                    ) : panelItems.length === 0 ? (
+                      <div className="p-4 text-sm text-slate-600">No notifications</div>
+                    ) : (
+                      panelItems.map((n) => (
+                        <div key={n._id || n.id} className="px-4 py-3 border-b hover:bg-slate-50">
+                          <div className="flex items-start justify-between">
+                            <button
+                              onClick={() => { try { if (n.link) nav(n.link); if (n.type === 'chat' && n.apptId) localStorage.setItem('lastChatApptId', String(n.apptId)); setPanelOpen(false); } catch(_) {} }}
+                              className="text-left text-sm text-slate-900"
+                            >
+                              {n.message}
+                            </button>
+                            {!n.read && (
+                              <button onClick={async () => { try { await API.put(`/notifications/${n._id || n.id}/read`); setPanelItems((prev) => prev.map((x) => (String(x._id || x.id) === String(n._id || n.id) ? { ...x, read: true } : x))); setPanelUnread((c) => Math.max(0, c - 1)); } catch(_) {} }} className="text-xs text-slate-600">Mark As Read</button>
+                            )}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-1">{new Date(n.createdAt).toLocaleString()}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="fixed right-4 top-4 z-50 space-y-2">
+                {notifs.map((n) => (
+                  <button key={n.id} onClick={() => { try { if (n.link) nav(n.link); } catch(_) {} setNotifs((prev) => prev.filter((x) => x.id !== n.id)); }} className="flex items-center gap-2 bg-white shadow-lg border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" fill="#F59E0B"/>
+                    </svg>
+                    <div className="text-sm text-slate-900">{n.text}</div>
+                  </button>
+                ))}
+              </div>
               {photo ? (
                 <img
                   src={photo}
@@ -92,13 +217,16 @@ function Header() {
                   onClick={() => setOpen((v) => !v)}
                 />
               ) : (
-                <div
-                  className="h-9 w-9 rounded-full border border-slate-300 bg-white cursor-pointer"
+                <button
+                  className="h-9 w-9 rounded-full border border-slate-300 bg-white cursor-pointer flex items-center justify-center text-slate-700 font-semibold"
                   onClick={() => setOpen((v) => !v)}
-                />
+                  title={userName || 'Profile'}
+                >
+                  {(userName || '').trim().slice(0,1).toUpperCase() || 'M'}
+                </button>
               )}
               {open && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg text-sm z-50 overflow-hidden">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg text-sm z-50">
                   <Link to="/profile" className="block px-3 py-2 hover:bg-slate-50">My Profile</Link>
                   <Link to="/appointments" className="block px-3 py-2 hover:bg-slate-50">My Appointments</Link>
                   <Link to="/appointments?view=prescriptions" className="block px-3 py-2 hover:bg-slate-50">Prescriptions</Link>

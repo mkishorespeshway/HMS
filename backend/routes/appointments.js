@@ -6,6 +6,7 @@ const DoctorProfile = require("../models/DoctorProfile");
 const { generateSlots } = require("../utils/slotGenerator");
 const { sendMail } = require("../utils/mailer");
 const { createMeetLink } = require("../utils/meeting");
+const { notifyAppointmentConfirmed, notifyMeetingLink, notifySessionComplete, notifyPrescription } = require('../utils/notify');
 
 // -------------------------------
 // Get available slots for a doctor
@@ -100,6 +101,7 @@ router.put('/:id/meet-link', authenticate, async (req, res) => {
     const email = appt.patient?.email;
     if (email) await sendMail(email, 'Join Meeting', `Doctor has started your consultation. Join here: ${link}`);
   } catch (e) {}
+  try { await notifyMeetingLink(req.app, appt); } catch (_) {}
   res.json({ ok: true });
 });
 
@@ -114,6 +116,7 @@ router.post('/:id/meet-link/generate', authenticate, async (req, res) => {
     appt.meetingLink = url;
     await appt.save();
     try { if (appt.patient?.email) await sendMail(appt.patient.email, 'Join Meeting', `Doctor has started your consultation. Join here: ${url}`); } catch (_) {}
+    try { await notifyMeetingLink(req.app, appt); } catch (_) {}
     return res.json({ url });
   } catch (e) {
     return res.status(500).json({ message: e.message || 'Failed to generate meeting link' });
@@ -136,9 +139,9 @@ router.post("/:id/pay", authenticate, async (req, res) => {
     }
     await appt.save();
 
-    const populated = await Appointment.findById(id)
-        .populate("doctor", "name email")
-        .populate("patient", "name email");
+  const populated = await Appointment.findById(id)
+      .populate("doctor", "name email")
+      .populate("patient", "name email");
 
     const when = `${populated.date} ${populated.startTime}-${populated.endTime}`;
     const subject = "Appointment Confirmed";
@@ -150,10 +153,11 @@ router.post("/:id/pay", authenticate, async (req, res) => {
         if (populated.doctor.email) await sendMail(populated.doctor.email, subject, textDoctor);
     } catch (e) {}
 
-    try {
-      const io = req.app.get('io');
-      if (io) io.emit('appointment:new', populated);
-    } catch (_) {}
+  try {
+    const io = req.app.get('io');
+    if (io) io.emit('appointment:new', populated);
+  } catch (_) {}
+  try { await notifyAppointmentConfirmed(req.app, populated); } catch (_) {}
 
     res.json(populated);
 });
@@ -173,9 +177,29 @@ router.put("/:id/complete", authenticate, async (req, res) => {
     const appt = await Appointment.findById(id);
     if (!appt) return res.status(404).json({ message: "Appointment not found" });
     if (String(appt.doctor) !== String(req.user._id)) return res.status(403).json({ message: "Forbidden" });
-    appt.status = "COMPLETED";
-    await appt.save();
-    res.json(appt);
+  appt.status = "COMPLETED";
+  await appt.save();
+  try { await notifySessionComplete(req.app, appt); } catch (_) {}
+  res.json(appt);
+});
+
+router.put('/:id/payment/failed', authenticate, async (req, res) => {
+  const { id } = req.params;
+  const appt = await Appointment.findById(id).populate('patient','name email');
+  if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+  if (String(appt.patient._id || appt.patient) !== String(req.user._id)) return res.status(403).json({ message: 'Forbidden' });
+  appt.paymentStatus = 'FAILED';
+  appt.status = 'PENDING';
+  await appt.save();
+  try {
+    const email = appt.patient?.email;
+    if (email) await sendMail(email, 'Payment Failed', 'Payment unsuccessful. Appointment not booked.');
+  } catch (_) {}
+  try {
+    const { createNotification } = require('../utils/notify');
+    await createNotification(req.app, { userId: appt.patient._id || appt.patient, title: 'Payment Failed', message: 'Payment unsuccessful. Appointment not booked.', type: 'payment', link: '/appointments', dedupeKey: `payfail_${String(appt._id || appt.id || '')}` });
+  } catch (_) {}
+  res.json({ ok: true });
 });
 
 router.put("/:id/cancel", authenticate, async (req, res) => {
@@ -237,6 +261,7 @@ router.post("/:id/prescription", authenticate, async (req, res) => {
   try {
     if (appt.patient.email) await sendMail(appt.patient.email, "Prescription Available", `Your prescription is ready: ${url}`);
   } catch (e) {}
+  try { await notifyPrescription(req.app, id); } catch (_) {}
   res.json({ ok: true });
 });
 

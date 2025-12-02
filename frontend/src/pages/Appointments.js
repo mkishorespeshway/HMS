@@ -67,18 +67,22 @@ export default function Appointments() {
   const [detText, setDetText] = useState("");
   const [detEdit, setDetEdit] = useState(false);
   const [bookDocId, setBookDocId] = useState("");
+  const [alertHandled, setAlertHandled] = useState(false);
 
   useEffect(() => {
     try {
       const q = new URLSearchParams(location.search);
-      if (q.get('alertChat') === '1') {
+      const shouldOpen = q.get('alertChat') === '1' && !alertHandled;
+      if (shouldOpen) {
         const id = localStorage.getItem('lastChatApptId') || '';
         const a = (list || []).find((x) => String(x._id || x.id) === id) || null;
         if (a) setDetailsAppt(a);
+        setAlertHandled(true);
         setTimeout(() => { try { localStorage.setItem('patientBellCount', '0'); } catch(_) {} }, 0);
+        try { nav('/appointments', { replace: true }); } catch(_) {}
       }
     } catch(_) {}
-  }, [location.search, list]);
+  }, [location.search, list, alertHandled, nav]);
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) { nav("/login"); return; }
@@ -976,12 +980,13 @@ export default function Appointments() {
                     onClick={() => {
                       if (waitText.trim()) {
                         const id = String(waitingAppt._id || waitingAppt.id);
-                        const next = [...waitChat, waitText.trim()];
+                        const text = waitText.trim();
+                        const next = [...waitChat, text];
                         setWaitChat(next);
                         try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
                         try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient' }); chan.close(); } catch(_) {}
-                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre' }); } catch(_) {}
+                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient', text }); chan.close(); } catch(_) {}
+                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre', text }); } catch(_) {}
                         setWaitText("");
                       }
                     }}
@@ -996,8 +1001,8 @@ export default function Appointments() {
                     type="file"
                     multiple
                     onChange={async (e) => {
-                      const filesSel = Array.from(e.target.files || []);
-                      const newItems = [];
+                    const filesSel = Array.from(e.target.files || []);
+                    const newItems = [];
                       for (const f of filesSel) {
                         try {
                           const buf = await f.arrayBuffer();
@@ -1011,11 +1016,11 @@ export default function Appointments() {
                       }
                       const nextFiles = [...waitFiles, ...newItems];
                       setWaitFiles(nextFiles);
-                      const id = String(waitingAppt._id || waitingAppt.id);
-                      try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
-                      try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report' }); } catch(_) {}
-                      e.target.value = '';
-                    }}
+                    const id = String(waitingAppt._id || waitingAppt.id);
+                    try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
+                    try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report', text: `Report uploaded (${filesSel.length})` }); } catch(_) {}
+                    e.target.value = '';
+                  }}
                   />
                   <div className="mt-2 space-y-2">
                     {waitFiles.length === 0 ? (
@@ -1085,7 +1090,7 @@ export default function Appointments() {
           <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-lg h-[75vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <div className="font-semibold text-slate-900">Patient Details</div>
-              <button onClick={() => setDetailsAppt(null)} className="px-3 py-1 rounded-md border border-slate-300">Close</button>
+              <button onClick={() => { setDetailsAppt(null); try { nav('/appointments', { replace: true }); } catch(_) {} }} className="px-3 py-1 rounded-md border border-slate-300">Close</button>
             </div>
             <div className="p-4 grid gap-3 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-4">
@@ -1167,12 +1172,13 @@ export default function Appointments() {
                     onClick={() => {
                       if (detText.trim()) {
                         const id = String(detailsAppt._id || detailsAppt.id);
-                        const next = [...detChat, detText.trim()];
+                        const text = detText.trim();
+                        const next = [...detChat, text];
                         setDetChat(next);
                         try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
                         try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient' }); chan.close(); } catch(_) {}
-                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre' }); } catch(_) {}
+                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient', text }); chan.close(); } catch(_) {}
+                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre', text }); } catch(_) {}
                         setDetText("");
                       }
                     }}
@@ -1206,7 +1212,7 @@ export default function Appointments() {
                     const id = String(detailsAppt._id || detailsAppt.id);
                     try { localStorage.setItem(`wr_${id}_prevpres`, JSON.stringify(nextFiles)); } catch(_) {}
                     try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
-                    try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report' }); } catch(_) {}
+                    try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report', text: `Report uploaded (${files.length})` }); } catch(_) {}
                     e.target.value = '';
                   }}
                 />
