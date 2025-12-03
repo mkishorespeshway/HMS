@@ -104,6 +104,7 @@ export default function DoctorDetails() {
 
   useEffect(() => {
     if (!doctor || !selectedDate) return;
+    try { if (!localStorage.getItem('token')) return; } catch(_) {}
     (async () => {
       try {
         const { data } = await API.get('/appointments/mine');

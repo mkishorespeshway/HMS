@@ -10,6 +10,11 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
+@keyframes slideInRight {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
 @keyframes zoomIn {
   from { transform: scale(0.9); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -21,6 +26,10 @@
 
 .animate-slide-in-left {
   animation: slideInLeft 0.5s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s ease-out forwards;
 }
 
 .animate-zoom-in {
