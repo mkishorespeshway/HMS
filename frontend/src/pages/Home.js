@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import API from "../api";
 
 export default function Home() {
-  const FALLBACK = "https://raw.githubusercontent.com/abhi051002/hms-fullstack/main/frontend/src/readme_images/home1.png";
-  const LOCAL = (process.env.PUBLIC_URL || "") + "/doctor3.jpeg";
+  const FALLBACK = "";
+  const LOCAL = (process.env.PUBLIC_URL || "") + "/uploads/Screenshot 2025-12-03 145101.png";
   const CARD_FALLBACK = "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=640&auto=format&fit=crop";
   const [heroSrc, setHeroSrc] = useState(FALLBACK);
   const [list, setList] = useState([]);
@@ -15,12 +15,10 @@ export default function Home() {
     if (didInit.current) return;
     didInit.current = true;
     const bust = `${LOCAL}?v=${Date.now()}`;
-    fetch(bust, { method: "HEAD" })
-      .then((res) => {
-        if (res.ok) setHeroSrc(LOCAL);
-        else setHeroSrc(FALLBACK);
-      })
-      .catch(() => setHeroSrc(FALLBACK));
+    const img = new Image();
+    img.onload = () => setHeroSrc(LOCAL);
+    img.onerror = () => setHeroSrc(FALLBACK);
+    img.src = bust;
     (async () => {
       try {
         setError("");
@@ -76,13 +74,35 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
 
-      
+      <section className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <div className="text-sm uppercase tracking-wide opacity-90">HospoZen</div>
+              <h1 className="mt-2 text-3xl md:text-4xl font-semibold leading-tight">Book Appointment With Trusted Doctors</h1>
+              <p className="mt-3 text-indigo-100 max-w-xl">Discover verified specialists, schedule easily, and take control of your health journey.</p>
+              <div className="mt-6 flex items-center gap-4">
+                <Link to="/search" className="inline-block bg-white text-indigo-700 px-5 py-2 rounded-md font-medium shadow hover:bg-indigo-50">Book Appointment</Link>
+                <div className="flex items-center gap-2 text-indigo-100">
+                  <span className="w-2 h-2 rounded-full bg-white/70"></span>
+                  <span className="w-2 h-2 rounded-full bg-white/50"></span>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              {heroSrc && (
+                <img src={heroSrc} alt="Hero" className="w-full rounded-xl shadow-lg" />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section>
         <div className="max-w-7xl mx-auto px-4 py-10">
           <h2 className="text-2xl font-semibold text-slate-900 text-center">Find by Speciality</h2>
           <p className="text-slate-600 text-center mt-2">Simply browse through specialties and schedule your appointment.</p>
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-8 gap-4">
             {[
               { label: "Cardiology", icon: "❤️" },
               { label: "Dermatology", icon: "🧴" },
@@ -92,10 +112,10 @@ export default function Home() {
               { label: "Dental", icon: "🦷" },
             ].map((s) => (
               <div key={s.label} className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl">
+                <div className="mx-auto w-16 h-16 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-2xl shadow-sm">
                   <span>{s.icon}</span>
                 </div>
-                <div className="mt-2 text-sm text-slate-700">{s.label}</div>
+                <div className="mt-2 text-sm font-medium text-slate-800">{s.label}</div>
               </div>
             ))}
           </div>
@@ -118,7 +138,7 @@ export default function Home() {
                 return nb.localeCompare(na);
               });
               return sorted.map((d) => (
-                <div key={d._id} className="bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm overflow-hidden">
+                <div key={d._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition">
                   <div className="relative">
                     {String(d.photoBase64 || "").startsWith("data:image") ? (
                       <img
@@ -143,7 +163,9 @@ export default function Home() {
                   <div className="p-4">
                     <h3 className="text-base font-semibold">{`Dr. ${d.user?.name || ''}`}</h3>
                     <p className="text-sm text-slate-600">{(d.specializations && d.specializations[0]) || ""}</p>
-                    <Link to={`/doctor/${d.user._id}`} className="mt-3 inline-block text-indigo-600 hover:text-indigo-800">View Profile</Link>
+                    <div className="mt-3">
+                      <Link to={`/doctor/${d.user._id}`} className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">View Profile</Link>
+                    </div>
                   </div>
                 </div>
               ));
@@ -152,9 +174,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section>
-        <div className="hidden" aria-hidden="true" />
-      </section>
+      
 
       <section>
         <div className="max-w-7xl mx-auto px-4 py-12">
