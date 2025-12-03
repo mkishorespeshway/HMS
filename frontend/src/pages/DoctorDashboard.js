@@ -14,6 +14,7 @@ export default function DoctorDashboard() {
   const [notifs, setNotifs] = useState([]);
   const [bellCount, setBellCount] = useState(0);
   const [chatAppt, setChatAppt] = useState(null);
+  const [chatPreview, setChatPreview] = useState(null);
   const socketRef = useRef(null);
   const meetWinRef = useRef(null);
   const meetMonitorRef = useRef(null);
@@ -1374,7 +1375,7 @@ export default function DoctorDashboard() {
           <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-lg h-[70vh] overflow-hidden flex flex-col">
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <div className="font-semibold text-slate-900">Patient Details</div>
-              <button onClick={() => setChatAppt(null)} className="px-3 py-1 rounded-md border border-slate-300">Close</button>
+              <button onClick={() => { setChatAppt(null); setChatPreview(null); }} className="px-3 py-1 rounded-md border border-slate-300">Close</button>
             </div>
             <div className="p-4 grid gap-3 overflow-y-auto flex-1">
               <div className="text-slate-700 text-sm">Patient: <span className="text-slate-900">{chatAppt.patient?.name || ''}</span></div>
@@ -1397,17 +1398,28 @@ export default function DoctorDashboard() {
                       try {
                         const id = String(chatAppt._id || chatAppt.id);
                         const files = JSON.parse(localStorage.getItem(`wr_${id}_files`) || '[]');
-                        const arr = Array.isArray(files) ? files : [];
+                        const arr = (Array.isArray(files) ? files : []).filter((x) => typeof x?.url === 'string' && String(x.url).trim() !== '');
                         if (arr.length === 0) return <div className="text-slate-600 text-sm">No reports uploaded</div>;
                         return arr.map((f, idx) => (
                           <div key={idx} className="flex items-center justify-between border rounded-md p-2">
                             <div className="text-sm text-slate-700 truncate max-w-[12rem]">{f.name}</div>
-                            <button onClick={() => window.open(String(f.url || ''), '_blank')} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
+                            <button onClick={() => setChatPreview(f)} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
                           </div>
                         ));
                       } catch(_) { return <div className="text-slate-600 text-sm">No reports uploaded</div>; }
                     })()}
                   </div>
+                  {chatPreview && (
+                    <div className="mt-3 border rounded-md p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm text-slate-900 truncate">{chatPreview.name || 'Selected report'}</div>
+                        <button onClick={() => setChatPreview(null)} className="px-2 py-1 rounded-md border border-slate-300 text-xs">Close Preview</button>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <img src={String(chatPreview.url || '')} alt="" className="max-h-64 w-auto object-contain" />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-2 flex gap-2">
                   <input id="chatInputDoc" placeholder="Reply to patient" className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm" />

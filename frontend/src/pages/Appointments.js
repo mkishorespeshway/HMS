@@ -32,7 +32,8 @@ export default function Appointments() {
             date: a.date || '',
             time: a.startTime || '',
             name,
-            url
+            url,
+            docId: String(typeof a.doctor === 'string' ? a.doctor : (a.doctor?._id || a.doctor?.id || ''))
           });
         });
       } catch (_) {}
@@ -72,14 +73,16 @@ export default function Appointments() {
   useEffect(() => {
     try {
       const q = new URLSearchParams(location.search);
-      const shouldOpen = q.get('alertChat') === '1' && !alertHandled;
-      if (shouldOpen) {
+      const shouldOpen = q.get('alertChat') === '1';
+      if (shouldOpen && !alertHandled) {
         const id = localStorage.getItem('lastChatApptId') || '';
         const a = (list || []).find((x) => String(x._id || x.id) === id) || null;
-        if (a) setDetailsAppt(a);
-        setAlertHandled(true);
-        setTimeout(() => { try { localStorage.setItem('patientBellCount', '0'); } catch(_) {} }, 0);
-        try { nav('/appointments', { replace: true }); } catch(_) {}
+        if (a) {
+          setDetailsAppt(a);
+          setAlertHandled(true);
+          setTimeout(() => { try { localStorage.setItem('patientBellCount', '0'); } catch(_) {} }, 0);
+          try { nav('/appointments', { replace: true }); } catch(_) {}
+        }
       }
     } catch(_) {}
   }, [location.search, list, alertHandled, nav]);
@@ -150,6 +153,26 @@ export default function Appointments() {
     };
     load();
   }, [nav]);
+
+  useEffect(() => {
+    try {
+      const needed = Array.from(new Set((presItems || []).map((x) => String(x.docId || '')).filter(Boolean))).filter((id) => !profiles.has(id));
+      if (!needed.length) return;
+      (async () => {
+        try {
+          const resps = await Promise.all(needed.map((id) => API.get(`/doctors?user=${id}`).catch(() => ({ data: [] }))));
+          setProfiles((prev) => {
+            const next = new Map(prev);
+            needed.forEach((id, idx) => {
+              const first = Array.isArray(resps[idx]?.data) ? resps[idx].data[0] : null;
+              if (first) next.set(String(id), first);
+            });
+            return next;
+          });
+        } catch (_) {}
+      })();
+    } catch (_) {}
+  }, [presItems, profiles]);
 
   useEffect(() => {
     let chan = null;
@@ -593,7 +616,7 @@ export default function Appointments() {
                 <div className="flex items-center gap-4">
                   {(() => {
                     try {
-                      const docId = String(a.doctor?._id || a.doctor || '');
+                      const docId = isPrescriptionsView ? String(a.docId || '') : String(a.doctor?._id || a.doctor || '');
                       const prof = profiles.get(docId);
                       const src = prof?.photoBase64;
                       if (src && String(src).startsWith('data:image')) {
@@ -634,7 +657,7 @@ export default function Appointments() {
                 </div>
                 <div className="flex gap-3 items-center">
                   {isPrescriptionsView ? (
-                    <button onClick={() => openFile(a.url)} className="border border-indigo-600 text-indigo-700 px-3 py-1 rounded-md">Open</button>
+                    <button onClick={() => { try { const u = String(a.url || ''); if (u) nav(u); } catch(_) {} }} className="border border-indigo-600 text-indigo-700 px-3 py-1 rounded-md">Open</button>
                   ) : String(a.status).toUpperCase() === 'CANCELLED' ? (
                     <div className="flex flex-wrap gap-2 items-center">
                       <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Cancelled</span>
@@ -672,7 +695,7 @@ export default function Appointments() {
                       <button
                         onClick={() => {
                           const docId = String(a.doctor?._id || a.doctor || '');
-                          if (docId) window.open(`/doctor/${docId}`, '_blank');
+                          if (docId) nav(`/doctor/${docId}`);
                         }}
                         className="border border-slate-300 px-3 py-1 rounded-md"
                       >

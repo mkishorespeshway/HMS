@@ -328,32 +328,34 @@ export default function Prescription() {
                 Close
               </button>
               <button onClick={() => { try { window.print(); } catch(_) {} }} className="px-3 py-2 rounded-md border border-slate-300">Download PDF</button>
-              <button
-                onClick={async () => {
-                  const key = String(id);
-                  const viewUrl = `${window.location.origin}/prescription/${id}`;
-                  try {
-                    const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
-                    const label = `Prescription ${when}`;
-                    const item = { name: label, url: viewUrl, by: "doctor" };
-                    const next = Array.isArray(prev) ? [...prev, item] : [item];
-                    localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
-                    try { const chan = new BroadcastChannel('prescriptions'); chan.postMessage({ id: key, item }); chan.close(); } catch (_) {}
-                  } catch (_) {}
-                  try { await API.post(`/appointments/${id}/prescription`, { text: appt?.prescriptionText || "" }); } catch (_) {}
-                  try {
-                    if (navigator.share) {
-                      await navigator.share({ title: 'Prescription', url: viewUrl });
-                    } else {
-                      await navigator.clipboard.writeText(viewUrl);
-                    }
-                  } catch (_) {}
-                  alert('Sent to Prescriptions')
-                }}
-                className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
-              >
-                Share
-              </button>
+              {isDoctorUser && (
+                <button
+                  onClick={async () => {
+                    const key = String(id);
+                    const viewUrl = `${window.location.origin}/prescription/${id}`;
+                    try {
+                      const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
+                      const label = `Prescription ${when}`;
+                      const item = { name: label, url: viewUrl, by: "doctor" };
+                      const next = Array.isArray(prev) ? [...prev, item] : [item];
+                      localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
+                      try { const chan = new BroadcastChannel('prescriptions'); chan.postMessage({ id: key, item }); chan.close(); } catch (_) {}
+                    } catch (_) {}
+                    try { await API.post(`/appointments/${id}/prescription`, { text: appt?.prescriptionText || "" }); } catch (_) {}
+                    try {
+                      if (navigator.share) {
+                        await navigator.share({ title: 'Prescription', url: viewUrl });
+                      } else {
+                        await navigator.clipboard.writeText(viewUrl);
+                      }
+                    } catch (_) {}
+                    alert('Sent to Prescriptions')
+                  }}
+                  className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  Share
+                </button>
+              )}
             </>
           )}
         </div>

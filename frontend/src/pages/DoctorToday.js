@@ -743,6 +743,43 @@ export default function DoctorToday() {
             </div>
             <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
               <button type="button" onClick={() => { try { window.open(`/prescription/${summaryId}?print=1`, '_blank'); } catch(_) {} }} className="px-3 py-1 rounded-md border border-slate-300">Download PDF</button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const id = String(summaryId || '');
+                    if (!id) return;
+                    const { data } = await API.get(`/appointments/${id}`);
+                    const text = String(data?.prescriptionText || '');
+                    try {
+                      const key = String(id);
+                      const viewUrl = `${window.location.origin}/prescription/${id}`;
+                      const when = `${String(data?.date || '')} ${String(data?.startTime || '')}-${String(data?.endTime || '')}`;
+                      const prev = JSON.parse(localStorage.getItem(`wr_${key}_prevpres`) || '[]');
+                      const item = { name: `Prescription ${when}`.trim(), url: viewUrl, by: "doctor" };
+                      const next = Array.isArray(prev) ? [...prev, item] : [item];
+                      localStorage.setItem(`wr_${key}_prevpres`, JSON.stringify(next));
+                      try { const chan = new BroadcastChannel('prescriptions'); chan.postMessage({ id: key, item }); chan.close(); } catch (_) {}
+                    } catch (_) {}
+                    try { await API.post(`/appointments/${id}/prescription`, { text }); } catch (_) {}
+                    const viewUrl = `${window.location.origin}/prescription/${id}`;
+                    try {
+                      if (navigator.share) {
+                        await navigator.share({ title: 'Prescription', url: viewUrl });
+                      } else {
+                        await navigator.clipboard.writeText(viewUrl);
+                      }
+                    } catch (_) {}
+                    try { window.open(viewUrl, '_blank'); } catch (_) {}
+                    alert('Prescription shared to patient');
+                  } catch (e) {
+                    alert(e.response?.data?.message || e.message || 'Failed to share');
+                  }
+                }}
+                className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700"
+              >
+                Share
+              </button>
               <button type="button" onClick={() => setSummaryOpen(false)} className="px-3 py-1 rounded-md border border-slate-300">Close</button>
             </div>
           </div>
