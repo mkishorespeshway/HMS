@@ -147,13 +147,9 @@ export default function Home() {
     return () => { cleanup.forEach((fn) => fn()); };
   }, []);
   return (
-    <div className="page-gradient">
+    <div className="min-h-screen bg-pink-100">
 
-      <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden py-24">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-100/30 via-purple-100/20 to-pink-100/30"></div>
-        <div className="absolute top-10 right-10 w-80 h-80 bg-gradient-to-br from-blue-200/25 to-purple-200/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-gradient-to-tr from-purple-200/20 to-pink-200/25 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-cyan-200/15 to-blue-200/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+      <section className="relative overflow-hidden py-24">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="grid md:grid-cols-2 gap-20 items-center">
             <div>
@@ -196,10 +192,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-24 bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 relative overflow-hidden">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-blue-200/25 to-purple-200/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-gradient-to-tl from-indigo-200/20 to-pink-200/25 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
-        <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-gradient-to-r from-cyan-200/15 to-blue-200/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '6s' }}></div>
+      <section className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="text-center mb-20">
             <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-semibold animate-slide-in-down shadow-lg border border-blue-200/50 mb-6">
@@ -279,8 +272,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-blue-200/20 to-purple-200/20 rounded-full blur-3xl"></div>
+      <section className="py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent animate-slide-in-up">Why Choose HospoZen</h2>
@@ -320,30 +312,30 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-gray-900 py-16">
+      <section className="bg-pink-200 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 items-start">
             <div className="animate-slide-in-left">
-              <div className="flex items-center gap-3 text-blue-400 font-bold text-xl mb-4">
+              <div className="flex items-center gap-3 text-pink-700 font-bold text-xl mb-4">
                 <Logo size={32} />
                 <span>HospoZen</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-700 text-sm leading-relaxed">
                 Your trusted healthcare companion. Connecting patients with verified medical professionals for seamless healthcare experiences.
               </p>
             </div>
             <div className="animate-slide-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-white mb-4 text-lg">COMPANY</div>
-              <div className="space-y-3 text-gray-400 text-sm">
-                <Link to="/" className="hover:text-blue-400 transition-colors duration-200 block">Home</Link>
-                <Link to="/about" className="hover:text-blue-400 transition-colors duration-200 block">About us</Link>
-                <div className="text-gray-500">Services</div>
-                <div className="text-gray-500">Privacy policy</div>
+              <div className="font-semibold text-gray-900 mb-4 text-lg">COMPANY</div>
+              <div className="space-y-3 text-gray-700 text-sm">
+                <Link to="/" className="hover:text-pink-600 transition-colors duration-200 block">Home</Link>
+                <Link to="/about" className="hover:text-pink-600 transition-colors duration-200 block">About us</Link>
+                <div className="text-gray-600">Services</div>
+                <div className="text-gray-600">Privacy policy</div>
               </div>
             </div>
             <div className="animate-slide-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-white mb-4 text-lg">SERVICES</div>
-              <div className="space-y-3 text-gray-400 text-sm">
+              <div className="font-semibold text-gray-900 mb-4 text-lg">SERVICES</div>
+              <div className="space-y-3 text-gray-700 text-sm">
                 <div>Doctor Consultation</div>
                 <div>Online Booking</div>
                 <div>Health Records</div>
@@ -351,25 +343,25 @@ export default function Home() {
               </div>
             </div>
             <div className="animate-slide-in-right" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-white mb-4 text-lg">GET IN TOUCH</div>
-              <div className="space-y-3 text-gray-400 text-sm">
+              <div className="font-semibold text-gray-900 mb-4 text-lg">GET IN TOUCH</div>
+              <div className="space-y-3 text-gray-700 text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-400">📞</span>
+                  <span className="text-pink-600">📞</span>
                   <span>+0-000-000-000</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-400">✉️</span>
+                  <span className="text-pink-600">✉️</span>
                   <span>greatstackdev@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-blue-400">📍</span>
+                  <span className="text-pink-600">📍</span>
                   <span>Healthcare Innovation Hub</span>
                 </div>
               </div>
             </div>
           </div>
-          <hr className="my-8 border-gray-700" />
-          <div className="text-center text-gray-500 text-sm animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
+          <hr className="my-8 border-gray-400" />
+          <div className="text-center text-gray-700 text-sm animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
             © 2024 HospoZen. All rights reserved. | Powered by Innovation
           </div>
         </div>
