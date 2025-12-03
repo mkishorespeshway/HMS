@@ -141,155 +141,167 @@ export default function SearchDoctors() {
 
   if (isAdmin) {
     return (
-      <div className="max-w-7xl mx-auto mt-8 px-4">
-        <div className="grid grid-cols-12 gap-6">
-          <aside className="col-span-12 md:col-span-3">
-            <div className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 text-indigo-700 font-semibold">
-                <Logo size={24} />
-                <span>HospoZen</span>
-              </div>
-            </div>
-              <nav className="space-y-2 text-slate-700">
-                <Link to="/admin/dashboard" className="block px-3 py-2 rounded-md hover:bg-slate-50">Dashboard</Link>
-                <Link to="/admin/appointments" className="block px-3 py-2 rounded-md hover:bg-slate-50">Appointments</Link>
-                <Link to="/admin/add-doctor" className="block px-3 py-2 rounded-md hover:bg-slate-50">Add Doctor</Link>
-                
-                <div className="px-3 py-2 rounded-md bg-indigo-50 text-indigo-700">Doctors List</div>
-              </nav>
-            </div>
-          </aside>
-          <main className="col-span-12 md:col-span-9">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-3xl font-semibold">Doctors List</h2>
-              <button
-                onClick={() => { localStorage.removeItem("token"); nav("/admin/login"); }}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full"
-              >
-                Logout
-              </button>
-            </div>
-            {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {list.map((d) => (
-                <div key={d._id} className="bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm overflow-hidden">
-                  <div className="relative">
-                  {photoOf(d) ? (
-                    <img
-                      src={photoOf(d)}
-                      alt="Doctor"
-                      className="w-full h-56 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-56 bg-white" />
-                  )}
-                  <div className="absolute top-2 right-2">
-                  {(() => {
-                      const online = typeof d.isOnline === 'boolean' ? d.isOnline : null;
-                      const busy = typeof d.isBusy === 'boolean' ? d.isBusy : null;
-                      if (online === null && busy === null) return null;
-                      const cls = busy ? 'bg-amber-100 text-amber-700' : (online ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
-                      const txt = busy ? 'Busy' : (online ? 'Online' : 'Offline');
-                      return <span className={`inline-block text-xs px-2 py-1 rounded ${cls}`}>{txt}</span>;
-                    })()}
-                  </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-base font-semibold">{`Dr. ${d.user?.name || ''}`}</h3>
-                    <p className="text-sm text-slate-600">{(d.specializations && d.specializations[0]) || ""}</p>
-                    {typeof d.consultationFees === 'number' && (
-                      <div className="text-sm text-slate-700">Fee: ₹{d.consultationFees}</div>
-                    )}
-                    <Link to={`/admin/doctors/${d.user._id}`} className="mt-3 inline-block text-indigo-600 hover:text-indigo-800">View Profile</Link>
-                  </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
+          <div className="grid grid-cols-12 gap-8">
+            <aside className="col-span-12 md:col-span-3 animate-slide-in-left">
+              <div className="bg-white/90 backdrop-blur-sm border border-white/20 rounded-2xl p-6 shadow-2xl hover:scale-105 transition-transform duration-300">
+              <div className="mb-6">
+                <div className="flex items-center gap-3 text-indigo-700 font-bold text-lg">
+                  <Logo size={28} />
+                  <span>HospoZen</span>
                 </div>
-              ))}
-            </div>
-          </main>
+              </div>
+                <nav className="space-y-3 text-slate-700">
+                  <Link to="/admin/dashboard" className="block px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:scale-105 transition-all duration-300 font-medium">Dashboard</Link>
+                  <Link to="/admin/appointments" className="block px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:scale-105 transition-all duration-300 font-medium">Appointments</Link>
+                  <Link to="/admin/add-doctor" className="block px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:scale-105 transition-all duration-300 font-medium">Add Doctor</Link>
+
+                  <div className="px-4 py-3 rounded-xl bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 font-semibold animate-fade-in shadow-lg" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>Doctors List</div>
+                </nav>
+              </div>
+            </aside>
+            <main className="col-span-12 md:col-span-9 animate-fade-in" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-left">Doctors Management</h2>
+                <button
+                  onClick={() => { localStorage.removeItem("token"); nav("/admin/login"); }}
+                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                >
+                  Logout
+                </button>
+              </div>
+              {error && <div className="mb-6 text-center text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-in shadow-lg">{error}</div>}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {list.map((d, index) => (
+                  <div key={d._id} className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-500 animate-zoom-in opacity-0" style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}>
+                    <div className="relative">
+                    {photoOf(d) ? (
+                      <img
+                        src={photoOf(d)}
+                        alt="Doctor"
+                        className="w-full h-64 object-cover hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center hover:scale-110 transition-transform duration-700">
+                        <div className="text-6xl text-slate-400">👨‍⚕️</div>
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 animate-fade-in" style={{ animationDelay: `${index * 0.1 + 0.3}s`, animationFillMode: 'forwards' }}>
+                    {(() => {
+                        const online = typeof d.isOnline === 'boolean' ? d.isOnline : null;
+                        const busy = typeof d.isBusy === 'boolean' ? d.isBusy : null;
+                        if (online === null && busy === null) return null;
+                        const cls = busy ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' : (online ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white' : 'bg-gradient-to-r from-red-400 to-pink-500 text-white');
+                        const txt = busy ? 'Busy' : (online ? 'Online' : 'Offline');
+                        return <span className={`inline-block text-xs px-3 py-2 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform duration-300 ${cls}`}>{txt}</span>;
+                      })()}
+                    </div>
+                    </div>
+                    <div className="p-6 animate-fade-in" style={{ animationDelay: `${index * 0.1 + 0.5}s`, animationFillMode: 'forwards' }}>
+                      <h3 className="text-lg font-bold text-slate-800 mb-1">{`Dr. ${d.user?.name || ''}`}</h3>
+                      <p className="text-sm text-indigo-600 font-medium mb-2">{(d.specializations && d.specializations[0]) || ""}</p>
+                      {typeof d.consultationFees === 'number' && (
+                        <div className="text-sm text-slate-600 font-semibold mb-3">Fee: <span className="text-green-600">₹{d.consultationFees}</span></div>
+                      )}
+                      <Link to={`/admin/doctors/${d.user._id}`} className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </main>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto mt-8 px-4">
-      <h2 className="text-3xl font-semibold mb-6">All Doctors</h2>
-      <div className="bg-white rounded-lg border border-slate-200 p-4 mb-6">
-        <div className="grid sm:grid-cols-3 gap-3 items-end">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Specialty</label>
-            <select
-              value={specialization}
-              onChange={(e) => setSpecialization(e.target.value)}
-              className="border border-slate-300 rounded-md p-2 w-full"
-            >
-              <option value="">All Specialties</option>
-              {SPECIALTIES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Search</label>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border border-slate-300 rounded-md p-2"
-                placeholder="Search doctor or specialization"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') search(); }}
-              />
-              <button onClick={search} className="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white">Search</button>
-              <button
-                onClick={() => { setQ(''); setSpecialization(''); search(); }}
-                className="px-4 py-2 rounded-md border border-slate-300"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
+        <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-left">Find Your Perfect Doctor</h2>
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+          <div className="grid sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Specialty</label>
+              <select
+                value={specialization}
+                onChange={(e) => setSpecialization(e.target.value)}
+                className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
               >
-                Clear
-              </button>
+                <option value="">All Specialties</option>
+                {SPECIALTIES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Search Doctors</label>
+              <div className="flex gap-3">
+                <input
+                  className="flex-1 p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                  placeholder="Search by name, clinic, or specialization..."
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') search(); }}
+                />
+                <button onClick={search} className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">Search</button>
+                <button
+                  onClick={() => { setQ(''); setSpecialization(''); search(); }}
+                  className="px-6 py-3 rounded-xl border-2 border-slate-300 bg-white hover:bg-slate-50 font-semibold transition-all duration-300 hover:scale-105"
+                >
+                  Clear
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="grid grid-cols-1 gap-6">
-        <main>
-          {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {list.map((d) => (
-              <div key={d._id} className="bg-indigo-50 rounded-xl border border-indigo-100 shadow-sm overflow-hidden">
-                <div className="relative">
-                  {photoOf(d) ? (
-                    <img
-                      src={photoOf(d)}
-                      alt="Doctor"
-                      className="w-full h-56 object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-56 bg-white" />
-                  )}
-                  <div className="absolute top-2 right-2">
-                    {(() => {
-                      const online = typeof d.isOnline === 'boolean' ? d.isOnline : null;
-                      const busy = typeof d.isBusy === 'boolean' ? d.isBusy : null;
-                      if (online === null && busy === null) return null;
-                      const cls = busy ? 'bg-amber-100 text-amber-700' : (online ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
-                      const txt = busy ? 'Busy' : (online ? 'Online' : 'Offline');
-                      return <span className={`inline-block text-xs px-2 py-1 rounded ${cls}`}>{txt}</span>;
-                    })()}
+        <div className="grid grid-cols-1 gap-8">
+          <main>
+            {error && <div className="mb-6 text-center text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-in shadow-lg">{error}</div>}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {list.map((d, index) => (
+                <div key={d._id} className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl overflow-hidden hover:scale-105 hover:shadow-2xl transition-all duration-500 animate-zoom-in opacity-0" style={{ animationDelay: `${index * 0.1}s`, animationFillMode: 'forwards' }}>
+                  <div className="relative">
+                    {photoOf(d) ? (
+                      <img
+                        src={photoOf(d)}
+                        alt="Doctor"
+                        className="w-full h-64 object-cover hover:scale-110 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center hover:scale-110 transition-transform duration-700">
+                        <div className="text-6xl text-slate-400">👨‍⚕️</div>
+                      </div>
+                    )}
+                    <div className="absolute top-3 right-3 animate-fade-in" style={{ animationDelay: `${index * 0.1 + 0.3}s`, animationFillMode: 'forwards' }}>
+                      {(() => {
+                        const online = typeof d.isOnline === 'boolean' ? d.isOnline : null;
+                        const busy = typeof d.isBusy === 'boolean' ? d.isBusy : null;
+                        if (online === null && busy === null) return null;
+                        const cls = busy ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white' : (online ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white' : 'bg-gradient-to-r from-red-400 to-pink-500 text-white');
+                        const txt = busy ? 'Busy' : (online ? 'Online' : 'Offline');
+                        return <span className={`inline-block text-xs px-3 py-2 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform duration-300 ${cls}`}>{txt}</span>;
+                      })()}
+                    </div>
+                  </div>
+                  <div className="p-6 animate-fade-in" style={{ animationDelay: `${index * 0.1 + 0.5}s`, animationFillMode: 'forwards' }}>
+                    <h3 className="text-lg font-bold text-slate-800 mb-1">{`Dr. ${d.user?.name || ''}`}</h3>
+                    <p className="text-sm text-indigo-600 font-medium mb-2">{(d.specializations && d.specializations[0]) || ""}</p>
+                    {typeof d.consultationFees === 'number' && (
+                      <div className="text-sm text-slate-600 font-semibold mb-3">Consultation Fee: <span className="text-green-600">₹{d.consultationFees}</span></div>
+                    )}
+                    <Link to={`/doctor/${d.user._id}`} className="inline-flex items-center justify-center w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      View Profile
+                    </Link>
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold">{`Dr. ${d.user?.name || ''}`}</h3>
-                  <p className="text-sm text-slate-600">{(d.specializations && d.specializations[0]) || ""}</p>
-                  {typeof d.consultationFees === 'number' && (
-                    <div className="text-sm text-slate-700">Fee: ₹{d.consultationFees}</div>
-                  )}
-                  <Link to={`/doctor/${d.user._id}`} className="mt-3 inline-block text-indigo-600 hover:text-indigo-800">View Profile</Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </main>
+              ))}
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
