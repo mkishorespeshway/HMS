@@ -36,6 +36,44 @@ export default function DoctorDashboard() {
       : "relative px-4 py-2 text-gray-600 hover:text-blue-600 font-medium rounded-xl hover:bg-blue-50/50 transition-all duration-300 hover:scale-105";
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const timeAgo = (ts) => {
+    try {
+      const d = new Date(ts).getTime();
+      const diff = Math.max(0, Date.now() - d);
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      const days = Math.floor(h / 24);
+      return `${days}d ago`;
+    } catch(_) { return ''; }
+  };
+  const TypeIcon = ({ type }) => {
+    const c = 'w-5 h-5';
+    if (type === 'chat') return (
+      <svg className={c} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 5a3 3 0 013-3h10a3 3 0 013 3v9a3 3 0 01-3 3H9l-5 4V5z" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    );
+    if (type === 'meet') return (
+      <svg className={c} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 7a3 3 0 013-3h8a3 3 0 013 3v10a3 3 0 01-3 3H6a3 3 0 01-3-3V7z" stroke="#7C3AED" strokeWidth="2"/>
+        <path d="M21 10l-4 3 4 3V10z" fill="#7C3AED"/>
+      </svg>
+    );
+    if (type === 'appointment') return (
+      <svg className={c} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 2v3m10-3v3M3 8h18M5 6h14a2 2 0 012 2v11a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" stroke="#059669" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    );
+    return (
+      <svg className={c} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" fill="#F59E0B"/>
+      </svg>
+    );
+  };
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -676,41 +714,67 @@ export default function DoctorDashboard() {
                     }
                   } catch (_) { setPanelLoading(false); }
                 }}
-                className="relative h-9 w-9 rounded-full border border-slate-300 flex items-center justify-center"
+                className="p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300 relative"
                 title="Notifications"
               >
-                <span role="img" aria-label="bell">🔔</span>
+                <svg className={`w-6 h-6 ${bellCount > 0 ? 'animate-bounce' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 22a2 2 0 002-2H10a2 2 0 002 2z" fill="#2563EB"/>
+                  <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7z" stroke="#2563EB" strokeWidth="2" fill="none"/>
+                </svg>
                 {bellCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1">{bellCount}</span>
+                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                    {bellCount > 9 ? '9+' : bellCount}
+                  </span>
                 )}
               </button>
               {panelOpen && (
-                <div className="absolute right-0 top-12 w-96 bg-white rounded-xl shadow-2xl border border-slate-200 z-50">
-                  <div className="bg-indigo-700 text-white px-4 py-3 rounded-t-xl flex items-center justify-between">
-                    <div className="font-semibold">Your Notifications</div>
-                    <div className="text-xs bg-green-500 text-white rounded-full px-2 py-0.5">{panelUnread} New</div>
-                  </div>
-                  <div className="px-4 py-2 flex items-center justify-between border-b">
-                    <button onClick={() => nav('/doctor/dashboard')} className="text-indigo-700 text-sm">View All</button>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={async () => {
-                          try { await API.delete('/notifications'); setPanelItems([]); setPanelUnread(0); setBellCount(0); } catch(_) {}
-                        }}
-                        className="text-white bg-indigo-700 rounded-md px-2 py-1 text-xs"
-                      >
-                        Clear All
-                      </button>
+                <div className="absolute right-0 top-16 w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200/50 z-50">
+                  <div className="absolute right-6 -top-2 w-4 h-4 bg-white/95 border border-blue-200/50 rotate-45"></div>
+                  <div className="p-6 border-b border-blue-200/50">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Notifications</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">{panelUnread} new</span>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const ids = panelItems.filter((x) => !x.read).map((x) => x._id || x.id);
+                              await Promise.all(ids.map((id) => API.put(`/notifications/${id}/read`).catch(() => {})));
+                              setPanelItems((prev) => prev.map((x) => ({ ...x, read: true })));
+                              setPanelUnread(0);
+                              setBellCount(0);
+                            } catch(_) {}
+                          }}
+                          className="text-xs px-2 py-1 rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50"
+                        >
+                          Mark all read
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try { await API.delete('/notifications'); setPanelItems([]); setPanelUnread(0); setBellCount(0); } catch(_) {}
+                          }}
+                          className="text-xs px-2 py-1 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          Clear all
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="max-h-[60vh] overflow-y-auto">
+                  <div className="max-h-96 overflow-y-auto">
                     {panelLoading ? (
-                      <div className="p-4 text-sm text-slate-600">Loading…</div>
+                      <div className="p-8 text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+                      </div>
                     ) : panelItems.length === 0 ? (
-                      <div className="p-4 text-sm text-slate-600">No notifications</div>
+                      <div className="p-12 text-center text-gray-500">
+                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p className="font-medium">No notifications yet</p>
+                      </div>
                     ) : (
                       panelItems.map((n) => (
-                        <div key={n._id || n.id} className="px-4 py-3 border-b hover:bg-slate-50">
+                        <div key={n._id || n.id} className="p-4 border-b border-gray-100 hover:bg-blue-50/50 transition-colors duration-200">
                           <div className="flex items-start justify-between">
                             <button
                               onClick={async () => {
@@ -736,15 +800,18 @@ export default function DoctorDashboard() {
                                   setBellCount((c) => Math.max(0, c - 1));
                                 } catch(_) {}
                               }}
-                              className="text-left text-sm text-slate-900"
+                              className="flex-1 text-left"
                             >
-                              {n.message}
+                              <div className="flex items-start gap-3">
+                                <TypeIcon type={n.type} />
+                                <div className="flex-1">
+                                  <p className="text-sm text-gray-900 font-medium">{n.message}</p>
+                                  <p className="text-xs text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
+                                </div>
+                              </div>
                             </button>
-                            {!n.read && (
-                              <button onClick={async () => { try { await API.put(`/notifications/${n._id || n.id}/read`); setPanelItems((prev) => prev.map((x) => (String(x._id || x.id) === String(n._id || n.id) ? { ...x, read: true } : x))); setPanelUnread((c) => Math.max(0, c - 1)); } catch(_) {} }} className="text-xs text-slate-600">Mark As Read</button>
-                            )}
+                            {!n.read && <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>}
                           </div>
-                          <div className="text-xs text-slate-500 mt-1">{new Date(n.createdAt).toLocaleString()}</div>
                         </div>
                       ))
                     )}
