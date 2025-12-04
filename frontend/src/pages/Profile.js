@@ -102,104 +102,149 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div>
-            {String(photo || "").startsWith("data:image") ? (
-              <img
-                src={photo}
-                alt="User"
-                className="w-24 h-24 md:w-36 md:h-36 object-cover rounded-lg border"
-              />
-            ) : (
-              <div className="w-24 h-24 md:w-36 md:h-36 rounded-lg border bg-white" />
-            )}
-          </div>
-          <div className="md:col-span-2">
-            <div className="text-2xl font-semibold">{name}</div>
-            <hr className="my-4" />
-
-            <div>
-              <div className="text-xs font-semibold tracking-wide text-slate-500">CONTACT INFORMATION</div>
-              {!editing ? (
-                <div className="mt-3 text-sm text-slate-700 space-y-2">
-                  <div> Email id: <a className="text-indigo-600" href={`mailto:${email}`}>{email}</a></div>
-                  <div> Phone: <span className="text-indigo-600">{phone}</span></div>
-                  <div> Address: <div className="whitespace-pre-wrap">{address}</div></div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
+        <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Your Profile</h2>
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-6 hover:scale-105 hover:shadow-2xl transition-all duration-500">
+                {String(photo || "").startsWith("data:image") ? (
+                  <img
+                    src={photo}
+                    alt="User"
+                    className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-xl border-2 border-indigo-200 mx-auto hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-32 h-32 md:w-40 md:h-40 rounded-xl border-2 border-slate-300 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center mx-auto hover:scale-110 transition-transform duration-700">
+                    <div className="text-6xl text-slate-400">👤</div>
+                  </div>
+                )}
+                <div className="text-center mt-4">
+                  <div className="text-2xl font-bold text-slate-800">{name}</div>
                 </div>
-              ) : (
-                <div className="mt-3 grid sm:grid-cols-2 gap-3">
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1">Profile Image</label>
-                    <input type="file" accept="image/*" onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = () => setPhoto(String(reader.result || ""));
-                      reader.readAsDataURL(file);
-                    }} />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Email</label>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Phone</label>
-                    <input value={phone} onChange={(e) => setPhone(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full" />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-sm text-slate-700 mb-1">Address</label>
-                    <textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full" />
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
+            <div className="md:col-span-2 animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}>
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-6 hover:scale-105 hover:shadow-2xl transition-all duration-500">
+                <div className="text-xl font-bold text-slate-800 mb-4">Contact Information</div>
+                {!editing ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <div> Email: <a className="text-indigo-600 hover:text-indigo-700 font-medium" href={`mailto:${email}`}>{email}</a></div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <div> Phone: <span className="text-slate-700 font-medium">{phone}</span></div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <svg className="w-5 h-5 text-indigo-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <div> Address: <div className="whitespace-pre-wrap text-slate-700 font-medium">{address}</div></div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Profile Image</label>
+                      <input type="file" accept="image/*" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = () => setPhoto(String(reader.result || ""));
+                        reader.readAsDataURL(file);
+                      }} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                      <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Phone</label>
+                      <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Address</label>
+                      <textarea rows={3} value={address} onChange={(e) => setAddress(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div className="mt-6">
-              <div className="text-xs font-semibold tracking-wide text-slate-500">BASIC INFORMATION</div>
-              {!editing ? (
-                <div className="mt-3 text-sm text-slate-700 space-y-2">
-                  <div> Gender: <span className="text-slate-900">{gender}</span></div>
-                  <div> Birthday: <span className="text-slate-900">{birthday}</span></div>
-                  <div> Age: <span className="text-slate-900">{age}</span></div>
+              <div className="mt-6 animate-fade-in" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-6 hover:scale-105 hover:shadow-2xl transition-all duration-500">
+                  <div className="text-xl font-bold text-slate-800 mb-4">Basic Information</div>
+                  {!editing ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <div> Gender: <span className="text-slate-700 font-medium">{gender}</span></div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m0 0l-2-2m2 2l2-2m6-6v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6a2 2 0 012-2h8a2 2 0 012 2z" />
+                        </svg>
+                        <div> Birthday: <span className="text-slate-700 font-medium">{birthday}</span></div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div> Age: <span className="text-slate-700 font-medium">{age}</span></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Gender</label>
+                        <select value={gender} onChange={(e) => setGender(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105">
+                          <option>Male</option>
+                          <option>Female</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Birthday</label>
+                        <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-slate-700 mb-2">Age</label>
+                        <input type="number" min="0" value={age} onChange={(e) => setAge(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="mt-3 grid sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Gender</label>
-                    <select value={gender} onChange={(e) => setGender(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full">
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Birthday</label>
-                    <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full" />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-700 mb-1">Age</label>
-                    <input type="number" min="0" value={age} onChange={(e) => setAge(e.target.value)} className="border border-slate-300 rounded-md p-2 w-full" />
-                  </div>
-                </div>
-              )}
-            </div>
+              </div>
 
-            <div className="mt-6">
-              {!editing ? (
-                <button onClick={() => setEditing(true)} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-full">Edit</button>
-              ) : (
-                <div className="flex gap-3">
-                  <button onClick={save} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-full">Save</button>
-                  <button onClick={() => setEditing(false)} className="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-full">Cancel</button>
-                </div>
-              )}
+              <div className="mt-6 animate-fade-in flex gap-4" style={{ animationDelay: '1s', animationFillMode: 'forwards' }}>
+                {!editing ? (
+                  <button onClick={() => setEditing(true)} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    Edit Profile
+                  </button>
+                ) : (
+                  <>
+                    <button onClick={save} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      Save Changes
+                    </button>
+                    <button onClick={() => setEditing(false)} className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 }
