@@ -471,7 +471,7 @@ return (
 <Header />
 
 
-<div className="p-6 page-gradient">
+<div className="pt-16 pb-6 px-6 page-gradient">
 <Routes>
 <Route path="/" element={<Home />} />
 <Route path="/about" element={<About />} />
