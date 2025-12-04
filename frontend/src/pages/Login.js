@@ -34,26 +34,25 @@ const nav = useNavigate();
 
 
 return (
-  <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-    <div className="max-w-md mx-auto pt-16">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent">Login</h1>
-        <p className="text-slate-600 mt-1">Enter your credentials to log in</p>
-      </div>
-
-      <div className="bg-white shadow-lg rounded-xl p-6 border border-slate-200 transition-shadow duration-200 hover:shadow-xl">
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
+      <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right px-4">Login to Your Account</h2>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 mb-8 animate-slide-in-left opacity-0 max-w-md mx-auto" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+        <div className="text-center mb-6">
+          <p className="text-slate-600">Enter your credentials to log in</p>
+        </div>
         <form onSubmit={submit}>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
           <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+            className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105 mb-4"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-          <div className="relative">
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+          <div className="relative mb-6">
             <input
-              className="border border-slate-300 rounded-md p-2 w-full mb-4 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105 pr-12"
               placeholder="Password"
               type={show ? "text" : "password"}
               value={password}
@@ -61,24 +60,22 @@ return (
             />
             <button
               type="button"
-              className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-700"
+              className="absolute right-3 top-3 text-slate-500 hover:text-slate-700"
               onClick={() => setShow((v) => !v)}
               aria-label="Toggle password visibility"
             >
               👁️
             </button>
           </div>
-          <button className="group bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md w-full flex items-center justify-center gap-2">
-            <span>Login</span>
-            <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+          <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full">
+            Login
           </button>
         </form>
-      </div>
-
-      <div className="text-center mt-4">
-        <a href="/register" className="text-indigo-700 hover:text-indigo-900">Create an account</a>
-        <div className="mt-2">
-          <a href="/forgot" className="text-slate-700 hover:text-indigo-700">Forgot password?</a>
+        <div className="text-center mt-6">
+          <a href="/register" className="text-indigo-700 hover:text-indigo-900">Create an account</a>
+          <div className="mt-2">
+            <a href="/forgot" className="text-slate-700 hover:text-indigo-700">Forgot password?</a>
+          </div>
         </div>
       </div>
     </div>

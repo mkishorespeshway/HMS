@@ -73,139 +73,187 @@ export default function Register() {
   };
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
-    <div className="max-w-md mx-auto pt-16">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 bg-clip-text text-transparent">Create Account</h1>
-      </div>
-      <div className="bg-white shadow-lg rounded-xl p-6 border border-slate-200 transition-shadow duration-200 hover:shadow-xl">
-        <form onSubmit={submit}>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-          <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-          <input
-            type="email"
-            required
-            className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {errors.email ? (<div className="text-red-600 text-xs mb-3">{errors.email}</div>) : (<div className="mb-3" />)}
-          <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-          <div className="relative mb-1">
-            <input
-              className="border border-slate-300 rounded-md p-2 w-full focus:outline-none focus:ring-4 focus:ring-indigo-100 pr-10"
-              placeholder="Password"
-              type={showPass ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600">
-              {showPass ? "🙈" : "👁"}
-            </button>
-          </div>
-          {errors.password ? (<div className="text-red-600 text-xs mb-3">{errors.password}</div>) : (<div className="mb-3" />)}
-          <label className="block text-sm font-medium text-slate-700 mb-1">Upload Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="border border-slate-300 rounded-md p-2 w-full mb-3"
-            onChange={(e) => {
-              const file = e.target.files && e.target.files[0];
-              if (!file) { setPhotoBase64(""); return; }
-              const reader = new FileReader();
-              reader.onloadend = () => setPhotoBase64(String(reader.result || ""));
-              reader.readAsDataURL(file);
-            }}
-          />
-          <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-          <input
-            className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Phone Number"
-            inputMode="numeric"
-            maxLength={10}
-            value={phone}
-            onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, "").slice(0, 10);
-              setPhone(v);
-            }}
-          />
-          {errors.phone ? (<div className="text-red-600 text-xs mb-3">{errors.phone}</div>) : (<div className="mb-3" />)}
-          <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
-          <textarea
-            rows={3}
-            className="border border-slate-300 rounded-md p-2 w-full mb-3 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-            placeholder="Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Gender</label>
-              <select
-                className="border border-slate-300 rounded-md p-2 w-full mb-3"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <option value="">Select</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Age</label>
-              <input
-                type="number"
-                min="0"
-                max="120"
-                className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                placeholder="Age"
-                value={age}
-                onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ""))}
-              />
-              {errors.age ? (<div className="text-red-600 text-xs mb-3">{errors.age}</div>) : (<div className="mb-3" />)}
-            </div>
-          </div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth</label>
-          {(() => {
-            const t = new Date();
-            const yyyy = t.getFullYear();
-            const mm = String(t.getMonth() + 1).padStart(2, "0");
-            const dd = String(t.getDate()).padStart(2, "0");
-            const maxDate = `${yyyy}-${mm}-${dd}`;
-            return (
-              <>
+  <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
+    <div className="max-w-7xl mx-auto px-4 animate-fade-in">
+      <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right px-4">Create Your Account</h2>
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 animate-slide-in-left opacity-0 max-w-lg mx-auto" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+        <div className="text-center mb-6">
+          <p className="text-slate-600 text-lg font-medium italic bg-slate-50 rounded-lg p-3 border border-slate-200">Fill in your details to create an account</p>
+        </div>
+        <form onSubmit={submit} className="space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <span className="text-indigo-600">👤</span>
+              Personal Information
+            </h3>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
                 <input
-                  type="date"
-                  max={maxDate}
-                  className="border border-slate-300 rounded-md p-2 w-full mb-1 focus:outline-none focus:ring-4 focus:ring-indigo-100"
-                  value={dob}
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                  placeholder="Full Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  required
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                {errors.email && <div className="text-red-600 text-xs mt-1">{errors.email}</div>}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Password</label>
+                <div className="relative">
+                  <input
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105 pr-12"
+                    placeholder="Password"
+                    type={showPass ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-3 top-3 text-slate-500 hover:text-slate-700">
+                    {showPass ? "🙈" : "👁"}
+                  </button>
+                </div>
+                {errors.password && <div className="text-red-600 text-xs mt-1">{errors.password}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <span className="text-indigo-600">📞</span>
+              Contact Details
+            </h3>
+            <div className="grid gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Phone Number</label>
+                <input
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                  placeholder="Phone Number"
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={phone}
                   onChange={(e) => {
-                    const v = e.target.value;
-                    setDob(v);
+                    const v = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setPhone(v);
                   }}
                 />
-                {errors.dob ? (<div className="text-red-600 text-xs mb-3">{errors.dob}</div>) : (<div className="mb-3" />)}
-              </>
-            );
-          })()}
+                {errors.phone && <div className="text-red-600 text-xs mt-1">{errors.phone}</div>}
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Address</label>
+                <textarea
+                  rows={3}
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                  placeholder="Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <span className="text-indigo-600">📋</span>
+              Personal Details
+            </h3>
+            <div className="grid gap-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Gender</label>
+                  <select
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Age</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="120"
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                    placeholder="Age"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ""))}
+                  />
+                  {errors.age && <div className="text-red-600 text-xs mt-1">{errors.age}</div>}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Date of Birth</label>
+                {(() => {
+                  const t = new Date();
+                  const yyyy = t.getFullYear();
+                  const mm = String(t.getMonth() + 1).padStart(2, "0");
+                  const dd = String(t.getDate()).padStart(2, "0");
+                  const maxDate = `${yyyy}-${mm}-${dd}`;
+                  return (
+                    <input
+                      type="date"
+                      max={maxDate}
+                      className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                      value={dob}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setDob(v);
+                      }}
+                    />
+                  );
+                })()}
+                {errors.dob && <div className="text-red-600 text-xs mt-1">{errors.dob}</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2">
+              <span className="text-indigo-600">📸</span>
+              Profile Picture
+            </h3>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Upload Image (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (!file) { setPhotoBase64(""); return; }
+                  const reader = new FileReader();
+                  reader.onloadend = () => setPhotoBase64(String(reader.result || ""));
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </div>
+          </div>
+
           <input type="hidden" value={role} readOnly />
-          <div className="mb-4 text-sm text-slate-600">Creating a patient account</div>
-          <button className="group w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-md flex items-center justify-center gap-2">
-            <span>Register</span>
-            <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
+          <div className="text-center text-sm text-slate-600 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-2 border border-indigo-100 font-medium">
+            Creating a patient account
+          </div>
+          <button className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full text-base">
+            Create Account
           </button>
+          <div className="text-center mt-3 pt-2 border-t border-slate-200">
+            <a href="/login" className="text-indigo-700 hover:text-indigo-900 font-medium">Already have an account? Login</a>
+          </div>
         </form>
-      </div>
-      <div className="text-center mt-4">
-        <a href="/login" className="text-indigo-700 hover:text-indigo-900">Already have an account? Login</a>
       </div>
     </div>
   </div>

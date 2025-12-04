@@ -155,7 +155,7 @@ export default function SearchDoctors() {
                   <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                     HospoZen
                   </span>
-                  
+                  <span className="text-xs text-blue-600 font-medium tracking-wider uppercase">Healthcare Platform</span>
                 </div>
               </Link>
               <nav className="flex items-center gap-6 ml-6 text-slate-700">
@@ -223,7 +223,7 @@ export default function SearchDoctors() {
       <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
         <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Find Your Perfect Doctor</h2>
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-          <div className="grid sm:grid-cols-3 gap-4 items-end">
+          <div className="grid sm:grid-cols-3 gap-4 items-start">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">Specialty</label>
               <select
