@@ -181,22 +181,21 @@ export default function AdminAddDoctor() {
           )}
         </div>
       </header>
-      <div className="pt-16 px-6 page-gradient">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-semibold">Add Doctor</h1>
-          </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-6 max-w-xl">
+      <div className="pt-14 page-gradient">
+        <div className="relative max-w-7xl mx-auto px-4 animate-fade-in">
+          <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
+          <h2 className="text-4xl font-extrabold mb-3 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Add Doctor</h2>
+          <div className="mx-auto max-w-2xl bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 animate-slide-in-left opacity-0 hover:scale-105 hover:shadow-2xl transition-all duration-500" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <form onSubmit={submit}>
               <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-              <input name="name" value={form.name} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Dr. John Doe" />
+              <input name="name" value={form.name} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="Dr. John Doe" />
 
               <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-              <input type="email" name="email" value={form.email} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="doctor@example.com" />
+              <input type="email" name="email" value={form.email} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-1" placeholder="doctor@example.com" />
               {errors.email ? (<div className="text-red-600 text-xs mb-3">{errors.email}</div>) : (<div className="mb-3" />)}
 
               <label className="block text-sm font-medium text-slate-700 mb-1">Phone</label>
-              <input name="phone" inputMode="numeric" maxLength={10} value={form.phone} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="XXXXXXXXXX" />
+              <input name="phone" inputMode="numeric" maxLength={10} value={form.phone} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-1" placeholder="XXXXXXXXXX" />
               {errors.phone ? (<div className="text-red-600 text-xs mb-3">{errors.phone}</div>) : (<div className="mb-3" />)}
 
               <label className="block text-sm font-medium text-slate-700 mb-1">Specializations</label>
@@ -234,7 +233,7 @@ export default function AdminAddDoctor() {
                         specializations: f.specializations ? `${f.specializations}, ${val}` : val,
                       }));
                     }}
-                    className="border border-slate-300 rounded-md p-2 w-full mb-2"
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-2"
                   >
                     <option value="">Select specialization</option>
                     {SPECIALTIES.map((s) => (
@@ -243,26 +242,26 @@ export default function AdminAddDoctor() {
                   </select>
                 );
               })()}
-              <input name="specializations" value={form.specializations} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="e.g., Cardiology, Dermatology" />
+              <input name="specializations" value={form.specializations} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="e.g., Cardiology, Dermatology" />
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Clinic</label>
-                  <input name="clinic" value={form.clinic} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Clinic name" />
+                  <input name="clinic" value={form.clinic} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="Clinic name" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">City</label>
-                  <input name="city" value={form.city} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="City" />
+                  <input name="city" value={form.city} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="City" />
                 </div>
               </div>
 
               <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
-              <textarea name="address" value={form.address} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Clinic address" rows={3} />
+              <textarea name="address" value={form.address} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="Clinic address" rows={3} />
 
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Consultation Fees</label>
-                  <input name="fees" inputMode="numeric" value={form.fees} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="e.g., 500" />
+                  <input name="fees" inputMode="numeric" value={form.fees} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-1" placeholder="e.g., 500" />
                   {errors.fees ? (<div className="text-red-600 text-xs mb-3">{errors.fees}</div>) : (<div className="mb-3" />)}
                 </div>
                 <div>
@@ -271,7 +270,7 @@ export default function AdminAddDoctor() {
                     name="slotDurationMins"
                     value={form.slotDurationMins}
                     onChange={onChange}
-                    className="border border-slate-300 rounded-md p-2 w-full mb-1"
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-1"
                   >
                     <option value="15">15</option>
                     <option value="30">30</option>
@@ -284,13 +283,13 @@ export default function AdminAddDoctor() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Experience (years)</label>
-                  <input name="experienceYears" inputMode="numeric" value={form.experienceYears} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-1" placeholder="e.g., 5" />
+                  <input name="experienceYears" inputMode="numeric" value={form.experienceYears} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-1" placeholder="e.g., 5" />
                   {errors.exp ? (<div className="text-red-600 text-xs mb-3">{errors.exp}</div>) : (<div className="mb-3" />)}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
                   <div className="relative mb-1">
-                    <input name="password" type={showPass ? "text" : "password"} value={form.password} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full pr-10" placeholder="Set doctor password" />
+                    <input name="password" type={showPass ? "text" : "password"} value={form.password} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 pr-10" placeholder="Set doctor password" />
                     <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-600">{showPass ? "🙈" : "👁"}</button>
                   </div>
                   {errors.password ? (<div className="text-red-600 text-xs mb-3">{errors.password}</div>) : (<div className="mb-3" />)}
@@ -298,10 +297,10 @@ export default function AdminAddDoctor() {
               </div>
 
               <label className="block text-sm font-medium text-slate-700 mb-1">About</label>
-              <textarea name="about" value={form.about} onChange={onChange} className="border border-slate-300 rounded-md p-2 w-full mb-3" placeholder="Short bio" rows={4} />
+              <textarea name="about" value={form.about} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-3" placeholder="Short bio" rows={4} />
 
               <label className="block text-sm font-medium text-slate-700 mb-1">Upload Image</label>
-              <input type="file" accept="image/*" className="border border-slate-300 rounded-md p-2 w-full mb-3" onChange={async (e) => {
+              <input type="file" accept="image/*" className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white transition-all duration-300 mb-3" onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
                 const reader = new FileReader();
@@ -312,11 +311,13 @@ export default function AdminAddDoctor() {
               }} />
               {form.photoBase64 && (
                 <div className="mb-3">
-                  <img src={form.photoBase64} alt="Selected" className="w-full h-40 object-cover rounded-md border border-slate-200" />
+                  <img src={form.photoBase64} alt="Selected" className="w-full h-40 object-cover rounded-xl border-2 border-slate-200" />
                 </div>
               )}
 
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md">Create Doctor</button>
+              <div className="flex items-center justify-end">
+                <button className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">Create Doctor</button>
+              </div>
             </form>
           </div>
         </div>
