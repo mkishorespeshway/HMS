@@ -711,6 +711,27 @@ export default function DoctorDashboard() {
               })()}
             </nav>
             <div className="relative flex items-center gap-3">
+              {(() => {
+                const isOnline = !!online && !busy;
+                const isOffline = !online;
+                const isBusy = !!online && !!busy;
+                const chip = (active, baseCls, activeCls, label, onClick) => (
+                  <button
+                    onClick={onClick}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-300 ${active ? activeCls : baseCls}`}
+                    title={label}
+                  >
+                    {label}
+                  </button>
+                );
+                return (
+                  <div className="hidden md:flex items-center gap-2 mr-2">
+                    {chip(isOnline, "bg-green-100 text-green-700 border-green-200 hover:bg-green-200", "bg-green-600 text-white border-green-600 shadow-sm", "Online", () => setStatus("online"))}
+                    {chip(isBusy, "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200", "bg-amber-600 text-white border-amber-600 shadow-sm", "Busy", () => setStatus("busy"))}
+                    {chip(isOffline, "bg-red-100 text-red-700 border-red-200 hover:bg-red-200", "bg-red-600 text-white border-red-600 shadow-sm", "Offline", () => setStatus("offline"))}
+                  </div>
+                );
+              })()}
               <button
                 onClick={async () => {
                   try {
