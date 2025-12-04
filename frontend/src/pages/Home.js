@@ -319,66 +319,55 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-pink-200 py-16">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 items-start">
-            <div className="animate-slide-in-left">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
-                  <div className="text-white">
-                    <Logo size={20} />
+          <div className="px-6 py-12 bg-gradient-to-br from-white/90 to-indigo-50 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl">
+            <div className="grid md:grid-cols-3 gap-8 items-start">
+              <div className="animate-slide-in-left">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                    <div className="text-white">
+                      <Logo size={20} />
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                      HospoZen
+                    </span>
+                    <span className="text-xs text-blue-600 font-medium tracking-wider uppercase">Healthcare Platform</span>
                   </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                    HospoZen
-                  </span>
-                  <span className="text-xs text-blue-600 font-medium tracking-wider uppercase">Healthcare Platform</span>
+                <p className="text-slate-700 text-sm leading-relaxed">
+                  Your trusted healthcare companion. Connecting patients with verified medical professionals for seamless healthcare experiences.
+                </p>
+              </div>
+              <div className="animate-slide-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+                <div className="font-semibold text-slate-900 mb-2 uppercase tracking-wide">Company</div>
+                <div className="space-y-2 text-slate-700 text-sm">
+                  <Link to="/" className="hover:text-indigo-700 transition-colors duration-200 block">Home</Link>
+                  <Link to="/search" className="hover:text-indigo-700 transition-colors duration-200 block">Find Doctors</Link>
+                  <Link to="/about" className="hover:text-indigo-700 transition-colors duration-200 block">About us</Link>
+                  <Link to="/contact" className="hover:text-indigo-700 transition-colors duration-200 block">Contact</Link>
                 </div>
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                Your trusted healthcare companion. Connecting patients with verified medical professionals for seamless healthcare experiences.
-              </p>
-            </div>
-            <div className="animate-slide-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-gray-900 mb-4 text-lg">COMPANY</div>
-              <div className="space-y-3 text-gray-700 text-sm">
-                <Link to="/" className="hover:text-pink-600 transition-colors duration-200 block">Home</Link>
-                <Link to="/about" className="hover:text-pink-600 transition-colors duration-200 block">About us</Link>
-                <div className="text-gray-600">Services</div>
-                <div className="text-gray-600">Privacy policy</div>
-              </div>
-            </div>
-            <div className="animate-slide-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-gray-900 mb-4 text-lg">SERVICES</div>
-              <div className="space-y-3 text-gray-700 text-sm">
-                <div>Doctor Consultation</div>
-                <div>Online Booking</div>
-                <div>Health Records</div>
-                <div>Emergency Care</div>
-              </div>
-            </div>
-            <div className="animate-slide-in-right" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
-              <div className="font-semibold text-gray-900 mb-4 text-lg">GET IN TOUCH</div>
-              <div className="space-y-3 text-gray-700 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-pink-600">📞</span>
-                  <span>+0-000-000-000</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-pink-600">✉️</span>
-                  <span>greatstackdev@gmail.com</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-pink-600">📍</span>
-                  <span>Healthcare Innovation Hub</span>
+              <div className="animate-slide-in-right" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+                <div className="font-semibold text-slate-900 mb-2 uppercase tracking-wide">Get in touch</div>
+                <div className="space-y-2 text-slate-700 text-sm">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" d="M2 3h5l2 5-3 2a16 16 0 008 8l2-3 5 2v5a2 2 0 01-2 2h-1C9.163 24 0 14.837 0 3V2a2 2 0 012-2h0z"/></svg>
+                    <span>+0-000-000-000</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeWidth="2" d="M4 4h16v16H4z"/><path strokeWidth="2" d="M22 6l-10 7L2 6"/></svg>
+                    <span>greatstackdev@gmail.com</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <hr className="my-8 border-gray-400" />
-          <div className="text-center text-gray-700 text-sm animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-            © 2024 HospoZen. All rights reserved. | Powered by Innovation
+            <hr className="my-8 border-slate-200" />
+            <div className="text-center text-slate-600 text-sm animate-fade-in" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+              © 2024 HospoZen. All rights reserved. | Powered by Innovation
+            </div>
           </div>
         </div>
       </section>
