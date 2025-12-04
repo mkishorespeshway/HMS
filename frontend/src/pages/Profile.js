@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+ 
 import API from "../api";
 
 export default function Profile() {
@@ -198,6 +199,7 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
