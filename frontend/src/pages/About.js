@@ -65,16 +65,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 mt-8 animate-fade-in">
-        <h2 className="text-xl font-semibold text-slate-900">All Specialties</h2>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {specs.map((name) => (
-            <span key={name} className="px-3 py-1 rounded-xl bg-white/70 border border-white/40 shadow-sm text-slate-800 text-sm">
-              {name}
-            </span>
-          ))}
-        </div>
-      </section>
+      
 
       <section className="max-w-7xl mx-auto px-4 mt-10 pb-16 animate-fade-in">
         <div className="grid md:grid-cols-2 gap-8 items-center">

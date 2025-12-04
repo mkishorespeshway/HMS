@@ -1090,10 +1090,8 @@ export default function DoctorDashboard() {
                           }
                           const id = String(a._id || a.id || '');
                           const joinedDoc = id ? localStorage.getItem(`joinedByDoctor_${id}`) === '1' : false;
-                          const joinedPat = id ? localStorage.getItem(`joinedByPatient_${id}`) === '1' : false;
-                          const joined = joinedDoc;
                           const leftDoc = id ? localStorage.getItem(`leftDoctor_${id}`) === '1' : false;
-                          if (joined) {
+                          if (joinedDoc) {
                             return (
                               <div className="flex items-center gap-2">
                                 <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Joined</span>

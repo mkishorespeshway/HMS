@@ -31,6 +31,34 @@ router.get('/', async (req, res) => {
     );
   }
 
+  try {
+    const ids = doctors.map((d) => d.user?._id).filter(Boolean).map((x) => require('mongoose').Types.ObjectId(String(x)));
+    if (ids.length) {
+      const stats = await Appointment.aggregate([
+        { $match: { doctor: { $in: ids }, ratingStars: { $gte: 1 } } },
+        { $group: { _id: '$doctor', avg: { $avg: '$ratingStars' } } }
+      ]);
+      const map = new Map(stats.map((s) => [String(s._id), s.avg ? Number(s.avg.toFixed(1)) : 0]));
+      doctors = doctors.map((d) => {
+        const obj = d.toObject ? d.toObject() : d;
+        const did = String(d.user?._id || '');
+        obj.averageRating = map.has(did) ? map.get(did) : 0;
+        return obj;
+      });
+    } else {
+      doctors = doctors.map((d) => {
+        const obj = d.toObject ? d.toObject() : d;
+        obj.averageRating = 0;
+        return obj;
+      });
+    }
+  } catch (_) {
+    doctors = doctors.map((d) => {
+      const obj = d.toObject ? d.toObject() : d;
+      obj.averageRating = 0;
+      return obj;
+    });
+  }
   res.json(doctors);
 });
 

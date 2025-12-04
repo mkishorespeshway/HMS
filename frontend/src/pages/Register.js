@@ -187,7 +187,7 @@ export default function Register() {
                     type="number"
                     min="0"
                     max="120"
-                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105"
+                    className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105 no-spin"
                     placeholder="Age"
                     value={age}
                     onChange={(e) => setAge(e.target.value.replace(/[^0-9]/g, ""))}
