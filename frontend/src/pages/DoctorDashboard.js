@@ -90,6 +90,27 @@ export default function DoctorDashboard() {
   }, []);
 
   useEffect(() => {
+    try {
+      const chan = new BroadcastChannel('doctorStatus');
+      const my = localStorage.getItem('userId') || '';
+      chan.onmessage = (e) => {
+        const { uid, online: on, busy: bz } = e.data || {};
+        if (!uid || uid === my) {
+          if (typeof on === 'boolean') {
+            setOnline(on);
+            localStorage.setItem(`doctorOnlineById_${my}`, on ? '1' : '0');
+          }
+          if (typeof bz === 'boolean') {
+            setBusy(bz);
+            localStorage.setItem(`doctorBusyById_${my}`, bz ? '1' : '0');
+          }
+        }
+      };
+      return () => { try { chan.close(); } catch(_) {} };
+    } catch(_) {}
+  }, []);
+
+  useEffect(() => {
     const uid = localStorage.getItem("userId") || "";
     const v = localStorage.getItem(`doctorOnlineById_${uid}`) === "1";
     const b = localStorage.getItem(`doctorBusyById_${uid}`) === "1";
@@ -140,18 +161,21 @@ export default function DoctorDashboard() {
       setOnline(true);
       setBusy(false);
       try { await API.put('/doctors/me/status', { isOnline: true, isBusy: false }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: true, busy: false }); chan.close(); } catch(_) {}
     } else if (status === "offline") {
       localStorage.setItem(`doctorOnlineById_${uid}`, "0");
       localStorage.setItem(`doctorBusyById_${uid}`, "0");
       setOnline(false);
       setBusy(false);
       try { await API.put('/doctors/me/status', { isOnline: false, isBusy: false }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: false, busy: false }); chan.close(); } catch(_) {}
     } else {
       localStorage.setItem(`doctorBusyById_${uid}`, "1");
       localStorage.setItem(`doctorOnlineById_${uid}`, "1");
       setOnline(true);
       setBusy(true);
       try { await API.put('/doctors/me/status', { isOnline: true, isBusy: true }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: true, busy: true }); chan.close(); } catch(_) {}
     }
   };
 
@@ -189,6 +213,7 @@ export default function DoctorDashboard() {
       } catch(_) {}
       setOnline(true);
       setBusy(true);
+      try { const chan = new BroadcastChannel('doctorStatus'); const uid = localStorage.getItem('userId') || ''; chan.postMessage({ uid, online: true, busy: true }); chan.close(); } catch(_) {}
       try {
         meetWinRef.current = window.open(url, '_blank');
         meetMonitorRef.current = setInterval(() => {
@@ -197,13 +222,14 @@ export default function DoctorDashboard() {
             try { localStorage.removeItem(`joinedByDoctor_${id}`); } catch(_) {}
             try {
               const uid = localStorage.getItem('userId') || '';
-              if (uid) {
-                localStorage.setItem(`doctorBusyById_${uid}`, '0');
-                API.put('/doctors/me/status', { isOnline: true, isBusy: false }).catch(() => {});
-              }
-            } catch(_) {}
-            setBusy(false);
+          if (uid) {
+            localStorage.setItem(`doctorBusyById_${uid}`, '0');
+            API.put('/doctors/me/status', { isOnline: true, isBusy: false }).catch(() => {});
           }
+        } catch(_) {}
+        setBusy(false);
+        try { const chan = new BroadcastChannel('doctorStatus'); const uid2 = localStorage.getItem('userId') || ''; chan.postMessage({ uid: uid2, online: true, busy: false }); chan.close(); } catch(_) {}
+      }
         }, 1000);
       } catch(_) {}
     } catch(_) {}
@@ -274,6 +300,18 @@ export default function DoctorDashboard() {
                 setLatestToday((prev) => [a, ...prev]);
                 setList((prev) => [a, ...prev]);
               } catch (_) {}
+            });
+            socket.on('doctor:status', (msg) => {
+              try {
+                const uid = localStorage.getItem('userId') || '';
+                if (String(msg?.doctorId || '') !== String(uid)) return;
+                const on = !!msg?.isOnline;
+                const bz = !!msg?.isBusy;
+                setOnline(on);
+                setBusy(bz);
+                try { localStorage.setItem(`doctorOnlineById_${uid}`, on ? '1' : '0'); } catch(_) {}
+                try { localStorage.setItem(`doctorBusyById_${uid}`, bz ? '1' : '0'); } catch(_) {}
+              } catch(_) {}
             });
             socket.on('meet:update', (msg) => {
               try {

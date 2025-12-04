@@ -43,15 +43,39 @@ export default function DoctorProfile() {
       
       try {
         const { data } = await API.get("/doctors", { params: { user: id } });
-        setProfile(data?.[0] || null);
+        const p = data?.[0] || null;
+        setProfile(p);
         const onlineById = localStorage.getItem(`doctorOnlineById_${id}`);
-        if (onlineById !== null) setOnline(onlineById === "1");
         const busyById = localStorage.getItem(`doctorBusyById_${id}`);
+        if (onlineById !== null) setOnline(onlineById === "1");
+        else if (typeof p?.isOnline === 'boolean') setOnline(!!p.isOnline);
         if (busyById !== null) setBusy(busyById === "1");
+        else if (typeof p?.isBusy === 'boolean') setBusy(!!p.isBusy);
       } catch (e) {}
       
     };
     load();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const chan = new BroadcastChannel('doctorStatus');
+      const my = localStorage.getItem('userId') || '';
+      chan.onmessage = (e) => {
+        const { uid, online: on, busy: bz } = e.data || {};
+        if (!uid || uid === my) {
+          if (typeof on === 'boolean') {
+            setOnline(on);
+            localStorage.setItem(`doctorOnlineById_${my}`, on ? '1' : '0');
+          }
+          if (typeof bz === 'boolean') {
+            setBusy(bz);
+            localStorage.setItem(`doctorBusyById_${my}`, bz ? '1' : '0');
+          }
+        }
+      };
+      return () => { try { chan.close(); } catch(_) {} };
+    } catch(_) {}
   }, []);
 
   useEffect(() => {
@@ -75,6 +99,29 @@ export default function DoctorProfile() {
     })();
   }, []);
 
+  useEffect(() => {
+    const refreshStatus = async () => {
+      try {
+        const id = localStorage.getItem('userId') || '';
+        if (!id) return;
+        const onLS = localStorage.getItem(`doctorOnlineById_${id}`);
+        const bzLS = localStorage.getItem(`doctorBusyById_${id}`);
+        if (onLS !== null) setOnline(onLS === '1');
+        if (bzLS !== null) setBusy(bzLS === '1');
+        const { data } = await API.get('/doctors', { params: { user: id } });
+        const p = Array.isArray(data) ? data[0] : null;
+        if (p && typeof p.isOnline === 'boolean') setOnline(!!p.isOnline);
+        if (p && typeof p.isBusy === 'boolean') setBusy(!!p.isBusy);
+      } catch(_) {}
+    };
+    const onFocus = () => { refreshStatus(); };
+    const onVis = () => { if (document.visibilityState === 'visible') refreshStatus(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    const t = setInterval(refreshStatus, 8000);
+    return () => { window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onVis); clearInterval(t); };
+  }, []);
+
   const setStatus = async (status) => {
     const uid = localStorage.getItem("userId") || "";
     if (status === "online") {
@@ -83,18 +130,21 @@ export default function DoctorProfile() {
       setOnline(true);
       setBusy(false);
       try { await API.put('/doctors/me/status', { isOnline: true, isBusy: false }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: true, busy: false }); chan.close(); } catch(_) {}
     } else if (status === "offline") {
       localStorage.setItem(`doctorOnlineById_${uid}`, "0");
       localStorage.setItem(`doctorBusyById_${uid}`, "0");
       setOnline(false);
       setBusy(false);
       try { await API.put('/doctors/me/status', { isOnline: false, isBusy: false }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: false, busy: false }); chan.close(); } catch(_) {}
     } else {
       localStorage.setItem(`doctorBusyById_${uid}`, "1");
       localStorage.setItem(`doctorOnlineById_${uid}`, "1");
       setOnline(true);
       setBusy(true);
       try { await API.put('/doctors/me/status', { isOnline: true, isBusy: true }); } catch (_) {}
+      try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: true, busy: true }); chan.close(); } catch(_) {}
     }
   };
 
@@ -212,7 +262,7 @@ export default function DoctorProfile() {
                 <div className="mt-3 flex items-center gap-3">
                   <span className={`inline-block text-xs px-2 py-1 rounded ${online ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-700"}`}>{online ? "Online" : "Offline"}</span>
                   <button
-                    onClick={() => setOnline((v) => !v)}
+                    onClick={() => setStatus(online ? "offline" : "online")}
                     className={`text-xs px-3 py-1 rounded-full border ${online ? "border-green-600 text-green-700" : "border-slate-600 text-slate-700"}`}
                   >
                     {online ? "Go Offline" : "Go Online"}

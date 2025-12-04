@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useMemo } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import Logo from "../components/Logo";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../api";
 
 export default function Appointments() {
@@ -965,44 +964,7 @@ export default function Appointments() {
         )}
       </div>
       
-      <div className="mt-8">
-        <div className="grid md:grid-cols-3 gap-8 items-start">
-          <div>
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
-                <div className="text-white">
-                  <Logo size={20} />
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
-                  HospoZen
-                </span>
-                <span className="text-xs text-blue-600 font-medium tracking-wider uppercase">Healthcare Platform</span>
-              </div>
-            </div>
-            <p className="mt-3 text-slate-600 text-sm">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</p>
-          </div>
-          <div>
-            <div className="font-semibold text-slate-900 mb-2">COMPANY</div>
-            <div className="space-y-1 text-slate-700 text-sm">
-              <Link to="/" className="hover:text-indigo-700">Home</Link>
-              <div>
-                <Link to="/about" className="hover:text-indigo-700">About us</Link>
-              </div>
-              <div className="text-slate-700">Delivery</div>
-              <div className="text-slate-700">Privacy policy</div>
-            </div>
-          </div>
-          <div>
-            <div className="font-semibold text-slate-900 mb-2">GET IN TOUCH</div>
-            <div className="text-slate-700 text-sm">+1-212-456-7890</div>
-            <div className="text-slate-700 text-sm">greatstackdev@gmail.com</div>
-          </div>
-        </div>
-        <hr className="my-6 border-slate-200" />
-        <div className="text-center text-slate-600 text-sm">Copyright 2024 © HospoZen.com - All Right Reserved.</div>
-      </div>
+      
       {waitingAppt && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-2xl overflow-hidden">
@@ -1598,6 +1560,7 @@ export default function Appointments() {
           </div>
         </div>
       )}
+
     </div>
   );
 }
