@@ -43,6 +43,7 @@ export default function Profile() {
     const n = uid ? localStorage.getItem(`userNameById_${uid}`) : null;
     const e = uid ? localStorage.getItem(`userEmailById_${uid}`) : null;
     const p = uid ? localStorage.getItem(`userPhoneById_${uid}`) : null;
+    const p2 = uid ? localStorage.getItem(`userMobileById_${uid}`) : null;
     const a = uid ? localStorage.getItem(`userAddressById_${uid}`) : null;
     const g = uid ? localStorage.getItem(`userGenderById_${uid}`) : null;
     const b1 = uid ? localStorage.getItem(`userBirthdayById_${uid}`) : null;
@@ -52,7 +53,7 @@ export default function Profile() {
 
     setName(n || "");
     setEmail(e || "");
-    setPhone(p || "");
+    setPhone(p || p2 || "");
     setAddress(a || "");
     setGender(g || "");
     const dobVal = b1 || b2 || "";
@@ -66,7 +67,8 @@ export default function Profile() {
         if (data) {
           if (data.name) setName(String(data.name));
           if (data.email) setEmail(String(data.email));
-          if (data.phone) setPhone(String(data.phone));
+          const ph = String(data.phone || data.mobile || data.contactNumber || data.phoneNumber || data?.user?.phone || data?.user?.mobile || data?.user?.contactNumber || "");
+          if (ph) setPhone(ph);
           if (data.address) setAddress(String(data.address));
           if (data.gender) setGender(String(data.gender));
           if (data.birthday) {
@@ -82,12 +84,15 @@ export default function Profile() {
 
   const save = async () => {
     try {
+      if (email && !String(email).includes('@')) { alert('Please enter a valid email containing @'); return; }
+      if (phone && String(phone).replace(/\D/g, '').length !== 10) { alert('Phone number must be 10 digits'); return; }
       await API.put('/auth/me', { name, email, phone, address, gender, birthday, photoBase64: photo });
       const uid = localStorage.getItem("userId");
       if (uid) {
         localStorage.setItem(`userNameById_${uid}`, name || "");
         localStorage.setItem(`userEmailById_${uid}`, email || "");
         localStorage.setItem(`userPhoneById_${uid}`, phone || "");
+        localStorage.setItem(`userMobileById_${uid}`, phone || "");
         localStorage.setItem(`userAddressById_${uid}`, address || "");
         localStorage.setItem(`userGenderById_${uid}`, gender || "");
         localStorage.setItem(`userBirthdayById_${uid}`, birthday || "");
@@ -164,11 +169,11 @@ export default function Profile() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Email</label>
-                      <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                      <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Phone</label>
-                      <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                      <input inputMode="numeric" maxLength={10} value={phone} onChange={(e) => setPhone(String(e.target.value).replace(/\D/g, "").slice(0, 10))} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
                     </div>
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-semibold text-slate-700 mb-2">Address</label>

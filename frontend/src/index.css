@@ -338,3 +338,13 @@
 .animate-scroll-left {
   animation: scroll-left 60s linear infinite;
 }
+/* Hide arrows on specific numeric inputs (e.g., Age) */
+input.no-spin[type="number"]::-webkit-inner-spin-button,
+input.no-spin[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input.no-spin[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}

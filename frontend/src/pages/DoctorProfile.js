@@ -176,6 +176,11 @@ export default function DoctorProfile() {
 
   const onChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'consultationFees' || name === 'slotDurationMins') {
+      const digits = String(value || '').replace(/\D/g, '');
+      setForm((f) => ({ ...f, [name]: digits }));
+      return;
+    }
     setForm((f) => ({ ...f, [name]: value }));
   };
 
@@ -338,11 +343,16 @@ export default function DoctorProfile() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Consultation Fees</label>
-                  <input name="consultationFees" value={form.consultationFees} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300" />
+                  <input inputMode="numeric" name="consultationFees" value={form.consultationFees} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Slot Duration (mins)</label>
-                  <input name="slotDurationMins" value={form.slotDurationMins} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300" />
+                  <select name="slotDurationMins" value={form.slotDurationMins} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300">
+                    <option value="">Select</option>
+                    <option value="15">15</option>
+                    <option value="30">30</option>
+                    <option value="60">60</option>
+                  </select>
                 </div>
                 <div className="sm:col-span-2 flex gap-3 mt-2">
                   <button disabled={saving} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all">{saving ? "Saving..." : "Save"}</button>

@@ -285,6 +285,14 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {(() => {
               const sorted = (list || []).slice().sort((a, b) => {
+                const expB = Number(b.experienceYears ?? b.experience ?? 0) || 0;
+                const expA = Number(a.experienceYears ?? a.experience ?? 0) || 0;
+                if (expB !== expA) return expB - expA;
+                const didB = String(b.user?._id || "");
+                const didA = String(a.user?._id || "");
+                const rateB = Number(ratings[didB] || b.averageRating || 0) || 0;
+                const rateA = Number(ratings[didA] || a.averageRating || 0) || 0;
+                if (rateB !== rateA) return rateB - rateA;
                 const tb = new Date(b.createdAt || 0).getTime();
                 const ta = new Date(a.createdAt || 0).getTime();
                 if (tb !== ta) return tb - ta;

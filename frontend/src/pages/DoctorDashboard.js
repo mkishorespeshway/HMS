@@ -629,9 +629,41 @@ export default function DoctorDashboard() {
           }
         } catch (_) {}
       });
+      try {
+        src.forEach((a) => {
+          const id = String(a._id || a.id || '');
+          if (!id) return;
+          const endTs = apptEndTs(a);
+          if (now > endTs) {
+            try { localStorage.removeItem(`joinedByDoctor_${id}`); } catch(_) {}
+          }
+        });
+      } catch(_) {}
+      try {
+        const hasActive = src.some((a) => {
+          if (String(a.type).toLowerCase() !== 'online') return false;
+          const s = String(a.status || '').toUpperCase();
+          if (s === 'CANCELLED' || s === 'COMPLETED') return false;
+          const startTs = apptStartTs(a);
+          const endTs = apptEndTs(a);
+          return now >= startTs && now < endTs;
+        });
+        const inMeeting = src.some((a) => {
+          const id = String(a._id || a.id || '');
+          return !!id && localStorage.getItem(`joinedByDoctor_${id}`) === '1';
+        });
+        if (!hasActive && !inMeeting && busy) {
+          const uid = localStorage.getItem('userId') || '';
+          try { if (uid) localStorage.setItem(`doctorBusyById_${uid}`, '0'); } catch(_) {}
+          setBusy(false);
+          setOnline(true);
+          try { API.put('/doctors/me/status', { isOnline: true, isBusy: false }); } catch(_) {}
+          try { const chan = new BroadcastChannel('doctorStatus'); chan.postMessage({ uid, online: true, busy: false }); chan.close(); } catch(_) {}
+        }
+      } catch(_) {}
     }, 30000);
     return () => clearInterval(t);
-  }, [list, latestToday]);
+  }, [list, latestToday, busy]);
 
   const completed = useMemo(() => {
     const arr = (list || []).filter((a) => String(a.status).toUpperCase() === "COMPLETED");
@@ -902,12 +934,13 @@ export default function DoctorDashboard() {
               </button>
             ))}
           </div>
-          <div className="mb-6">
-            <h1 className="text-3xl font-semibold">Doctor Dashboard</h1>
+          <div className="relative mb-6">
+            <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
+            <h1 className="text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Doctor Dashboard</h1>
           </div>
 
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="relative flex-1 min-w-[160px] bg-white border border-slate-200 rounded-xl p-4 transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:bg-indigo-50">
+          <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-4 mb-6">
+            <div className="relative flex-1 min-w-[160px] bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-4 shadow-2xl transition-transform duration-300 hover:scale-105 hover:bg-indigo-50">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-md bg-indigo-50 border border-indigo-100 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -920,7 +953,7 @@ export default function DoctorDashboard() {
                 </div>
               </div>
             </div>
-            <div className="relative flex-1 min-w-[160px] bg-white border border-slate-200 rounded-xl p-4 transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:bg-indigo-50">
+            <div className="relative flex-1 min-w-[160px] bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-4 shadow-2xl transition-transform duration-300 hover:scale-105 hover:bg-indigo-50">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-md bg-blue-50 border border-blue-100 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -933,7 +966,7 @@ export default function DoctorDashboard() {
                 </div>
               </div>
             </div>
-            <div className="relative flex-1 min-w-[160px] bg-white border border-slate-200 rounded-xl p-4 transition-transform duration-300 hover:scale-105 hover:shadow-lg hover:bg-indigo-50">
+            <div className="relative flex-1 min-w-[160px] bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-4 shadow-2xl transition-transform duration-300 hover:scale-105 hover:bg-indigo-50">
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-md bg-cyan-50 border border-cyan-100 flex items-center justify-center">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -948,7 +981,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
+          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6 mb-6">
             <div className="bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 text-slate-700 mb-3">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1042,7 +1075,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-md border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
+          <div className="max-w-5xl mx-auto bg-white/80 backdrop-blur-md border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
             <div className="flex items-center gap-2 text-slate-700 mb-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-7 9a7 7 0 0114 0H5z" fill="#06B6D4"/>
@@ -1071,7 +1104,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          <div id="all-appointments" className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+          <div id="all-appointments" className="max-w-5xl mx-auto bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
             <div className="flex items-center gap-2 text-slate-700 mb-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 2a1 1 0 000 2h1v2h8V4h1a1 1 0 100-2H7zM5 8a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2H5zm3 3h8v2H8v-2zm0 4h8v2H8v-2z" fill="#4B5563"/>
@@ -1111,7 +1144,7 @@ export default function DoctorDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-4">
+          <div className="max-w-5xl mx-auto bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-6 shadow-lg">
             <div className="flex items-center gap-2 text-slate-700 mb-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 2a1 1 0 000 2h1v2h8V4h1a1 1 0 100-2H7zM5 8a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2H5zm3 3h8v2H8v-2zm0 4h8v2H8v-2z" fill="#4B5563"/>
@@ -1213,7 +1246,7 @@ export default function DoctorDashboard() {
               )}
             </div>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+          <div className="max-w-5xl mx-auto bg-white/85 backdrop-blur-sm border border-white/30 rounded-2xl p-6 mb-6 shadow-lg">
             <div className="flex items-center gap-2 text-slate-700 mb-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 2a1 1 0 000 2h1v2h8V4h1a1 1 0 100-2H7zM5 8a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2v-9a2 2 0 00-2-2H5zm3 3h8v2H8v-2zm0 4h8v2H8v-2z" fill="#4B5563"/>

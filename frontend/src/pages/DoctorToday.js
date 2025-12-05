@@ -637,21 +637,42 @@ export default function DoctorToday() {
                   Reject
                 </button>
               )}
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const id = String(a._id || a.id);
-                    const { data } = await API.get(`/appointments/${id}`);
-                    setDetailsAppt(data || a);
-                  } catch (_) {
-                    setDetailsAppt(a);
+              {(() => {
+                try {
+                  const id = String(a._id || a.id || '');
+                  const pres = !!a.prescriptionText;
+                  const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null;
+                  const isCompletedNow = isPast && (pres || jp !== null);
+                  if (isCompletedNow) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => { const id2 = String(a._id || a.id || ''); if (id2) { nav(`/prescription/${id2}`); } }}
+                        className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+                      >
+                        View Summary
+                      </button>
+                    );
                   }
-                }}
-                className="px-3 py-1 rounded-md border border-purple-600 text-purple-700 hover:bg-purple-50"
-              >
-                View Documents
-              </button>
+                } catch(_) {}
+                return (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const id = String(a._id || a.id);
+                        const { data } = await API.get(`/appointments/${id}`);
+                        setDetailsAppt(data || a);
+                      } catch (_) {
+                        setDetailsAppt(a);
+                      }
+                    }}
+                    className="px-3 py-1 rounded-md border border-purple-600 text-purple-700 hover:bg-purple-50"
+                  >
+                    View Documents
+                  </button>
+                );
+              })()}
               {(() => {
                 try {
                   if (!a.prescriptionText) return null;
@@ -779,13 +800,14 @@ export default function DoctorToday() {
       </div>
       <div className="grid grid-cols-12 gap-6">
         <main className="col-span-12">
-          <div className="mb-4">
-            <h1 className="text-3xl font-semibold">Doctor Appointments</h1>
+          <div className="relative mb-6">
+            <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
+            <h1 className="text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Doctor Appointments</h1>
           </div>
-          <div className="glass-card overflow-hidden">
+          <div className="max-w-5xl mx-auto bg-white/85 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-white/70 backdrop-blur-sm text-slate-700">
+                <thead className="bg-slate-50 text-slate-700">
                   <tr>
                     <th className="px-4 py-3 text-left">#</th>
                     <th className="px-4 py-3 text-left">Patient</th>

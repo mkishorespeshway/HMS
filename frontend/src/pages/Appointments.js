@@ -609,10 +609,10 @@ export default function Appointments() {
     } catch (_) {}
   };
 
-  const openFile = (u) => {
+  const openFile = (u, name) => {
     try {
       const s = String(u || '');
-      setFilePreview({ url: s });
+      setFilePreview({ url: s, name: String(name || '') });
       setIsFullPreview(true);
     } catch (_) {}
   };
@@ -1115,7 +1115,7 @@ export default function Appointments() {
                             <div className="text-sm text-slate-700 truncate max-w-[12rem]">{f.name}</div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => openFile(f.url)} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
+                            <button onClick={() => openFile(f.url, f.name)} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
                             <button
                               onClick={() => {
                                 const nextFiles = waitFiles.filter((_, i) => i !== idx);
@@ -1132,6 +1132,20 @@ export default function Appointments() {
                       ))
                     )}
                   </div>
+                  {filePreview && !isFullPreview && (
+                    <div className="mt-3 border rounded-md p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm text-slate-900 truncate">{filePreview.name || 'Selected report'}</div>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => setIsFullPreview(true)} className="px-2 py-1 rounded-md border border-slate-300 text-xs">Full Screen</button>
+                          <button onClick={() => setFilePreview(null)} className="px-2 py-1 rounded-md border border-slate-300 text-xs">Close Preview</button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center">
+                        <img src={String(filePreview.url || '')} alt="" className="max-h-64 w-auto object-contain cursor-zoom-in" onClick={() => setIsFullPreview(true)} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="mt-4">
@@ -1166,9 +1180,9 @@ export default function Appointments() {
         </div>
       )}
       {detailsAppt && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) { setDetailsAppt(null); setIsFullPreview(false); setFilePreview(null); } }}>
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-blue-200/50 shadow-2xl w-[95vw] max-w-xl h-[80vh] overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-blue-200/50 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[70]" style={{ overscrollBehavior: 'contain' }} onClick={(e) => { if (e.target === e.currentTarget) { setDetailsAppt(null); setIsFullPreview(false); setFilePreview(null); } }}>
+          <div className="relative m-auto bg-white/95 backdrop-blur-md rounded-2xl border border-blue-200/50 shadow-2xl w-[90vw] max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="sticky top-0 px-6 py-4 border-b border-blue-200/50 flex items-center justify-between bg-white/95 backdrop-blur-md">
               <div className="text-xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent">Patient Details</div>
               <button onClick={() => { setDetailsAppt(null); setIsFullPreview(false); setFilePreview(null); try { nav('/appointments', { replace: true }); } catch(_) {} }} className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white">Close</button>
             </div>
@@ -1243,32 +1257,7 @@ export default function Appointments() {
                     ))
                   )}
                 </div>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={detText}
-                    onChange={(e) => setDetText(e.target.value)}
-                    placeholder="Type a quick message"
-                    className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
-                  />
-                  <button
-                    onClick={() => {
-                      if (detText.trim()) {
-                        const id = String(detailsAppt._id || detailsAppt.id);
-                        const text = detText.trim();
-                        const next = [...detChat, text];
-                        setDetChat(next);
-                        try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
-                        try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                        try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient', text }); chan.close(); } catch(_) {}
-                        try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre', text }); } catch(_) {}
-                        setDetText("");
-                      }
-                    }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Send
-                  </button>
-                </div>
+                
               </div>
               <div>
                 <div className="text-slate-900 font-semibold mb-1">Medical reports uploaded</div>
@@ -1311,7 +1300,7 @@ export default function Appointments() {
                           <div className="text-sm text-slate-800 truncate max-w-[12rem]">{f.name}</div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => openFile(f.url)} className="px-2 py-1 rounded-md border border-blue-200 text-blue-700 text-sm">Open</button>
+                          <button onClick={() => openFile(f.url, f.name)} className="px-2 py-1 rounded-md border border-blue-200 text-blue-700 text-sm">Open</button>
                           <button
                             onClick={() => {
                               const nextFiles = detPrevFiles.filter((_, i) => i !== idx);
@@ -1329,8 +1318,22 @@ export default function Appointments() {
                     ))
                   )}
                 </div>
+                {filePreview && !isFullPreview && (
+                  <div className="mt-3 border rounded-md p-2">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-slate-900 truncate">{filePreview.name || 'Selected report'}</div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setIsFullPreview(true)} className="px-2 py-1 rounded-md border border-slate-300 text-xs">Full Screen</button>
+                        <button onClick={() => setFilePreview(null)} className="px-2 py-1 rounded-md border border-slate-300 text-xs">Close Preview</button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <img src={String(filePreview.url || '')} alt="" className="max-h-64 w-auto object-contain cursor-zoom-in" onClick={() => setIsFullPreview(true)} />
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex gap-2 items-center sticky bottom-0 bg-white/95 backdrop-blur-md py-3 border-t border-blue-200/50">
+              <div className="flex gap-2 items-center bg-white/95 backdrop-blur-md py-3 border-t border-blue-200/50">
                 <button
                   onClick={async () => {
                     try {
@@ -1381,11 +1384,39 @@ export default function Appointments() {
                 <div className="text-xs text-slate-600">Only visible to doctor</div>
               </div>
             </div>
+            <div className="px-6 py-3 border-t border-blue-200/50 bg-white/95 backdrop-blur-md">
+              <div className="flex gap-2">
+                <input
+                  value={detText}
+                  onChange={(e) => setDetText(e.target.value)}
+                  placeholder="Type a quick message"
+                  className="flex-1 border border-blue-200 rounded-xl px-3 py-2 text-sm bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                />
+                <button
+                  onClick={() => {
+                    if (detText.trim()) {
+                      const id = String(detailsAppt._id || detailsAppt.id);
+                      const text = detText.trim();
+                      const next = [...detChat, text];
+                      setDetChat(next);
+                      try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
+                      try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                      try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient', text }); chan.close(); } catch(_) {}
+                      try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'pre', text }); } catch(_) {}
+                      setDetText("");
+                    }
+                  }}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
       {filePreview && isFullPreview && (
-        <div className="fixed inset-0 z-[60] bg-black/80 flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center">
           <button
             type="button"
             onClick={() => setIsFullPreview(false)}
@@ -1394,7 +1425,7 @@ export default function Appointments() {
           <img
             src={String(filePreview.url || '')}
             alt=""
-            className="max-w-[95vw] max-h-[95vh] w-auto h-auto object-contain shadow-2xl"
+            className="w-[98vw] h-[98vh] object-contain shadow-2xl"
           />
         </div>
       )}
@@ -1553,9 +1584,9 @@ export default function Appointments() {
         </div>
       )}
       {rateAppt && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-md overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[70]" style={{ overscrollBehavior: 'contain' }}>
+          <div className="relative m-auto bg-white/95 backdrop-blur-md rounded-2xl border border-blue-200/50 shadow-2xl w-[95vw] max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="sticky top-0 flex items-center justify-between px-4 py-3 border-b border-blue-200/50 bg-white/95 backdrop-blur-md">
               <div className="font-semibold text-slate-900">Rate Doctor</div>
               <button
                 onClick={() => setRateAppt(null)}
@@ -1564,7 +1595,7 @@ export default function Appointments() {
                 Close
               </button>
             </div>
-            <div className="p-4">
+            <div className="p-4 overflow-y-auto flex-1">
               <div className="text-slate-700 text-sm mb-2">Doctor: <span className="text-slate-900">{rateAppt.doctor?.name || ''}</span></div>
               <div className="flex items-center gap-2 mb-3">
                 {[1,2,3,4,5].map((n) => (
@@ -1581,7 +1612,7 @@ export default function Appointments() {
                 value={rateText}
                 onChange={(e) => setRateText(e.target.value)}
                 rows={4}
-                className="w-full border border-slate-300 rounded-md p-3 text-sm"
+                className="w-full border border-blue-200 rounded-xl p-3 text-sm bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300"
                 placeholder="Write your feedback"
               />
               <div className="mt-3 flex items-center gap-2">
@@ -1606,7 +1637,7 @@ export default function Appointments() {
                         });
                     } catch(_) {}
                   }}
-                  className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Submit
                 </button>
