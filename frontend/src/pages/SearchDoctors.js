@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import API from "../api";
@@ -54,10 +54,13 @@ export default function SearchDoctors() {
     return `data:image/png;base64,${s}`;
   };
 
+  const abortRef = useRef(null);
   const search = async () => {
     setError("");
     try {
-      const { data } = await API.get("/doctors", { params: { q, specialization } });
+      if (abortRef.current) { try { abortRef.current.abort(); } catch(_) {} }
+      abortRef.current = new AbortController();
+      const { data } = await API.get("/doctors", { params: { q, specialization }, signal: abortRef.current.signal });
       let items = Array.isArray(data) ? data : [];
 
       if (q && String(q).trim().length > 0) {
@@ -74,7 +77,7 @@ export default function SearchDoctors() {
         const norm = specialization.trim().toLowerCase();
         const hasMatches = items.some((d) => (d.specializations || []).some((s) => String(s).toLowerCase().includes(norm)));
         if (!hasMatches) {
-          const all = await API.get("/doctors");
+          const all = await API.get("/doctors", { signal: abortRef.current.signal });
           const arr = Array.isArray(all.data) ? all.data : [];
           items = arr.filter((d) => (d.specializations || []).some((s) => String(s).toLowerCase().includes(norm)));
         } else {
@@ -116,15 +119,11 @@ export default function SearchDoctors() {
 
   useEffect(() => {
     const t = setTimeout(() => { search(); }, 250);
-    return () => clearTimeout(t);
+    return () => { clearTimeout(t); if (abortRef.current) { try { abortRef.current.abort(); } catch(_) {} } };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  useEffect(() => {
-    const iv = setInterval(() => { search(); }, 1000);
-    return () => clearInterval(iv);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, specialization]);
+  // Removed aggressive 1s polling to prevent unnecessary requests and aborts
 
   useEffect(() => {
     try {

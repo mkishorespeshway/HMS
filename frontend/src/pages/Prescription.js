@@ -548,16 +548,26 @@ export default function Prescription() {
           </div>
         </div>
         <div className="presc-details">
-          <div className="presc-line"><span>Patient Name:</span><span>{patientName || ''}</span></div>
+          <div className="presc-row">
+            <div className="presc-line presc-half"><span>Patient Name:</span><span>{patientName || ''}</span></div>
+            <div className="presc-line presc-half"><span>Date:</span><span>{appt?.date || ''}</span></div>
+          </div>
           <div className="presc-line"><span>Address:</span><span>{String(profile?.clinic?.address || '').trim()}</span></div>
           <div className="presc-row">
             <div className="presc-line presc-half"><span>Age:</span><span>{patientAge || ''}</span></div>
-            <div className="presc-line presc-half"><span>Date:</span><span>{appt?.date || ''}</span></div>
+            <div className="presc-line presc-half"><span>Diagnosis:</span><span>{parsed.diagnosis || ''}</span></div>
           </div>
-          <div className="presc-line"><span>Diagnosis:</span><span>{parsed.diagnosis || ''}</span></div>
         </div>
         <div className="presc-rx">Medicine</div>
         <table className="presc-table">
+          <colgroup>
+            <col style={{ width: '16.66%' }} />
+            <col style={{ width: '16.66%' }} />
+            <col style={{ width: '16.66%' }} />
+            <col style={{ width: '16.66%' }} />
+            <col style={{ width: '16.66%' }} />
+            <col style={{ width: '16.66%' }} />
+          </colgroup>
           <thead>
             <tr>
               <th>Medicine</th>
@@ -586,11 +596,34 @@ export default function Prescription() {
             <div className="presc-line"><span>Advice:</span><span>{parsed.advice}</span></div>
           </div>
         )}
+        <div className="presc-sign-row">
+          <div className="presc-sign-name">{doctorName || ''}</div>
+          <div className="presc-sign-line">Signature</div>
+        </div>
         <div className="presc-footer">
-          <div>{String(profile?.clinic?.address || '').trim() || ''}</div>
-          <div></div>
+          <div className="presc-footer-item">
+            <svg className="presc-footer-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22s7-8 7-13a7 7 0 10-14 0c0 5 7 13 7 13z" stroke="#334155" strokeWidth="2"/>
+              <circle cx="12" cy="9" r="3" stroke="#334155" strokeWidth="2"/>
+            </svg>
+            <span>{String(profile?.clinic?.address || '').trim() || ''}</span>
+          </div>
+          <div className="presc-footer-item">
+            <svg className="presc-footer-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 5a3 3 0 013-3h2a2 2 0 012 2v3a2 2 0 01-2 2l-1 .5a12 12 0 008.5 8.5l.5-1a2 2 0 012-2h3a2 2 0 012 2v2a3 3 0 01-3 3C7.82 24 0 16.18 0 6a3 3 0 012-1z" stroke="#334155" strokeWidth="2"/>
+            </svg>
+            <span>{String(appt?.doctor?.phone || '').trim() || ''}</span>
+          </div>
+          <div className="presc-footer-item">
+            <svg className="presc-footer-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#334155" strokeWidth="2"/>
+              <path d="M3 8l9 6 9-6" stroke="#334155" strokeWidth="2"/>
+            </svg>
+            <span>{String(appt?.doctor?.email || '').trim() || ''}</span>
+          </div>
         </div>
         <div className="presc-wave" />
+        <div className="presc-wave-left" />
       </div>
     </div>
     </>

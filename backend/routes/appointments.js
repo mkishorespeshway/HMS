@@ -337,7 +337,7 @@ router.get("/mine", authenticate, async (req, res) => {
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const appt = await Appointment.findById(id)
-    .populate("doctor", "name email")
+    .populate("doctor", "name email phone")
     .populate("patient", "name email");
   if (!appt) return res.status(404).json({ message: "Appointment not found" });
   if (String(appt.patient._id) !== String(req.user._id) && String(appt.doctor._id) !== String(req.user._id)) return res.status(403).json({ message: "Forbidden" });

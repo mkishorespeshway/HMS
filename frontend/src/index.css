@@ -359,31 +359,47 @@ input.no-spin[type="number"] {
   .print-only { display: block !important; }
 }
 
-.presc-a4 { position: relative; background: #ffffff; width: 210mm; height: 297mm; padding: 12mm 10mm; box-sizing: border-box; margin: 0 auto; }
-.presc-header { display: flex; align-items: center; justify-content: space-between; padding: 2mm 0 3mm; background: linear-gradient(to bottom, #e6f0ff 0%, #ffffff 80%); border-bottom: 2px solid #e5e7eb; }
-.presc-logo { width: 3mm; height: 3mm; display: flex; align-items: center; justify-content: center; margin-left: 4mm; }
-.presc-title { text-align: left; gap: 1mm; }
-.presc-doc-name { font-size: 20pt; font-weight: 800; color: #1f4b99; }
-.presc-qual { font-size: 10pt; letter-spacing: 3px; text-transform: uppercase; color: #64748b; }
+.presc-a4 { position: relative; background: #ffffff; width: 210mm; height: 297mm; padding: 6mm 12mm; box-sizing: border-box; margin: 0 auto; font-family: 'Segoe UI', Roboto, Arial, sans-serif; margin-top: 12px; margin-bottom: 12px; }
+.presc-header { display: flex; align-items: center; justify-content: space-between; padding: 4mm 0 3mm; background: linear-gradient(to bottom, #e6f0ff 0%, #ffffff 80%); }
+.presc-logo { width: 10mm; height: 10mm; display: flex; align-items: center; justify-content: center; margin-left: 4mm; }
+.presc-title { text-align: center; gap: 2mm; flex: 1; }
+.presc-doc-name { font-size: 22pt; font-weight: 800; color: #1f4b99; margin-bottom: 2mm; }
+.presc-qual { font-size: 9.5pt; letter-spacing: 1.5px; text-transform: uppercase; color: #475569; }
 .presc-hospital-box { text-align: right; }
-.presc-title, .presc-hospital-box { height: 12mm; display: flex; flex-direction: column; justify-content: center; margin-top: 0; }
-.presc-title { align-items: flex-start; transform: translateY(-0.8mm); margin-left: 15mm; }
-.presc-hospital-box { align-items: flex-end; gap: 0.8mm; transform: translateY(-1.0mm); }
+.presc-title, .presc-hospital-box { height: 10mm; display: flex; flex-direction: column; justify-content: center; margin-top: 0; }
+.presc-title { align-items: center; transform: translateY(0); margin-left: 0; }
+.presc-title::before { content: ''; display: block; width: 55mm; border-top: 2px solid #cbd5e1; margin-bottom: 2mm; align-self: center; }
+.presc-hospital-box { align-items: flex-end; gap: 0.8mm; transform: translateY(0); }
 .presc-doc-name { line-height: 1.1; }
-.presc-qual { line-height: 1.1; margin-top: 0.2mm; }
+.presc-qual { line-height: 1.1; margin-top: 0; }
 .presc-hospital { font-size: 14pt; font-weight: 700; color: #2563eb; text-transform: uppercase; }
 .presc-slogan { font-size: 9pt; color: #64748b; }
-.presc-details { margin-top: 6mm; }
+.presc-details { margin-top: 4mm; }
 .presc-row { display: flex; gap: 6mm; }
 .presc-half { flex: 1; }
-.presc-line { display: flex; justify-content: flex-start; align-items: baseline; border-bottom: 1px solid #cbd5e1; padding-bottom: 2mm; margin-top: 3mm; font-size: 11pt; }
-.presc-line span:first-child { color: #334155; font-weight: 600; }
-.presc-line span + span { margin-left: 6mm; color: #0f172a; }
-.presc-rx { font-size: 28pt; color: #2563eb; margin-top: 8mm; }
+.presc-line { display: flex; justify-content: flex-start; align-items: baseline; gap: 3mm; border-bottom: 1px solid #cbd5e1; padding-bottom: 1mm; margin-top: 1.5mm; font-size: 11pt; }
+.presc-line span:first-child { color: #334155; font-weight: 700; display: inline; margin-right: 1.5mm; }
+.presc-line span + span { margin-left: 0; color: #0f172a; white-space: pre-wrap; word-break: break-word; }
+.presc-rx { font-size: 24pt; color: #2563eb; margin-top: 6mm; }
 .presc-table { width: 100%; border-collapse: collapse; margin-top: 4mm; font-size: 10pt; table-layout: fixed; }
-.presc-table th { background-color: #f1f5f9; color: #0f172a; }
-.presc-table td, .presc-table th { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.presc-table th, .presc-table td { border: 1px solid #cbd5e1; padding: 3mm; }
+.presc-table th { background-color: #f1f5f9; color: #0f172a; font-weight: 700; }
+.presc-table th, .presc-table td { border: 1px solid #cbd5e1; padding: 3mm; vertical-align: middle; word-break: break-word; white-space: normal; }
+.presc-table th:nth-child(n+2), .presc-table td:nth-child(n+2) { text-align: center; }
+.presc-table th:nth-child(1), .presc-table td:nth-child(1) { width: 16.66%; }
+.presc-table th:nth-child(2), .presc-table td:nth-child(2) { width: 16.66%; }
+.presc-table th:nth-child(3), .presc-table td:nth-child(3) { width: 16.66%; }
+.presc-table th:nth-child(4), .presc-table td:nth-child(4) { width: 16.66%; }
+.presc-table th:nth-child(5), .presc-table td:nth-child(5) { width: 16.66%; }
+.presc-table th:nth-child(6), .presc-table td:nth-child(6) { width: 16.66%; }
 .presc-notes { margin-top: 6mm; }
-.presc-footer { position: absolute; left: 0; right: 0; bottom: 12mm; display: flex; justify-content: space-between; align-items: center; padding: 0 10mm; font-size: 9pt; color: #334155; }
-.presc-wave { position: absolute; right: 0; bottom: 0; width: 70mm; height: 70mm; background: radial-gradient(circle at 30% 30%, rgba(37,99,235,0.18), transparent 60%); border-top-left-radius: 70mm; }
+.presc-footer { position: absolute; left: 0; right: 0; bottom: 8mm; display: flex; justify-content: space-between; align-items: center; padding: 2mm 12mm; font-size: 9pt; color: #334155; border-top: 1px solid #e5e7eb; background: linear-gradient(to right, #f8fafc, #eef2ff); }
+.presc-footer-item { display: inline-flex; align-items: center; gap: 3mm; }
+.presc-footer-icon { width: 5mm; height: 5mm; }
+.presc-footer-right { justify-self: end; }
+.presc-footer-item span { color: #475569; font-weight: 500; }
+.presc-sign-row { position: absolute; right: 12mm; bottom: 20mm; display: flex; flex-direction: column; align-items: flex-end; padding: 0 10mm; text-align: right; }
+.presc-sign-name { text-align: right; color: #334155; font-weight: 700; margin-bottom: 2mm; }
+.presc-sign-line { width: 55mm; border-top: 2px solid #cbd5e1; text-align: right; color: #334155; font-weight: 600; padding-top: 2mm; margin-left: auto; margin-right: 0; }
+.presc-footer-right { display: flex; flex-direction: column; align-items: center; gap: 2mm; }
+.presc-wave { position: absolute; right: 0; bottom: 0; width: 90mm; height: 90mm; background: radial-gradient(circle at 35% 35%, rgba(37,99,235,0.15), rgba(99,102,241,0.12) 40%, transparent 70%); border-top-left-radius: 90mm; }
+.presc-wave-left { position: absolute; left: 0; bottom: 0; width: 60mm; height: 60mm; background: radial-gradient(circle at 65% 35%, rgba(99,102,241,0.12), transparent 60%); border-top-right-radius: 60mm; }
