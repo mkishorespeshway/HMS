@@ -360,11 +360,17 @@ input.no-spin[type="number"] {
 }
 
 .presc-a4 { position: relative; background: #ffffff; width: 210mm; height: 297mm; padding: 12mm 10mm; box-sizing: border-box; margin: 0 auto; }
-.presc-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 6mm; background: linear-gradient(to bottom, #e6f0ff 0%, #ffffff 80%); border-bottom: 2px solid #e5e7eb; }
-.presc-title { text-align: left; }
+.presc-header { display: flex; align-items: center; justify-content: space-between; padding: 2mm 0 3mm; background: linear-gradient(to bottom, #e6f0ff 0%, #ffffff 80%); border-bottom: 2px solid #e5e7eb; }
+.presc-logo { width: 3mm; height: 3mm; display: flex; align-items: center; justify-content: center; margin-left: 4mm; }
+.presc-title { text-align: left; gap: 1mm; }
 .presc-doc-name { font-size: 20pt; font-weight: 800; color: #1f4b99; }
-.presc-qual { font-size: 10pt; letter-spacing: 4px; text-transform: uppercase; color: #64748b; }
+.presc-qual { font-size: 10pt; letter-spacing: 3px; text-transform: uppercase; color: #64748b; }
 .presc-hospital-box { text-align: right; }
+.presc-title, .presc-hospital-box { height: 12mm; display: flex; flex-direction: column; justify-content: center; margin-top: 0; }
+.presc-title { align-items: flex-start; transform: translateY(-0.8mm); margin-left: 15mm; }
+.presc-hospital-box { align-items: flex-end; gap: 0.8mm; transform: translateY(-1.0mm); }
+.presc-doc-name { line-height: 1.1; }
+.presc-qual { line-height: 1.1; margin-top: 0.2mm; }
 .presc-hospital { font-size: 14pt; font-weight: 700; color: #2563eb; text-transform: uppercase; }
 .presc-slogan { font-size: 9pt; color: #64748b; }
 .presc-details { margin-top: 6mm; }

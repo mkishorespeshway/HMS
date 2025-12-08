@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import Logo from "../components/Logo";
 import API from "../api";
 
 export default function Prescription() {
@@ -535,10 +536,7 @@ export default function Prescription() {
       <div className="presc-a4" ref={pdfRef}>
         <div className="presc-header">
           <div className="presc-logo">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="1.5" fill="#e0f2fe"/>
-              <path d="M8 15c2 2 6 2 8-2M9 9h2M13 9h2" stroke="#2563eb" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+            <Logo size={48} />
           </div>
           <div className="presc-title">
             <div className="presc-doc-name">{doctorName || 'Dr. Doctor Name'}</div>
