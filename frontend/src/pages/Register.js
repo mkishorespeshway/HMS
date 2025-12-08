@@ -75,7 +75,7 @@ export default function Register() {
   return (
   <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8">
     <div className="max-w-7xl mx-auto px-4 animate-fade-in">
-      <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right px-4">Create Your Account</h2>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right px-4">Create Your Account</h2>
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 animate-slide-in-left opacity-0 max-w-lg mx-auto" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
         <div className="text-center mb-6">
           <p className="text-slate-600 text-lg font-medium italic bg-slate-50 rounded-lg p-3 border border-slate-200">Fill in your details to create an account</p>

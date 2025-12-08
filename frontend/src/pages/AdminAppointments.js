@@ -80,7 +80,7 @@ export default function AdminAppointments() {
   return (
     <div className="min-h-screen">
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
-        <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="flex items-center justify-between h-16">
             {/* Enhanced Logo Section */}
             <Link to="/admin/dashboard" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
@@ -137,7 +137,7 @@ export default function AdminAppointments() {
               {/* Logout Button */}
               <button
                 onClick={() => { localStorage.removeItem("token"); nav("/admin/login"); }}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/20"
+                className="hidden sm:inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/20"
               >
                 Logout
               </button>
@@ -182,10 +182,10 @@ export default function AdminAppointments() {
           )}
         </div>
       </header>
-      <div className="pt-14 px-6 page-gradient">
+      <div className="pt-16 px-4 sm:px-6 page-gradient">
         <div className="relative max-w-7xl mx-auto">
           <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
-          <h2 className="text-4xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">All Appointments</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">All Appointments</h2>
           <div className="bg-white/85 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">

@@ -109,7 +109,7 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
-        <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Your Profile</h2>
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Your Profile</h2>
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="animate-fade-in" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>

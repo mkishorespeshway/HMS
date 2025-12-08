@@ -197,9 +197,10 @@ export default function Prescription() {
       if (!pdfRef.current || !container) { alert('Preparing PDF failed'); return; }
       const prev = container.style.display;
       container.style.display = 'block';
+      await new Promise((r) => setTimeout(r, 50));
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
       await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-      const canvas = await window.html2canvas(pdfRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const canvas = await window.html2canvas(pdfRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf || {};
       if (!jsPDF) { throw new Error('PDF engine not available'); }
@@ -211,6 +212,7 @@ export default function Prescription() {
       doc.save(fname);
       container.style.display = prev || 'none';
     } catch (e) {
+      try { const params = new URLSearchParams(location.search); if (params.get('print') !== '1') window.print(); } catch(_) {}
       alert('Failed to download PDF');
     }
   };
@@ -220,8 +222,8 @@ export default function Prescription() {
     <div className="screen-only min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="max-w-4xl mx-auto pt-8 px-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{clinicName || 'Clinic/Hospital'}</h2>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">{clinicName || 'Clinic/Hospital'}</h2>
             <div className="text-right">
               <div className="text-slate-900 font-semibold">{doctorName}</div>
             </div>
@@ -235,7 +237,7 @@ export default function Prescription() {
                 </div>
               </div>
               <div className="my-3 border-t border-blue-200/50" />
-              <div className="flex items-center justify-between text-sm text-slate-700">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-sm text-slate-700">
                 <div>Patient: <span className="text-slate-900">{patientName || '--'}</span></div>
                 <div>Date: <span className="text-slate-900">{when}</span></div>
               </div>
@@ -261,36 +263,36 @@ export default function Prescription() {
         <div className="mt-6">
           <div className="text-slate-900 font-semibold">Complaint</div>
           {edit ? (
-            <textarea rows={3} value={symptoms} onChange={(e) => setSymptoms(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Enter complaint" />
+            <textarea rows={3} value={symptoms} onChange={(e) => setSymptoms(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 break-words overflow-x-hidden resize-y" placeholder="Enter complaint" />
           ) : (
-            <div className="mt-2 text-sm text-slate-800 whitespace-pre-wrap border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.complaint || symptomsText}</div>
+            <div className="mt-2 text-sm text-slate-800 whitespace-pre-wrap break-words border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.complaint || symptomsText}</div>
           )}
         </div>
 
         <div className="mt-6">
           <div className="text-slate-900 font-semibold">Observations</div>
           {edit ? (
-            <textarea rows={3} value={observations} onChange={(e) => setObservations(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Enter observations" />
+            <textarea rows={3} value={observations} onChange={(e) => setObservations(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 break-words overflow-x-hidden resize-y" placeholder="Enter observations" />
           ) : (
-            <div className="mt-2 text-sm text-slate-800 whitespace-pre-wrap border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.observations}</div>
+            <div className="mt-2 text-sm text-slate-800 whitespace-pre-wrap break-words border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.observations}</div>
           )}
         </div>
 
         <div className="mt-6">
           <div className="text-slate-900 font-semibold">Investigations Suggested</div>
           {edit ? (
-            <textarea rows={2} value={tests} onChange={(e) => setTests(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="e.g., CBC, LFT" />
+            <textarea rows={2} value={tests} onChange={(e) => setTests(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 break-words overflow-x-hidden resize-y" placeholder="e.g., CBC, LFT" />
           ) : (
-            <div className="mt-2 text-sm text-slate-800 border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.tests}</div>
+            <div className="mt-2 text-sm text-slate-800 break-words border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.tests}</div>
           )}
         </div>
 
         <div className="mt-6">
           <div className="text-slate-900 font-semibold">Diagnosis</div>
           {edit ? (
-            <input value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} className="w-full border border-blue-200 rounded-xl px-3 py-2 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Enter diagnosis" />
+            <input value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} className="w-full border border-blue-200 rounded-xl px-3 py-2 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 break-words" placeholder="Enter diagnosis" />
           ) : (
-            <div className="mt-2 text-sm text-slate-800 border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.diagnosis}</div>
+            <div className="mt-2 text-sm text-slate-800 break-words border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.diagnosis}</div>
           )}
         </div>
 
@@ -390,9 +392,9 @@ export default function Prescription() {
           <div className="mt-6">
             <div className="text-slate-900 font-semibold">Advice / Instructions</div>
             {edit ? (
-              <textarea rows={2} value={advice} onChange={(e) => setAdvice(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Advice / Instructions" />
+              <textarea rows={2} value={advice} onChange={(e) => setAdvice(e.target.value)} className="w-full border border-blue-200 rounded-xl p-3 text-sm mt-2 bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-300 break-words overflow-x-hidden resize-y" placeholder="Advice / Instructions" />
             ) : (
-              <div className="mt-2 text-sm text-slate-800 border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.advice}</div>
+              <div className="mt-2 text-sm text-slate-800 break-words border border-blue-200 rounded-xl p-3 bg-blue-50/50">{parsed.advice}</div>
             )}
           </div>
         )}
@@ -413,9 +415,9 @@ export default function Prescription() {
         </div>
         
         
-        <div className="mt-6 flex items-center justify-end gap-2">
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-end gap-2">
           {isDoctorUser && (
-            <button onClick={() => setEdit((v) => !v)} className="px-3 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50">{edit ? 'Cancel Edit' : 'Edit'}</button>
+            <button onClick={() => setEdit((v) => !v)} className="w-full sm:w-auto px-3 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50 text-center">{edit ? 'Cancel Edit' : 'Edit'}</button>
           )}
           {edit && isDoctorUser && (
             <button
@@ -451,26 +453,35 @@ export default function Prescription() {
                   alert(e.response?.data?.message || e.message || 'Failed to update');
                 }
               }}
-              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-center"
             >
               Save
             </button>
           )}
           {!isEmbed && (
             <>
-              <button
+              <button type="button"
                 onClick={() => {
                   try {
-                    if (window.opener) { window.close(); return; }
-                    if (window.history.length > 1) { window.history.back(); return; }
+                    if (window.opener && !window.opener.closed) { window.close(); return; }
                   } catch (_) {}
-                  nav('/appointments');
+                  try {
+                    nav(-1);
+                    setTimeout(() => {
+                      try {
+                        const path = String(window.location.pathname || '');
+                        if (path.includes('/prescription/')) nav('/appointments');
+                      } catch (_) { nav('/appointments'); }
+                    }, 150);
+                  } catch (_) {
+                    nav('/appointments');
+                  }
                 }}
-                className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50 text-center"
               >
                 Close
               </button>
-              <button onClick={downloadPdfDirect} className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50">Download PDF</button>
+              <button type="button" onClick={downloadPdfDirect} className="w-full sm:w-auto px-4 py-2 rounded-xl border border-blue-200 text-blue-700 hover:bg-blue-50 text-center">Download PDF</button>
               {isDoctorUser && (
                 <button
                   onClick={async () => {
@@ -517,11 +528,11 @@ export default function Prescription() {
                       } catch (_) {}
                       alert('Sent to Prescriptions')
                     }}
-                    className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-center"
                   >
                     Share
                   </button>
-                )}
+              )}
             </>
           )}
         </div>

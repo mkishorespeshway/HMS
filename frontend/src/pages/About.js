@@ -46,11 +46,11 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-4 pt-12 md:pt-16">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="animate-slide-in-left">
-              <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent">Your Trusted Healthcare Partner</h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent">Your Trusted Healthcare Partner</h1>
               <p className="mt-4 text-slate-600 max-w-xl">Discover verified doctors, book appointments in seconds, and get secure online consultations with e‑prescriptions.</p>
-              <div className="mt-6 flex gap-3">
-                <a href="/search" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-xl hover:from-blue-700 hover:to-purple-700 transition">Find Doctors</a>
-                <a href="/contact" className="px-6 py-3 rounded-xl bg-white text-slate-800 border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition font-semibold">Contact Us</a>
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <a href="/search" className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-xl hover:from-blue-700 hover:to-purple-700 transition text-center">Find Doctors</a>
+                <a href="/contact" className="px-6 py-3 rounded-xl bg-white text-slate-800 border-2 border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition font-semibold text-center">Contact Us</a>
               </div>
               <div className="mt-6 flex items-center gap-4 text-xs text-slate-500">
                 <span className="inline-flex items-center gap-1"><svg className="w-4 h-4 text-green-600" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>HIPAA‑style privacy</span>
@@ -123,9 +123,9 @@ export default function About() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 mt-12 pb-16 animate-fade-in">
-        <div className="rounded-2xl p-8 md:p-10 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-2xl flex items-center justify-between">
+        <div className="rounded-2xl p-6 md:p-10 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div>
-            <div className="text-2xl md:text-3xl font-extrabold">Ready to get started?</div>
+            <div className="text-xl sm:text-2xl md:text-3xl font-extrabold">Ready to get started?</div>
             <div className="text-indigo-100 mt-2">Search a specialist and book your appointment now.</div>
           </div>
           <a href="/search" className="px-6 py-3 rounded-xl bg-white text-indigo-700 font-bold hover:bg-indigo-50 transition">Find Doctors</a>

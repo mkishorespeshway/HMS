@@ -77,7 +77,7 @@ export default function AdminAddDoctor() {
   return (
     <div className="min-h-screen">
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
-        <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="flex items-center justify-between h-16">
             {/* Enhanced Logo Section */}
             <Link to="/admin/dashboard" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
@@ -184,7 +184,7 @@ export default function AdminAddDoctor() {
       <div className="pt-14 page-gradient">
         <div className="relative max-w-7xl mx-auto px-4 animate-fade-in">
           <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
-          <h2 className="text-4xl font-extrabold mb-3 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Add Doctor</h2>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-3 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Add Doctor</h2>
           <div className="mx-auto max-w-2xl bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 animate-slide-in-left opacity-0 hover:scale-105 hover:shadow-2xl transition-all duration-500" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <form onSubmit={submit}>
               <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>

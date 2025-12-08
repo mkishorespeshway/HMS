@@ -643,7 +643,7 @@ export default function Appointments() {
     <div className="page-gradient">
       <div className="max-w-7xl mx-auto px-4 pt-12 md:pt-16 animate-fade-in">
       
-      <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent mb-4">{isPrescriptionsView ? 'Prescriptions' : 'My appointments'}</h1>
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent mb-4">{isPrescriptionsView ? 'Prescriptions' : 'My appointments'}</h1>
       <div className="glass-card rounded-2xl animate-slide-in-left">
         {loading ? (
           <div className="p-4 text-slate-600">Loading...</div>
@@ -654,8 +654,8 @@ export default function Appointments() {
         ) : (
           <div className="divide-y">
             {(isPrescriptionsView ? presItems : list).map((a) => (
-              <div key={a._id} className="p-4 md:p-5 flex items-center justify-between card-hover">
-                <div className="flex items-center gap-4">
+              <div key={a._id} className="p-4 md:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 card-hover">
+                <div className="flex items-center gap-3 sm:gap-4">
                   {(() => {
                     try {
                       const docId = isPrescriptionsView ? String(a.docId || '') : String(a.doctor?._id || a.doctor || '');
@@ -697,7 +697,7 @@ export default function Appointments() {
                     {isPrescriptionsView && <div className="text-xs text-slate-600 truncate">{a.name}</div>}
                   </div>
                 </div>
-                <div className="flex gap-3 items-center">
+                <div className="flex flex-wrap gap-2 items-center w-full sm:w-auto sm:justify-end mt-2 sm:mt-0">
                   {isPrescriptionsView ? (
                     <button onClick={() => { try { const u = String(a.url || ''); if (u) nav(u); } catch(_) {} }} className="border border-indigo-600 text-indigo-700 px-3 py-1 rounded-md">Open</button>
                   ) : String(a.status).toUpperCase() === 'CANCELLED' ? (

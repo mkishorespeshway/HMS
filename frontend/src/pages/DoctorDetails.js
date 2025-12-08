@@ -276,7 +276,7 @@ export default function DoctorDetails() {
       ) : null}
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className={`max-w-7xl mx-auto ${isAdminRoute ? 'pt-24' : 'pt-8'} px-4 animate-fade-in`}>
-      <h2 className="text-4xl font-extrabold mb-2 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Doctor Profile</h2>
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-2 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Doctor Profile</h2>
       <p className="text-center text-slate-600 mb-8 animate-fade-in" style={{ animationDelay: '0.15s', animationFillMode: 'forwards' }}>Compassionate care, seamless booking, and secure consultations.</p>
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl p-6 animate-slide-in-left opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
         <div className="grid md:grid-cols-3 gap-6 items-start">

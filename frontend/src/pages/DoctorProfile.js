@@ -266,7 +266,7 @@ export default function DoctorProfile() {
       <div className="grid grid-cols-12 gap-6">
         <main className="col-span-12">
           <div className="mb-6">
-            <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Doctor Profile</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Doctor Profile</h1>
           </div>
 
           <div className="max-w-5xl mx-auto bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8 mb-8">

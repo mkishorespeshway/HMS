@@ -230,7 +230,7 @@ function Header() {
   if (hideHeader) return null;
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
-      <div className="max-w-7xl mx-auto px-6 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="flex items-center justify-between h-16">
           {/* Enhanced Logo Section */}
           <Link to="/" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
@@ -240,7 +240,7 @@ function Header() {
               </div>
             </div>
             <div className="flex flex-col">
-              <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+              <span className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
                 HospoZen
               </span>
              
@@ -284,7 +284,7 @@ function Header() {
           </nav>
 
           {/* Enhanced User Actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {/* Enhanced Mobile Menu Button */}
             <button
               className="lg:hidden p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300"
@@ -319,14 +319,14 @@ function Header() {
                         setPanelLoading(false);
                       }
                     }}
-                    className="p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300 relative"
+                    className="inline-flex p-2 sm:p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300 relative"
                   >
                     <svg className={`w-6 h-6 ${bell > 0 ? 'animate-bounce' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 22a2 2 0 002-2H10a2 2 0 002 2z" fill="#2563EB"/>
                       <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7z" stroke="#2563EB" strokeWidth="2" fill="none"/>
                     </svg>
                     {bell > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
+                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center font-bold shadow-lg animate-pulse">
                         {bell > 9 ? '9+' : bell}
                       </span>
                     )}
@@ -334,12 +334,12 @@ function Header() {
 
                   {/* Enhanced Notification Panel */}
                   {panelOpen && (
-                    <div className="absolute right-0 top-16 w-96 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200/50 z-50">
-                      <div className="absolute right-6 -top-2 w-4 h-4 bg-white/95 border border-blue-200/50 rotate-45"></div>
-                      <div className="p-6 border-b border-blue-200/50">
-                        <div className="flex items-center justify-between">
+                    <div className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 sm:top-16 w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-blue-200/50 z-50">
+                      <div className="absolute right-3 sm:right-6 -top-2 w-4 h-4 bg-white/95 border border-blue-200/50 rotate-45"></div>
+                      <div className="p-4 sm:p-6 border-b border-blue-200/50">
+                        <div className="flex items-start sm:items-center justify-between gap-3">
                           <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Notifications</h3>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="bg-blue-100 text-blue-700 text-sm px-3 py-1 rounded-full font-medium">{panelUnread} new</span>
                             <button
                               onClick={async () => {
@@ -366,7 +366,7 @@ function Header() {
                           </div>
                         </div>
                       </div>
-                      <div className="max-h-96 overflow-y-auto">
+                      <div className="max-h-[65vh] sm:max-h-96 overflow-y-auto">
                         {panelLoading ? (
                           <div className="p-8 text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
@@ -429,12 +429,12 @@ function Header() {
                   <img
                     src={photo}
                     alt="Profile"
-                    className="w-12 h-12 rounded-2xl object-cover border-3 border-white cursor-pointer hover:border-blue-300 transition-all duration-300 shadow-lg hover:shadow-xl"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl object-cover border-3 border-white cursor-pointer hover:border-blue-300 transition-all duration-300 shadow-lg hover:shadow-xl"
                     onClick={() => setOpen(!open)}
                   />
                 ) : (
                   <button
-                    className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-2xl flex items-center justify-center font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-white"
+                    className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-2xl flex items-center justify-center font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-white"
                     onClick={() => setOpen(!open)}
                   >
                     {(userName || '').charAt(0).toUpperCase() || 'U'}
@@ -547,7 +547,7 @@ function Header() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-4">
                 <Link
                   to="/login"
                   className="bg-white text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-blue-50 hover:text-blue-600 border-2 border-gray-200 hover:border-blue-300 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -622,7 +622,7 @@ return (
 <Header />
 
 
-<div className="pt-16 px-6 page-gradient">
+      <div className="pt-16 px-4 sm:px-6 page-gradient">
 <Routes>
 <Route path="/" element={<Home />} />
 <Route path="/about" element={<About />} />

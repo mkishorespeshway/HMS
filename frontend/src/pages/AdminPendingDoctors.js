@@ -49,7 +49,7 @@ export default function AdminPendingDoctors() {
   return (
     <div className="min-h-screen">
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
-        <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
           <div className="flex items-center justify-between h-16">
             {/* Enhanced Logo Section */}
             <Link to="/admin/dashboard" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">

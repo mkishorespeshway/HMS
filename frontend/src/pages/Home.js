@@ -210,7 +210,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-bold leading-tight animate-slide-in-left text-gray-900 mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight animate-slide-in-left text-gray-900 mb-6">
                 Care Beyond Limits
                 <br />
                 <span className="text-blue-600">Healing Through Innovation</span>
@@ -248,7 +248,7 @@ export default function Home() {
             <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-semibold animate-slide-in-down shadow-lg border border-blue-200/50 mb-6">
               <span className="mr-2">🎯</span> Choose Your Specialist
             </div>
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent animate-slide-in-up mb-6">Find by Speciality</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-purple-900 bg-clip-text text-transparent animate-slide-in-up mb-6">Find by Speciality</h2>
             <p className="text-gray-600 text-xl max-w-3xl mx-auto animate-fade-in leading-relaxed" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>Simply browse through our comprehensive range of medical specialties and schedule your appointment with qualified professionals.</p>
           </div>
           <div className="relative overflow-hidden">
@@ -278,7 +278,7 @@ export default function Home() {
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 animate-slide-in-up">Top Doctors to Book</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 animate-slide-in-up">Top Doctors to Book</h2>
             <p className="text-gray-600 mt-4 text-lg animate-fade-in" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>Simply browse through our extensive list of trusted doctors.</p>
           </div>
           {error && <div className="text-center text-sm text-red-600 mt-3 bg-red-50 py-2 px-4 rounded-lg border border-red-200">{error}</div>}
@@ -346,7 +346,7 @@ export default function Home() {
       <section className="py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent animate-slide-in-up">Why Choose HospoZen</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-blue-900 bg-clip-text text-transparent animate-slide-in-up">Why Choose HospoZen</h2>
             <p className="text-gray-600 mt-6 text-xl animate-fade-in" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>Experience healthcare innovation at its finest</p>
           </div>
           <div className="grid md:grid-cols-3 gap-10">

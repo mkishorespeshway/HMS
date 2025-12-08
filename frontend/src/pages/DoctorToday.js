@@ -802,7 +802,7 @@ export default function DoctorToday() {
         <main className="col-span-12">
           <div className="relative mb-6">
             <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
-            <h1 className="text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Doctor Appointments</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Doctor Appointments</h1>
           </div>
           <div className="max-w-5xl mx-auto bg-white/85 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl overflow-hidden">
             <div className="overflow-x-auto">
