@@ -185,7 +185,7 @@ export default function AdminAppointments() {
           <div className="absolute inset-x-0 -top-6 h-20 bg-gradient-to-r from-indigo-100 via-purple-100 to-blue-100 blur-xl opacity-70 rounded-full pointer-events-none"></div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold mb-4 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">All Appointments</h2>
           <div className="bg-white/85 backdrop-blur-sm rounded-2xl border border-white/30 shadow-2xl overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-50 text-slate-700">
                   <tr>
@@ -212,6 +212,50 @@ export default function AdminAppointments() {
                   )}
                 </tbody>
               </table>
+            </div>
+            <div className="sm:hidden divide-y">
+              {loading ? (
+                <div className="p-4 text-center text-slate-600">Loading...</div>
+              ) : error ? (
+                <div className="p-4 text-center text-red-600">{error}</div>
+              ) : (list.length === 0 ? (
+                <div className="p-4 text-center text-slate-600">No appointments found</div>
+              ) : (
+                list.map((a, i) => (
+                  <div key={a._id || a.id} className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-slate-900 font-semibold">{a.patient?.name || 'User'}</div>
+                      <div className="text-sm text-slate-600">#{i + 1}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="text-slate-700">Age: <span className="text-slate-900">{(() => {
+                        const p = a.patient || {};
+                        if (p.age !== undefined && p.age !== null && p.age !== "") return p.age;
+                        const pid = String(p._id || a.patient || "");
+                        const locAge = localStorage.getItem(`userAgeById_${pid}`) || "";
+                        if (locAge) return String(locAge);
+                        const dob = p.birthday || p.dob || p.dateOfBirth || localStorage.getItem(`userDobById_${pid}`) || "";
+                        if (!dob) return "";
+                        const b = new Date(dob);
+                        if (Number.isNaN(b.getTime())) return "";
+                        const today = new Date();
+                        let age = today.getFullYear() - b.getFullYear();
+                        const m = today.getMonth() - b.getMonth();
+                        if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--;
+                        return String(age);
+                      })()}</span></div>
+                      <div className="text-slate-700">Date & Time: <span className="text-slate-900">{a.date} {a.startTime}</span></div>
+                      <div className="text-slate-700">Doctor: <span className="text-slate-900">{a.doctor?.name || '--'}</span></div>
+                      <div className="text-slate-700">Fee: <span className="text-slate-900">₹{a.fee || 0}</span></div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className={`badge ${String(a.status || '').toUpperCase()==='PENDING' ? 'badge-busy' : ((String(a.status || '').toUpperCase()==='CANCELLED' || String(a.status || '').toUpperCase()==='CANCELED') ? 'badge-offline' : 'badge-online')}`}>
+                        {a.status}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ))}
             </div>
           </div>
         </div>

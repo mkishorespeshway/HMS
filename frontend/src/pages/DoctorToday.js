@@ -864,82 +864,84 @@ export default function DoctorToday() {
                 </tbody>
               </table>
             </div>
-            <div className="sm:hidden divide-y">
+            <div className="sm:hidden -mx-4 px-4 overflow-x-auto">
               {list.length === 0 ? (
                 <div className="p-4 text-center text-slate-600">No appointments found</div>
               ) : (
-                list.map((a, i) => (
-                  <div key={a._id || a.id} className="p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="text-slate-900 font-semibold">{a.patient?.name || ''}</div>
-                      <div className="text-sm text-slate-600">#{i + 1}</div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <span className={`inline-block text-xs px-2 py-1 rounded ${a.type === 'offline' ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>{a.type === 'offline' ? 'Clinic' : 'Online'}</span>
-                      <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
-                      {(() => {
-                        try {
-                          const d = new Date(a.date);
-                          const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
-                          d.setHours(hh, mm, 0, 0);
-                          const diff = d.getTime() - Date.now();
-                          const within10 = a.type === 'online' && String(a.status).toUpperCase() === 'CONFIRMED' && diff <= 10 * 60 * 1000 && diff > 0;
-                          if (within10) return <span className="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Patient waiting</span>;
-                        } catch(_) {}
-                        return null;
-                      })()}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div className="text-slate-700">Age: <span className="text-slate-900">{(() => { const p = a.patient || {}; if (p.age !== undefined && p.age !== null && p.age !== "") return p.age; const pid = String(p._id || a.patient || ""); const locAge = localStorage.getItem(`userAgeById_${pid}`) || ""; if (locAge) return String(locAge); const dob = p.birthday || p.dob || p.dateOfBirth || localStorage.getItem(`userDobById_${pid}`) || ""; if (!dob) return ""; const b = new Date(dob); if (Number.isNaN(b.getTime())) return ""; const today = new Date(); let age = today.getFullYear() - b.getFullYear(); const m = today.getMonth() - b.getMonth(); if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--; return String(age); })()}</span></div>
-                      <div className="text-slate-700">Date & Time: <span className="text-slate-900">{a.date} {a.startTime}</span></div>
-                      <div className="text-slate-700">Fee: <span className="text-slate-900">₹{a.fee || 0}</span></div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {(() => {
-                        const start = new Date(a.date);
-                        const [sh, sm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
-                        start.setHours(sh, sm, 0, 0);
-                        const end = new Date(a.date);
-                        const [eh, em] = String(a.endTime || a.startTime || '00:00').split(':').map((x) => Number(x));
-                        end.setHours(eh, em, 0, 0);
-                        const now = Date.now();
-                        const isPast = now >= end.getTime();
-                        const isActive = now >= start.getTime() && now < end.getTime();
-                        const isFuture = now < start.getTime();
-                        const status = String(a.status).toUpperCase();
-                        if (status === 'PENDING') {
-                          return (
-                            <div className="flex gap-2">
-                              <button type="button" onClick={() => accept(a._id || a.id, a.date, a.startTime)} disabled={!(a?._id || a?.id)} className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-green-600 hover:bg-green-700 text-white shadow-sm" : "bg-slate-200 text-slate-500"}`} title="Accept">✓</button>
-                              {isFuture && (<button type="button" onClick={() => reject(a._id || a.id, a.date, a.startTime)} disabled={!(a?._id || a?.id)} className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-red-600 hover:bg-red-700 text-white shadow-sm" : "bg-slate-200 text-slate-500"}`} title="Reject">✕</button>)}
-                              {isPast && (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>)}
-                            </div>
-                          );
-                        }
-                        if (status === 'CANCELLED') return <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">✕ Cancelled</span>;
-                        if (status === 'COMPLETED') {
+                <div className="inline-flex gap-4 snap-x snap-mandatory">
+                  {list.map((a, i) => (
+                    <div key={a._id || a.id} className="p-4 space-y-2 bg-white rounded-2xl border border-slate-200 shadow-sm min-w-[85vw] snap-center">
+                      <div className="flex items-center justify-between">
+                        <div className="text-slate-900 font-semibold">{a.patient?.name || ''}</div>
+                        <div className="text-sm text-slate-600">#{i + 1}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className={`inline-block text-xs px-2 py-1 rounded ${a.type === 'offline' ? 'bg-indigo-100 text-indigo-700' : 'bg-cyan-100 text-cyan-700'}`}>{a.type === 'offline' ? 'Clinic' : 'Online'}</span>
+                        <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
+                        {(() => {
+                          try {
+                            const d = new Date(a.date);
+                            const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
+                            d.setHours(hh, mm, 0, 0);
+                            const diff = d.getTime() - Date.now();
+                            const within10 = a.type === 'online' && String(a.status).toUpperCase() === 'CONFIRMED' && diff <= 10 * 60 * 1000 && diff > 0;
+                            if (within10) return <span className="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Patient waiting</span>;
+                          } catch(_) {}
+                          return null;
+                        })()}
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="text-slate-700">Age: <span className="text-slate-900">{(() => { const p = a.patient || {}; if (p.age !== undefined && p.age !== null && p.age !== "") return p.age; const pid = String(p._id || a.patient || ""); const locAge = localStorage.getItem(`userAgeById_${pid}`) || ""; if (locAge) return String(locAge); const dob = p.birthday || p.dob || p.dateOfBirth || localStorage.getItem(`userDobById_${pid}`) || ""; if (!dob) return ""; const b = new Date(dob); if (Number.isNaN(b.getTime())) return ""; const today = new Date(); let age = today.getFullYear() - b.getFullYear(); const m = today.getMonth() - b.getMonth(); if (m < 0 || (m === 0 && today.getDate() < b.getDate())) age--; return String(age); })()}</span></div>
+                        <div className="text-slate-700">Date & Time: <span className="text-slate-900">{a.date} {a.startTime}</span></div>
+                        <div className="text-slate-700">Fee: <span className="text-slate-900">₹{a.fee || 0}</span></div>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {(() => {
+                          const start = new Date(a.date);
+                          const [sh, sm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
+                          start.setHours(sh, sm, 0, 0);
+                          const end = new Date(a.date);
+                          const [eh, em] = String(a.endTime || a.startTime || '00:00').split(':').map((x) => Number(x));
+                          end.setHours(eh, em, 0, 0);
+                          const now = Date.now();
+                          const isPast = now >= end.getTime();
+                          const isActive = now >= start.getTime() && now < end.getTime();
+                          const isFuture = now < start.getTime();
+                          const status = String(a.status).toUpperCase();
+                          if (status === 'PENDING') {
+                            return (
+                              <div className="flex gap-2">
+                                <button type="button" onClick={() => accept(a._id || a.id, a.date, a.startTime)} disabled={!(a?._id || a?.id)} className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-green-600 hover:bg-green-700 text-white shadow-sm" : "bg-slate-200 text-slate-500"}`} title="Accept">✓</button>
+                                {isFuture && (<button type="button" onClick={() => reject(a._id || a.id, a.date, a.startTime)} disabled={!(a?._id || a?.id)} className={`h-7 w-7 rounded-full flex items-center justify-center ${(a?._id || a?.id) ? "bg-red-600 hover:bg-red-700 text-white shadow-sm" : "bg-slate-200 text-slate-500"}`} title="Reject">✕</button>)}
+                                {isPast && (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>)}
+                              </div>
+                            );
+                          }
+                          if (status === 'CANCELLED') return <span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">✕ Cancelled</span>;
+                          if (status === 'COMPLETED') {
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Completed</span>
+                                <button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { nav(`/prescription/${id}`); } }} className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700">View Summary</button>
+                                {(() => { try { if (!a.prescriptionText) return null; const d = new Date(a.date); const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x)); d.setHours(hh, mm, 0, 0); const diff = Date.now() - d.getTime(); const max = 5 * 24 * 60 * 60 * 1000; if (diff < 0 || diff > max) return null; const id = String(a._id || a.id || ''); return (<button type="button" onClick={() => { if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }} className="px-3 py-1 rounded-md border border-green-600 text-green-700">Follow-up</button>); } catch(_) { return null; } })()}
+                              </div>
+                            );
+                          }
                           return (
                             <div className="flex items-center gap-2">
-                              <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Completed</span>
-                              <button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { nav(`/prescription/${id}`); } }} className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700">View Summary</button>
-                              {(() => { try { if (!a.prescriptionText) return null; const d = new Date(a.date); const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x)); d.setHours(hh, mm, 0, 0); const diff = Date.now() - d.getTime(); const max = 5 * 24 * 60 * 60 * 1000; if (diff < 0 || diff > max) return null; const id = String(a._id || a.id || ''); return (<button type="button" onClick={() => { if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }} className="px-3 py-1 rounded-md border border-green-600 text-green-700">Follow-up</button>); } catch(_) { return null; } })()}
+                              <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">✓ Accepted</span>
+                              {isPast ? (() => { try { const id = String(a._id || a.id || ''); const pres = !!a.prescriptionText; const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null; const met = pres || (jp !== null); return met ? (<span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Completed</span>) : (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>); } catch(_) { return (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>); } })() : null}
+                              {isFuture && (<button type="button" onClick={() => reject(a._id || a.id, a.date, a.startTime)} className="px-3 py-1 rounded-md border border-red-600 text-red-700">Reject</button>)}
+                              {(() => { try { const id = String(a._id || a.id || ''); const pres = !!a.prescriptionText; const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null; const isCompletedNow = isPast && (pres || jp !== null); if (isCompletedNow) { return (<button type="button" onClick={() => { const id2 = String(a._id || a.id || ''); if (id2) { nav(`/prescription/${id2}`); } }} className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700">View Summary</button>); } } catch(_) {} return (<button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { nav(`/doctor/appointments/${id}/documents`); } }} className="px-3 py-1 rounded-md border border-purple-600 text-purple-700">View Documents</button>); })()}
+                              {(() => { try { if (!a.prescriptionText) return null; const d = new Date(a.date); const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x)); d.setHours(hh, mm, 0, 0); const diff = Date.now() - d.getTime(); const max = 5 * 24 * 60 * 60 * 1000; if (diff < 0 || diff > max) return null; return (<button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }} className="px-3 py-1 rounded-md border border-green-600 text-green-700">Follow-up</button>); } catch(_) { return null; } })()}
+                              {isActive && (<button type="button" onClick={async () => { try { await API.put(`/appointments/${String(a._id || a.id)}/complete`); setList((prev) => prev.map((x) => (String(x._id || x.id) === String(a._id || a.id) ? { ...x, status: 'COMPLETED' } : x))); try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorBusyById_${uid}`, '0'); localStorage.setItem(`doctorOnlineById_${uid}`, '1'); } try { await API.put('/doctors/me/status', { isOnline: true, isBusy: false }); } catch(_) {} } catch(_) {} try { const w = window; const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, ''); const socket = w.io ? w.io(origin, { transports: ['websocket','polling'] }) : null; socket && socket.emit('meet:update', { apptId: String(a._id || a.id), actor: 'doctor', event: 'complete' }); try { socket && socket.close(); } catch(_) {} } catch(_) {} } catch (e) { alert(e.response?.data?.message || e.message || 'Failed to complete'); } }} className="px-3 py-1 rounded-md border border-slate-300">Complete</button>)}
                             </div>
                           );
-                        }
-                        return (
-                          <div className="flex items-center gap-2">
-                            <span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">✓ Accepted</span>
-                            {isPast ? (() => { try { const id = String(a._id || a.id || ''); const pres = !!a.prescriptionText; const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null; const met = pres || (jp !== null); return met ? (<span className="inline-block text-xs px-2 py-1 rounded bg-green-100 text-green-700">Completed</span>) : (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>); } catch(_) { return (<span className="inline-block text-xs px-2 py-1 rounded bg-red-100 text-red-700">Time Expired</span>); } })() : null}
-                            {isFuture && (<button type="button" onClick={() => reject(a._id || a.id, a.date, a.startTime)} className="px-3 py-1 rounded-md border border-red-600 text-red-700">Reject</button>)}
-                            {(() => { try { const id = String(a._id || a.id || ''); const pres = !!a.prescriptionText; const jp = id ? localStorage.getItem(`joinedByPatient_${id}`) : null; const isCompletedNow = isPast && (pres || jp !== null); if (isCompletedNow) { return (<button type="button" onClick={() => { const id2 = String(a._id || a.id || ''); if (id2) { nav(`/prescription/${id2}`); } }} className="px-3 py-1 rounded-md border border-indigo-600 text-indigo-700">View Summary</button>); } } catch(_) {} return (<button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { nav(`/doctor/appointments/${id}/documents`); } }} className="px-3 py-1 rounded-md border border-purple-600 text-purple-700">View Documents</button>); })()}
-                            {(() => { try { if (!a.prescriptionText) return null; const d = new Date(a.date); const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x)); d.setHours(hh, mm, 0, 0); const diff = Date.now() - d.getTime(); const max = 5 * 24 * 60 * 60 * 1000; if (diff < 0 || diff > max) return null; return (<button type="button" onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }} className="px-3 py-1 rounded-md border border-green-600 text-green-700">Follow-up</button>); } catch(_) { return null; } })()}
-                            {isActive && (<button type="button" onClick={async () => { try { await API.put(`/appointments/${String(a._id || a.id)}/complete`); setList((prev) => prev.map((x) => (String(x._id || x.id) === String(a._id || a.id) ? { ...x, status: 'COMPLETED' } : x))); try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorBusyById_${uid}`, '0'); localStorage.setItem(`doctorOnlineById_${uid}`, '1'); } try { await API.put('/doctors/me/status', { isOnline: true, isBusy: false }); } catch(_) {} } catch(_) {} try { const w = window; const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, ''); const socket = w.io ? w.io(origin, { transports: ['websocket','polling'] }) : null; socket && socket.emit('meet:update', { apptId: String(a._id || a.id), actor: 'doctor', event: 'complete' }); try { socket && socket.close(); } catch(_) {} } catch(_) {} } catch (e) { alert(e.response?.data?.message || e.message || 'Failed to complete'); } }} className="px-3 py-1 rounded-md border border-slate-300">Complete</button>)}
-                          </div>
-                        );
-                      })()}
+                        })()}
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </div>
           </div>
