@@ -345,27 +345,31 @@ export default function DoctorDetails() {
       <div className="mt-8">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
           <div className="text-slate-900 font-semibold mb-4">Booking slots</div>
-          <div className="flex items-center gap-4 mb-4">
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value === 'online' ? 'online' : 'offline')}
-              className="w-full max-w-xs p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
-            >
+          <div className="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center">
+            <div className="w-full sm:w-auto">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value === 'online' ? 'online' : 'offline')}
+                className="w-full sm:max-w-xs p-3 text-sm border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+              >
               <option value="offline">Clinic/Hospital Visit</option>
               <option value="online">Online Consultation</option>
-            </select>
+              </select>
+            </div>
             {type === 'online' && (
-              <select
-                value={consultMode}
-                onChange={(e) => setConsultMode(e.target.value)}
-                className="w-full max-w-xs p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
-              >
+              <div className="w-full sm:w-auto">
+                <select
+                  value={consultMode}
+                  onChange={(e) => setConsultMode(e.target.value)}
+                  className="w-full sm:max-w-xs p-3 text-sm border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
+                >
                 <option value="video">Video call</option>
                 <option value="audio">Audio call</option>
                 <option value="chat">Chat</option>
-              </select>
+                </select>
+              </div>
             )}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 overflow-x-auto whitespace-nowrap py-2 sm:py-0 -mx-2 px-2">
               {Array.from({ length: 7 }).map((_, i) => {
                 const d = new Date();
                 d.setDate(d.getDate() + i);
@@ -381,10 +385,10 @@ export default function DoctorDetails() {
                     key={val}
                     onClick={() => { if (!disabledToday) setSelectedDate(val); }}
                     disabled={disabledToday}
-                    className={`px-4 py-3 rounded-full border ${isSel ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-600" : disabledToday ? "bg-white text-slate-400 border-slate-200 cursor-not-allowed" : "bg-white text-slate-900 border-slate-300 hover:scale-105 transition"}`}
+                    className={`min-w-[72px] flex-shrink-0 px-3 py-2 rounded-full border text-sm ${isSel ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-indigo-600" : disabledToday ? "bg-white text-slate-400 border-slate-200 cursor-not-allowed" : "bg-white text-slate-900 border-slate-300 hover:scale-105 transition"}`}
                   >
                     <div className="text-xs">{label}</div>
-                    <div className="text-base">{day}</div>
+                    <div className="text-sm">{day}</div>
                   </button>
                 );
               })}

@@ -23,6 +23,8 @@ export default function DoctorDashboard() {
   const [fuChat, setFuChat] = useState([]);
   const [fuFiles, setFuFiles] = useState([]);
   const [fuText, setFuText] = useState("");
+  const [fuPreview, setFuPreview] = useState(null);
+  const [fuIsFullPreview, setFuIsFullPreview] = useState(false);
   const [profile, setProfile] = useState(null);
   const [expiredAppt, setExpiredAppt] = useState(null);
   const [muteUntil, setMuteUntil] = useState(0);
@@ -73,6 +75,30 @@ export default function DoctorDashboard() {
       </svg>
     );
   };
+
+  useEffect(() => {
+    try {
+      const id = String(chatAppt?._id || chatAppt?.id || '');
+      if (!id) return;
+      const hasSym = String(chatAppt?.patientSymptoms || '').trim() !== '';
+      const hasSum = String(chatAppt?.patientSummary || '').trim() !== '';
+      if (hasSym && hasSum) return;
+      API.get(`/appointments/${id}`).then((res) => {
+        const d = res?.data || {};
+        setChatAppt((prev) => ({
+          ...(prev || {}),
+          patientSymptoms: String(d.patientSymptoms || (prev ? prev.patientSymptoms : '') || localStorage.getItem(`wr_${id}_symptoms`) || ''),
+          patientSummary: String(d.patientSummary || (prev ? prev.patientSummary : '') || localStorage.getItem(`fu_${id}_symptoms`) || ''),
+        }));
+      }).catch(() => {
+        setChatAppt((prev) => ({
+          ...(prev || {}),
+          patientSymptoms: String((prev ? prev.patientSymptoms : '') || localStorage.getItem(`wr_${id}_symptoms`) || ''),
+          patientSummary: String((prev ? prev.patientSummary : '') || localStorage.getItem(`fu_${id}_symptoms`) || ''),
+        }));
+      });
+    } catch(_) {}
+  }, [chatAppt]);
 
   useEffect(() => {
     const load = async () => {
@@ -456,10 +482,27 @@ export default function DoctorDashboard() {
             });
             socket.on('chat:new', (msg) => {
               try {
-                const { apptId, actor } = msg || {};
+                const { apptId, actor, kind, text } = msg || {};
                 if (String(actor || '').toLowerCase() !== 'patient') return;
                 const id = String(apptId || '');
                 if (!id) return;
+                const t = String(text || '').trim();
+                if (kind === 'pre' && t) {
+                  try {
+                    const k = `wr_${id}_chat`;
+                    const arr = JSON.parse(localStorage.getItem(k) || '[]');
+                    const next = (Array.isArray(arr) ? arr : []).concat(t);
+                    localStorage.setItem(k, JSON.stringify(next));
+                  } catch(_) {}
+                } else if (kind === 'followup' && t) {
+                  try {
+                    const k = `fu_${id}_chat`;
+                    const arr = JSON.parse(localStorage.getItem(k) || '[]');
+                    const next = (Array.isArray(arr) ? arr : []).concat(t);
+                    localStorage.setItem(k, JSON.stringify(next));
+                    if (followAppt && String(followAppt._id || followAppt.id) === id) setFuChat((prev) => prev.concat(t));
+                  } catch(_) {}
+                }
                 setBellCount((c) => c + 1);
                 try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                 const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id);
@@ -845,12 +888,11 @@ export default function DoctorDashboard() {
                             <button
                               onClick={async () => {
                                 try {
-                                  if (n.type === 'chat') {
+                                  if (n.type === 'chat' || n.type === 'followup') {
                                     const id = String(n.apptId || '');
                                     if (id) {
                                       try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                                      const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
-                                      setChatAppt(a || { _id: id, id, patient: { name: '' } });
+                                      nav(`/doctor/appointments/${id}/followup`);
                                     }
                                   } else if (n.type === 'meet' && n.apptId) {
                                     await openMeetFor(n.apptId);
@@ -910,11 +952,10 @@ export default function DoctorDashboard() {
             {notifs.map((n) => (
               <button key={n.id} onClick={async () => {
                 try {
-                  if (n.type === 'chat' && n.apptId) {
+                  if ((n.type === 'chat' || n.type === 'followup') && n.apptId) {
                     const id = String(n.apptId);
                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                    const a = (list || []).find((x) => String(x._id || x.id) === id) || (latestToday || []).find((x) => String(x._id || x.id) === id) || null;
-                    setChatAppt(a || { _id: id, id, patient: { name: '' } });
+                    nav(`/doctor/appointments/${id}/followup`);
                   } else if (n.type === 'meet' && n.apptId) {
                     await openMeetFor(n.apptId);
                   } else if (n.link) {
@@ -927,10 +968,10 @@ export default function DoctorDashboard() {
                   setNotifs((prev) => prev.filter((x) => x.id !== n.id));
                 } catch (_) {}
               }} className="flex items-center gap-2 bg-white shadow-lg border border-amber-200 rounded-lg px-3 py-2 cursor-pointer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" fill="#F59E0B"/>
-                </svg>
-                <div className="text-sm text-slate-900">{n.text}</div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2a7 7 0 00-7 7v3l-2 3h18l-2-3V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" fill="#F59E0B"/>
+              </svg>
+              <div className="text-sm text-slate-900">{n.text}</div>
               </button>
             ))}
           </div>
@@ -1052,16 +1093,7 @@ export default function DoctorDashboard() {
                         )}
                         {canFollowUp(a) && (
                           <button
-                            onClick={() => {
-                              setFollowAppt(a);
-                              const keyBase = `fu_${String(a._id || a.id)}`;
-                              try {
-                                const msgs = JSON.parse(localStorage.getItem(`${keyBase}_chat`) || '[]');
-                                const files = JSON.parse(localStorage.getItem(`${keyBase}_files`) || '[]');
-                                setFuChat(Array.isArray(msgs) ? msgs : []);
-                                setFuFiles(Array.isArray(files) ? files : []);
-                              } catch (_) { setFuChat([]); setFuFiles([]); }
-                            }}
+                            onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }}
                             className="px-2 py-1 rounded-md border border-green-600 text-green-700 text-xs"
                           >
                             Follow-up
@@ -1137,6 +1169,7 @@ export default function DoctorDashboard() {
                           <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
                         ) : null;
                       })()}
+                      {null}
                     </div>
                   </div>
                 ))
@@ -1226,16 +1259,7 @@ export default function DoctorDashboard() {
                     )}
                     {canFollowUp(a) && (
                       <button
-                        onClick={() => {
-                          setFollowAppt(a);
-                          const keyBase = `fu_${String(a._id || a.id)}`;
-                          try {
-                            const msgs = JSON.parse(localStorage.getItem(`${keyBase}_chat`) || '[]');
-                            const files = JSON.parse(localStorage.getItem(`${keyBase}_files`) || '[]');
-                            setFuChat(Array.isArray(msgs) ? msgs : []);
-                            setFuFiles(Array.isArray(files) ? files : []);
-                          } catch (_) { setFuChat([]); setFuFiles([]); }
-                        }}
+                        onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }}
                         className="ml-2 px-2 py-1 rounded-md border border-green-600 text-green-700 text-xs"
                       >
                         Follow-up
@@ -1273,6 +1297,7 @@ export default function DoctorDashboard() {
                           <span className={`inline-block text-xs px-2 py-1 rounded ${String(a.paymentStatus).toUpperCase() === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{String(a.paymentStatus).toUpperCase() === 'PAID' ? 'Paid' : 'Pending'}</span>
                         ) : null;
                       })()}
+                      {null}
                       {null}
                       {a.type === 'online' && String(a.status).toUpperCase() === 'CONFIRMED' && (
                         (() => {
@@ -1358,16 +1383,7 @@ export default function DoctorDashboard() {
                       )}
                       {canFollowUp(a) && (
                         <button
-                          onClick={() => {
-                            setFollowAppt(a);
-                            const keyBase = `fu_${String(a._id || a.id)}`;
-                            try {
-                              const msgs = JSON.parse(localStorage.getItem(`${keyBase}_chat`) || '[]');
-                              const files = JSON.parse(localStorage.getItem(`${keyBase}_files`) || '[]');
-                              setFuChat(Array.isArray(msgs) ? msgs : []);
-                              setFuFiles(Array.isArray(files) ? files : []);
-                            } catch (_) { setFuChat([]); setFuFiles([]); }
-                          }}
+                          onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }}
                           className="px-3 py-1 rounded-md border border-green-600 text-green-700"
                         >
                           Follow-up
@@ -1381,100 +1397,7 @@ export default function DoctorDashboard() {
           </div>
         </main>
       </div>
-      {followAppt && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <div className="font-semibold text-slate-900">Free Follow-up (5 days)</div>
-              <button
-                onClick={() => setFollowAppt(null)}
-                className="px-3 py-1 rounded-md border border-slate-300"
-              >
-                Close
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="text-slate-700 text-sm">Patient: <span className="text-slate-900">{followAppt.patient?.name || ''}</span></div>
-              <div className="mt-4">
-                <div className="text-slate-900 font-semibold mb-1">Chat</div>
-                <div className="h-28 overflow-y-auto border border-slate-200 rounded-md p-2 bg-slate-50">
-                  {fuChat.length === 0 ? (
-                    <div className="text-slate-600 text-sm">No messages</div>
-                  ) : (
-                    fuChat.map((m, idx) => (
-                      <div key={idx} className="text-sm text-slate-700">{m}</div>
-                    ))
-                  )}
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={fuText}
-                    onChange={(e) => setFuText(e.target.value)}
-                    placeholder="Reply to patient"
-                    className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm"
-                  />
-                  <button
-                    onClick={() => {
-                      if (fuText.trim()) {
-                        const next = [...fuChat, fuText.trim()];
-                        setFuChat(next);
-                        const keyBase = `fu_${String(followAppt._id || followAppt.id)}`;
-                        try { localStorage.setItem(`${keyBase}_chat`, JSON.stringify(next)); } catch(_) {}
-                        setFuText("");
-                      }
-                    }}
-                    className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    Send
-                  </button>
-                </div>
-                <div className="mt-4">
-                  <div className="text-slate-900 font-semibold mb-1">Patient reports</div>
-                  <div className="space-y-2">
-                    {fuFiles.length === 0 ? (
-                      <div className="text-slate-600 text-sm">No reports provided</div>
-                    ) : (
-                      fuFiles.map((f, idx) => (
-                        <div key={idx} className="flex items-center justify-between border rounded-md p-2">
-                          <div className="text-sm text-slate-700 truncate">{f.name}</div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                try {
-                                  const s = String(f.url || '');
-                                  if (s.startsWith('data:')) {
-                                    const m = s.match(/^data:(.*?);base64,(.*)$/);
-                                    const mime = (m && m[1]) || 'application/octet-stream';
-                                    const b64 = (m && m[2]) || '';
-                                    const byteChars = atob(b64);
-                                    const byteNumbers = new Array(byteChars.length);
-                                    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-                                    const byteArray = new Uint8Array(byteNumbers);
-                                    const blob = new Blob([byteArray], { type: mime });
-                                    const obj = URL.createObjectURL(blob);
-                                    window.open(obj, '_blank');
-                                    setTimeout(() => { try { URL.revokeObjectURL(obj); } catch(_) {} }, 15000);
-                                  } else {
-                                    window.open(s, '_blank');
-                                  }
-                                } catch(_) {}
-                              }}
-                              className="px-2 py-1 rounded-md border border-slate-300 text-sm"
-                            >
-                              Open
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                <div className="mt-2 text-xs text-slate-600">No video call in follow-up. For a new call, patient must book again.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {null}
       {chatAppt && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-lg h-[70vh] overflow-hidden flex flex-col">
@@ -1484,6 +1407,14 @@ export default function DoctorDashboard() {
             </div>
             <div className="p-4 grid gap-3 overflow-y-auto flex-1">
               <div className="text-slate-700 text-sm">Patient: <span className="text-slate-900">{chatAppt.patient?.name || ''}</span></div>
+              <div>
+                <div className="text-slate-900 font-semibold mb-1">Symptoms</div>
+                <div className="text-sm text-slate-700 whitespace-pre-wrap">{String(chatAppt.patientSymptoms || '').trim() || '--'}</div>
+              </div>
+              <div>
+                <div className="text-slate-900 font-semibold mb-1">Health issue summary</div>
+                <div className="text-sm text-slate-700 whitespace-pre-wrap">{String(chatAppt.patientSummary || '').trim() || '--'}</div>
+              </div>
               <div>
                 <div className="text-slate-900 font-semibold mb-2">Pre-call chat</div>
                 <div className="h-28 overflow-y-auto border border-slate-200 rounded-md p-2 bg-slate-50">
@@ -1503,12 +1434,28 @@ export default function DoctorDashboard() {
                       try {
                         const id = String(chatAppt._id || chatAppt.id);
                         const files = JSON.parse(localStorage.getItem(`wr_${id}_files`) || '[]');
-                        const arr = (Array.isArray(files) ? files : []).filter((x) => typeof x?.url === 'string' && String(x.url).trim() !== '');
+                        const prev = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || '[]');
+                        const base = ([]).concat(Array.isArray(files) ? files : [], Array.isArray(prev) ? prev : []);
+                        const arr = base.filter((x) => typeof x?.url === 'string' && String(x.url).trim() !== '');
                         if (arr.length === 0) return <div className="text-slate-600 text-sm">No reports uploaded</div>;
                         return arr.map((f, idx) => (
                           <div key={idx} className="flex items-center justify-between border rounded-md p-2">
                             <div className="text-sm text-slate-700 truncate max-w-[12rem]">{f.name}</div>
-                            <button onClick={() => { setChatPreview(f); setIsFullPreview(true); }} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
+                            <button
+                              onClick={() => {
+                                try {
+                                  const u = String(f.url || '');
+                                  if (u.startsWith('data:image')) {
+                                    setChatPreview(f);
+                                    setIsFullPreview(true);
+                                  } else {
+                                    setFuPreview(f);
+                                    setFuIsFullPreview(true);
+                                  }
+                                } catch(_) {}
+                              }}
+                              className="px-2 py-1 rounded-md border border-slate-300 text-sm"
+                            >Open</button>
                           </div>
                         ));
                       } catch(_) { return <div className="text-slate-600 text-sm">No reports uploaded</div>; }

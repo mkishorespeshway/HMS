@@ -86,6 +86,11 @@ export default function Profile() {
     try {
       if (email && !String(email).includes('@')) { alert('Please enter a valid email containing @'); return; }
       if (phone && String(phone).replace(/\D/g, '').length !== 10) { alert('Phone number must be 10 digits'); return; }
+      {
+        const exp = ageFromBirthday(birthday);
+        const norm = String(age).trim() === '' ? '' : String(Math.max(0, Math.min(120, Number(String(age).replace(/\D/g, '')))));
+        if (exp !== '--' && norm !== '' && norm !== exp) { alert('Age must match the date of birth'); return; }
+      }
       await API.put('/auth/me', { name, email, phone, address, gender, birthday, photoBase64: photo });
       const uid = localStorage.getItem("userId");
       if (uid) {
@@ -219,11 +224,11 @@ export default function Profile() {
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">Birthday</label>
-                        <input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                        <input type="date" value={birthday} onChange={(e) => { const d = e.target.value; setBirthday(d); setAge(ageFromBirthday(d)); }} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-slate-700 mb-2">Age</label>
-                        <input type="number" min="0" value={age} onChange={(e) => setAge(e.target.value)} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
+                        <input type="number" min="0" max="120" value={age} onChange={(e) => { const v = String(e.target.value).replace(/\D/g, ""); if (v === "") { setAge(""); return; } const n = Math.max(0, Math.min(120, Number(v))); setAge(String(n)); }} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 hover:scale-105" />
                       </div>
                     </div>
                   )}

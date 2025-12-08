@@ -598,6 +598,27 @@ export default function DoctorToday() {
                 >
                   View Summary
                 </button>
+                {(() => {
+                  try {
+                    if (!a.prescriptionText) return null;
+                    const d = new Date(a.date);
+                    const [hh, mm] = String(a.startTime || '00:00').split(':').map((x) => Number(x));
+                    d.setHours(hh, mm, 0, 0);
+                    const diff = Date.now() - d.getTime();
+                    const max = 5 * 24 * 60 * 60 * 1000;
+                    if (diff < 0 || diff > max) return null;
+                    const id = String(a._id || a.id || '');
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => { if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }}
+                        className="px-3 py-1 rounded-md border border-green-600 text-green-700 hover:bg-green-50"
+                      >
+                        Follow-up
+                      </button>
+                    );
+                  } catch(_) { return null; }
+                })()}
               </div>
             );
           }
@@ -658,15 +679,7 @@ export default function DoctorToday() {
                 return (
                   <button
                     type="button"
-                    onClick={async () => {
-                      try {
-                        const id = String(a._id || a.id);
-                        const { data } = await API.get(`/appointments/${id}`);
-                        setDetailsAppt(data || a);
-                      } catch (_) {
-                        setDetailsAppt(a);
-                      }
-                    }}
+                    onClick={() => { const id = String(a._id || a.id || ''); if (id) { nav(`/doctor/appointments/${id}/documents`); } }}
                     className="px-3 py-1 rounded-md border border-purple-600 text-purple-700 hover:bg-purple-50"
                   >
                     View Documents
@@ -685,16 +698,7 @@ export default function DoctorToday() {
                   return (
                     <button
                       type="button"
-                      onClick={() => {
-                        setFollowAppt(a);
-                        const keyBase = `fu_${String(a._id || a.id)}`;
-                        try {
-                          const msgs = JSON.parse(localStorage.getItem(`${keyBase}_chat`) || '[]');
-                          const files = JSON.parse(localStorage.getItem(`${keyBase}_files`) || '[]');
-                          setFuChat(Array.isArray(msgs) ? msgs : []);
-                          setFuFiles(Array.isArray(files) ? files : []);
-                        } catch (_) { setFuChat([]); setFuFiles([]); }
-                      }}
+                      onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {} nav(`/doctor/appointments/${id}/followup`); } }}
                       className="px-3 py-1 rounded-md border border-green-600 text-green-700 hover:bg-green-50"
                     >
                       Follow-up
@@ -1356,78 +1360,7 @@ export default function DoctorToday() {
           </div>
         </div>
       )}
-      {followAppt && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <div className="font-semibold text-slate-900">Free Follow-up (5 days)</div>
-              <button
-                onClick={() => setFollowAppt(null)}
-                className="px-3 py-1 rounded-md border border-slate-300"
-              >
-                Close
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="text-slate-700 text-sm">Patient: <span className="text-slate-900">{followAppt.patient?.name || ''}</span></div>
-              <div className="mt-4">
-                <div className="text-slate-900 font-semibold mb-1">Chat</div>
-                <div className="h-28 overflow-y-auto border border-slate-200 rounded-md p-2 bg-slate-50">
-                  {fuChat.length === 0 ? (
-                    <div className="text-slate-600 text-sm">No messages</div>
-                  ) : (
-                    fuChat.map((m, idx) => (
-                      <div key={idx} className="text-sm text-slate-700">{m}</div>
-                    ))
-                  )}
-                </div>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    value={fuText}
-                    onChange={(e) => setFuText(e.target.value)}
-                    placeholder="Reply to patient"
-                    className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm"
-                  />
-                  <button
-                    onClick={() => {
-                      if (fuText.trim()) {
-                        const text = fuText.trim();
-                        const next = [...fuChat, text];
-                        setFuChat(next);
-                        const keyBase = `fu_${String(followAppt._id || followAppt.id)}`;
-                        try { localStorage.setItem(`${keyBase}_chat`, JSON.stringify(next)); } catch(_) {}
-                        try { const id = String(followAppt._id || followAppt.id); localStorage.setItem('lastChatApptId', id); const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'doctor', text }); chan.close(); socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'doctor', kind: 'followup', text }); } catch(_) {}
-                        setFuText("");
-                      }
-                    }}
-                    className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    Send
-                  </button>
-                </div>
-                <div className="mt-4">
-                  <div className="text-slate-900 font-semibold mb-1">Patient reports</div>
-                  <div className="space-y-2">
-                    {fuFiles.length === 0 ? (
-                      <div className="text-slate-600 text-sm">No reports provided</div>
-                    ) : (
-                      fuFiles.map((f, idx) => (
-                        <div key={idx} className="flex items-center justify-between border rounded-md p-2">
-                          <div className="text-sm text-slate-700 truncate">{f.name}</div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => openFile(f.url)} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                <div className="mt-2 text-xs text-slate-600">No video call in follow-up. For a new call, patient must book again.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {null}
     </div>
   );
 }

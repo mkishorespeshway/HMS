@@ -79,7 +79,22 @@ export default function Appointments() {
         const id = localStorage.getItem('lastChatApptId') || '';
         const a = (list || []).find((x) => String(x._id || x.id) === id) || null;
         if (a) {
-          setDetailsAppt(a);
+          let isFollow = false;
+          try {
+            const msgs = JSON.parse(localStorage.getItem(`fu_${id}_chat`) || '[]');
+            isFollow = Array.isArray(msgs) && msgs.length > 0;
+          } catch(_) {}
+          try {
+            if (!isFollow) {
+              const s = String(a?.status || '').toUpperCase();
+              isFollow = s === 'COMPLETED' && !!a?.prescriptionText && canFollowUp(a);
+            }
+          } catch(_) {}
+          if (isFollow) {
+            try { setFollowAppt(a); loadFollowData(id); setFuText(''); } catch(_) { setFollowAppt(a); }
+          } else {
+            setDetailsAppt(a);
+          }
           setAlertHandled(true);
           setTimeout(() => { try { localStorage.setItem('patientBellCount', '0'); } catch(_) {} }, 0);
           try { nav('/appointments', { replace: true }); } catch(_) {}
@@ -486,6 +501,12 @@ export default function Appointments() {
     if (!detailsAppt) return;
     try {
       const id = String(detailsAppt._id || detailsAppt.id);
+      try {
+        const s = String(detailsAppt.patientSymptoms || localStorage.getItem(`wr_${id}_symptoms`) || '').trim();
+        const sum = String(detailsAppt.patientSummary || localStorage.getItem(`fu_${id}_symptoms`) || '').trim();
+        setDetSymptoms(s);
+        setDetSummary(sum);
+      } catch(_) {}
       const files = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || '[]');
       setDetPrevFiles(Array.isArray(files) ? files : []);
       const doctorFiles = JSON.parse(localStorage.getItem(`wr_${id}_files`) || '[]');
@@ -576,11 +597,11 @@ export default function Appointments() {
   };
 
   const canFollowUp = (a) => {
-    if (!a || !a.prescriptionText) return false;
+    if (!a) return false;
     const ts = apptStartTs(a);
     const now = Date.now();
     const diff = now - ts;
-    const max = 5 * 24 * 60 * 60 * 1000; // up to 5 days after appointment
+    const max = 5 * 24 * 60 * 60 * 1000;
     return diff >= 0 && diff <= max;
   };
 
@@ -732,6 +753,14 @@ export default function Appointments() {
                           className="border border-indigo-600 text-indigo-700 px-3 py-1 rounded-md"
                         >
                           View Prescription
+                        </button>
+                      )}
+                      {canFollowUp(a) && (
+                        <button
+                          onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {}; nav(`/appointments/${id}/followup`); } }}
+                          className="border border-green-600 text-green-700 px-3 py-1 rounded-md"
+                        >
+                          Follow-up
                         </button>
                       )}
                       <button
@@ -934,14 +963,8 @@ export default function Appointments() {
                       )}
                       <button
                         onClick={() => {
-                          try {
-                            const id = String(a._id || a.id);
-                            setDetailsAppt(a);
-                            const s = String(a.patientSymptoms || localStorage.getItem(`wr_${id}_symptoms`) || '').trim();
-                            const sum = String(a.patientSummary || localStorage.getItem(`fu_${id}_symptoms`) || '').trim();
-                            setDetSymptoms(s);
-                            setDetSummary(sum);
-                          } catch (_) { setDetailsAppt(a); }
+                          const id = String(a._id || a.id);
+                          nav(`/appointments/${id}/details`);
                         }}
                         className="border border-slate-600 text-slate-700 px-3 py-1 rounded-md"
                       >
@@ -999,14 +1022,7 @@ export default function Appointments() {
                           >
                             Share for lab tests
                           </button>
-                          {canFollowUp(a) && (
-                            <button
-                              onClick={() => { setFollowAppt(a); loadFollowData(a._id || a.id); }}
-                              className="border border-green-600 text-green-700 px-3 py-1 rounded-md"
-                            >
-                              Follow-up Chat
-                            </button>
-                          )}
+                          {null}
                         </>
                       )}
                     </>
@@ -1415,6 +1431,7 @@ export default function Appointments() {
           </div>
         </div>
       )}
+      {null}
       {filePreview && isFullPreview && (
         <div className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center">
           <button
@@ -1443,135 +1460,7 @@ export default function Appointments() {
           </div>
         </div>
       )}
-      {followAppt && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b">
-              <div className="font-semibold text-slate-900">Free Follow-up (5 days)</div>
-              <button
-                onClick={() => setFollowAppt(null)}
-                className="px-3 py-1 rounded-md border border-slate-300"
-              >
-                Close
-              </button>
-            </div>
-            <div className="p-4">
-              <div className="text-slate-700 text-sm">Appointment: <span className="text-slate-900">{followAppt.date} {followAppt.startTime}-{followAppt.endTime}</span></div>
-              <div className="mt-4 grid grid-cols-1 gap-3">
-                <div>
-                  <div className="text-slate-900 font-semibold mb-1">Upload symptoms</div>
-                  <textarea
-                    value={fuSymptoms}
-                    onChange={(e) => setFuSymptoms(e.target.value)}
-                    rows={3}
-                    className="w-full border border-slate-300 rounded-md p-3 text-sm"
-                    placeholder="Describe your current symptoms"
-                  />
-                </div>
-                <div>
-                  <div className="text-slate-900 font-semibold mb-1">Ask doubts</div>
-                  <div className="h-28 overflow-y-auto border border-slate-200 rounded-md p-2 bg-slate-50">
-                    {fuChat.length === 0 ? (
-                      <div className="text-slate-600 text-sm">No messages yet</div>
-                    ) : (
-                      fuChat.map((m, idx) => (
-                        <div key={idx} className="text-sm text-slate-700">{m}</div>
-                      ))
-                    )}
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <input
-                      value={fuText}
-                      onChange={(e) => setFuText(e.target.value)}
-                      placeholder="Type your question"
-                      className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm"
-                    />
-                    <button
-                      onClick={() => {
-                        if (fuText.trim()) {
-                          const next = [...fuChat, fuText.trim()];
-                          setFuChat(next);
-                          saveFollowData(followAppt._id || followAppt.id, next, fuFiles, fuSymptoms);
-                          try {
-                            const id = String(followAppt._id || followAppt.id);
-                            localStorage.setItem('lastChatApptId', id);
-                            const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: id, actor: 'patient' }); chan.close();
-                            socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'followup' });
-                          } catch(_) {}
-                          setFuText("");
-                        }
-                      }}
-                      className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"
-                    >
-                      Send
-                    </button>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-slate-900 font-semibold mb-1">Send reports</div>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={async (e) => {
-                      const files = Array.from(e.target.files || []);
-                      const newItems = [];
-                      for (const f of files) {
-                        try {
-                          const buf = await f.arrayBuffer();
-                          const bytes = new Uint8Array(buf);
-                          let binary = '';
-                          for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-                          const b64 = btoa(binary);
-                          const mime = f.type || 'application/octet-stream';
-                          newItems.push({ name: f.name, url: `data:${mime};base64,${b64}` });
-                        } catch (_) {}
-                      }
-                      const nextFiles = [...fuFiles, ...newItems];
-                      setFuFiles(nextFiles);
-                      saveFollowData(followAppt._id || followAppt.id, fuChat, nextFiles, fuSymptoms);
-                      try { const id = String(followAppt._id || followAppt.id); socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report' }); } catch(_) {}
-                      e.target.value = '';
-                    }}
-                  />
-                  <div className="mt-2 space-y-2">
-                    {fuFiles.length === 0 ? (
-                      <div className="text-slate-600 text-sm">No reports uploaded</div>
-                    ) : (
-                      fuFiles.map((f, idx) => (
-                        <div key={idx} className="flex items-center justify-between border rounded-md p-2">
-                          <div className="text-sm text-slate-700 truncate">{f.name}</div>
-                          <div className="flex items-center gap-2">
-                            <button onClick={() => openFile(f.url)} className="px-2 py-1 rounded-md border border-slate-300 text-sm">Open</button>
-                            <button
-                              onClick={() => {
-                                const nextFiles = fuFiles.filter((_, i) => i !== idx);
-                                setFuFiles(nextFiles);
-                                saveFollowData(followAppt._id || followAppt.id, fuChat, nextFiles, fuSymptoms);
-                              }}
-                              className="px-2 py-1 rounded-md border border-red-600 text-red-700 text-sm"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => { saveFollowData(followAppt._id || followAppt.id, fuChat, fuFiles, fuSymptoms); alert('Saved'); }}
-                    className="px-3 py-2 rounded-md border border-slate-300"
-                  >
-                    Save
-                  </button>
-                  <div className="text-xs text-slate-600">Doctor replies here; video call requires new booking.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {null}
       {bookDocId && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl border border-slate-200 w-[95vw] max-w-5xl h-[85vh] overflow-hidden flex flex-col">

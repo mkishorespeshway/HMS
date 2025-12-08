@@ -24,6 +24,9 @@ import AdminAddDoctor from "./pages/AdminAddDoctor";
 import SearchDoctors from "./pages/SearchDoctors";
 import Profile from "./pages/Profile";
 import Appointments from "./pages/Appointments";
+import AppointmentDetails from "./pages/AppointmentDetails";
+import FollowUpDetails from "./pages/FollowUpDetails";
+import DoctorAppointmentDocuments from "./pages/DoctorAppointmentDocuments";
 
 
 function Header() {
@@ -386,9 +389,9 @@ function Header() {
                                   onClick={async () => {
                                     try {
                                       const id = String(n.apptId || '');
-                                      if (id) {
+                                      if (n.type === 'chat' && id) {
                                         try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                                        nav('/appointments?alertChat=1');
+                                        nav(`/appointments/${id}/followup`);
                                       } else if (n.type === 'meet' && n.apptId) {
                                         const mid = String(n.apptId || '');
                                         if (mid) nav(`/appointments?joinMeet=${mid}`);
@@ -637,8 +640,10 @@ return (
 <Route path="/book/:id" element={<Navigate to="/search" />} />
 <Route path="/pay/:id" element={<Payment />} />
 <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-<Route path="/doctor/appointments" element={<DoctorToday />} />
-<Route path="/doctor/profile" element={<DoctorProfile />} />
+      <Route path="/doctor/appointments" element={<DoctorToday />} />
+      <Route path="/doctor/appointments/:id/documents" element={<DoctorAppointmentDocuments />} />
+      <Route path="/doctor/appointments/:id/followup" element={<FollowUpDetails actor="doctor" backTo="/doctor/appointments" />} />
+      <Route path="/doctor/profile" element={<DoctorProfile />} />
 <Route path="/prescription/:id" element={<Prescription />} />
 <Route path="/admin/doctors/pending" element={<AdminPendingDoctors />} />
 <Route path="/admin" element={<Navigate to="/login" />} />
@@ -647,8 +652,10 @@ return (
 <Route path="/admin/add-doctor" element={<AdminAddDoctor />} />
 <Route path="/admin/doctors" element={<SearchDoctors />} />
 <Route path="/forgot" element={<ForgotPassword />} />
-<Route path="/profile" element={<Profile />} />
-<Route path="/appointments" element={<Appointments />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/appointments" element={<Appointments />} />
+      <Route path="/appointments/:id/details" element={<AppointmentDetails />} />
+      <Route path="/appointments/:id/followup" element={<FollowUpDetails />} />
 </Routes>
 </div>
 </BrowserRouter>
