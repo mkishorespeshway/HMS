@@ -23,7 +23,7 @@ router.get("/slots/:doctorId", async (req, res) => {
         return res.status(404).json({ message: "Doctor profile not found" });
 
     const day = new Date(date).getDay(); // 0-6 (Sun-Sat)
-    let todaysAvailability = [{ day, from: "10:00", to: "22:00" }];
+    let todaysAvailability = [{ day, from: "00:00", to: "24:00" }];
 
     const duration = profile.slotDurationMins || 15;
     const slotsMap = generateSlots(todaysAvailability, duration);

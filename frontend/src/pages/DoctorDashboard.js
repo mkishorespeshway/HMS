@@ -222,6 +222,8 @@ export default function DoctorDashboard() {
     } catch (_) {}
   }, [list, latestToday]);
 
+  
+
   const setStatus = async (status) => {
     const uid = localStorage.getItem("userId") || "";
     if (status === "online") {
@@ -297,7 +299,7 @@ export default function DoctorDashboard() {
       setBusy(true);
       try { const chan = new BroadcastChannel('doctorStatus'); const uid = localStorage.getItem('userId') || ''; chan.postMessage({ uid, online: true, busy: true }); chan.close(); } catch(_) {}
       try {
-        meetWinRef.current = window.open(url, '_blank');
+        meetWinRef.current = window.open(url, 'doctorMeet');
         meetMonitorRef.current = setInterval(() => {
           try {
             const end = new Date(a.date);
@@ -360,6 +362,10 @@ export default function DoctorDashboard() {
       try {
         if (meetMonitorRef.current) { clearInterval(meetMonitorRef.current); meetMonitorRef.current = null; }
         if (meetWinRef.current && !meetWinRef.current.closed) { meetWinRef.current.close(); }
+        try {
+          const w = window.open('', 'doctorMeet');
+          if (w && !w.closed) w.close();
+        } catch(_) {}
         meetWinRef.current = null;
       } catch(_) {}
     } catch(_) {}
@@ -996,18 +1002,18 @@ export default function DoctorDashboard() {
                   </div>
                 </div>
               )}
-              <button
-                onClick={() => {
-                  try {
-                    const uid = localStorage.getItem("userId") || "";
-                    if (uid) {
-                      localStorage.setItem(`doctorOnlineById_${uid}`, "0");
-                      localStorage.setItem(`doctorBusyById_${uid}`, "0");
-                    }
-                  } catch (_) {}
-                  localStorage.removeItem("token");
-                  nav("/doctor/login");
-                }}
+  <button
+    onClick={() => {
+      try {
+        const uid = localStorage.getItem("userId") || "";
+        if (uid) {
+          localStorage.setItem(`doctorOnlineById_${uid}`, "0");
+          localStorage.setItem(`doctorBusyById_${uid}`, "0");
+        }
+      } catch (_) {}
+      localStorage.removeItem("token");
+      nav("/doctor/login");
+    }}
                 className="hidden sm:inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/20"
               >
                 Logout
@@ -1024,10 +1030,10 @@ export default function DoctorDashboard() {
                 <Link to="/doctor/dashboard" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Dashboard</Link>
                 <Link to="/doctor/appointments" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Appointments</Link>
                 <Link to="/doctor/profile" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Profile</Link>
-                <button
-                  onClick={() => { try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorOnlineById_${uid}`, '0'); localStorage.setItem(`doctorBusyById_${uid}`, '0'); } } catch(_) {}; localStorage.removeItem('token'); nav('/doctor/login'); }}
-                  className="px-3 py-2 rounded-lg text-white text-sm bg-gradient-to-r from-blue-500 to-purple-600"
-                >Logout</button>
+  <button
+    onClick={() => { try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorOnlineById_${uid}`, '0'); localStorage.setItem(`doctorBusyById_${uid}`, '0'); } } catch(_) {}; localStorage.removeItem('token'); nav('/doctor/login'); }}
+    className="px-3 py-2 rounded-lg text-white text-sm bg-gradient-to-r from-blue-500 to-purple-600"
+  >Logout</button>
               </nav>
             </div>
           </div>
