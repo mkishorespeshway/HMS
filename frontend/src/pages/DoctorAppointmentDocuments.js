@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api";
 
@@ -16,6 +16,7 @@ export default function DoctorAppointmentDocuments() {
   const [filePreview, setFilePreview] = useState(null);
   const [isFullPreview, setIsFullPreview] = useState(false);
   const [chatText, setChatText] = useState("");
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
@@ -66,6 +67,29 @@ export default function DoctorAppointmentDocuments() {
     };
     load();
   }, [id]);
+
+  useEffect(() => {
+    try {
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const w = window;
+      const onReady = () => {
+        try {
+          const socket = w.io ? w.io(origin, { transports: ['websocket','polling'], auth: { token: localStorage.getItem('token') || '' } }) : null;
+          if (socket) socketRef.current = socket;
+        } catch(_) {}
+      };
+      if (!w.io) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+        s.onload = onReady;
+        document.body.appendChild(s);
+        return () => { try { document.body.removeChild(s); } catch(_) {} try { socketRef.current && socketRef.current.close(); } catch(_) {} };
+      } else {
+        onReady();
+        return () => { try { socketRef.current && socketRef.current.close(); } catch(_) {} };
+      }
+    } catch(_) { return () => {}; }
+  }, []);
 
   const patientName = appt?.patient?.name || "";
   const patientGender = (() => {
@@ -163,6 +187,7 @@ export default function DoctorAppointmentDocuments() {
                     try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
                     try { localStorage.setItem('lastChatApptId', String(id)); } catch(_) {}
                     try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: String(id), actor: 'doctor', text: t }); chan.close(); } catch(_) {}
+                    try { socketRef.current && socketRef.current.emit('chat:new', { apptId: String(id), actor: 'doctor', kind: 'pre', text: t }); } catch(_) {}
                     setChatText("");
                   }}
                   className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"

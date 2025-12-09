@@ -125,7 +125,7 @@ function Header() {
       const chan = new BroadcastChannel('chatmsg');
       const onMsg = (e) => {
         try {
-          const { apptId, actor } = e.data || {};
+          const { apptId, actor, kind } = e.data || {};
           if (String(actor || '').toLowerCase() !== 'doctor') return;
           setBell((c) => {
             const next = c + 1;
@@ -137,7 +137,7 @@ function Header() {
             const id = String(Date.now()) + String(Math.random());
             const text = 'New message from doctor';
             const apptIdStr = String(apptId || '');
-            setNotifs((prev) => [{ id, text, type: 'chat', apptId: apptIdStr }, ...prev].slice(0, 4));
+            setNotifs((prev) => [{ id, text, type: 'chat', kind: kind || 'pre', apptId: apptIdStr }, ...prev].slice(0, 4));
             setTimeout(() => { setNotifs((prev) => prev.filter((n) => n.id !== id)); }, 6000);
           } catch(_) {}
         } catch(_) {}
@@ -162,6 +162,7 @@ function Header() {
               const link = p?.link || '';
               const type = p?.type || 'general';
               const apptId = p?.apptId ? String(p.apptId) : '';
+              const kind = p?.kind || '';
               try {
                 if (p?.type === 'chat' && p?.apptId) localStorage.setItem('lastChatApptId', String(p.apptId));
               } catch(_) {}
@@ -181,10 +182,10 @@ function Header() {
                 try { localStorage.setItem('patientBellCount', String(next)); } catch(_) {}
                 return next;
               });
-              setNotifs((prev) => [{ id, text, link, type, apptId }, ...prev].slice(0, 4));
+              setNotifs((prev) => [{ id, text, link, type, kind, apptId }, ...prev].slice(0, 4));
               setTimeout(() => { setNotifs((prev) => prev.filter((n) => n.id !== id)); }, 6000);
               if (panelOpen) {
-                const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type, createdAt: new Date().toISOString(), read: false, apptId };
+                const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type, kind, createdAt: new Date().toISOString(), read: false, apptId };
                 setPanelItems((prev) => {
                   const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
                   if (exists) return prev;
@@ -393,14 +394,16 @@ function Header() {
                             <div key={n._id || n.id} className="p-4 border-b border-gray-100 hover:bg-blue-50/50 transition-colors duration-200">
                               <div className="flex items-start justify-between">
                                 <button
-                                  onClick={async () => {
-                                    try {
-                                      const id = String(n.apptId || '');
-                                      const msg = String(n.message || '').toLowerCase();
-                                      if ((msg.includes('follow up') || n.type === 'followup' || n.type === 'chat') && id) {
-                                        try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                                        nav(`/appointments/${id}/followup`);
-                                      } else if ((msg.includes('view details') || n.type === 'details') && id) {
+                              onClick={async () => {
+                                try {
+                                  const id = String(n.apptId || '');
+                                  const msg = String(n.message || '').toLowerCase();
+                                  if (n.type === 'chat' && id) {
+                                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                                    nav(n.kind === 'followup' ? `/appointments/${id}/followup` : `/appointments/${id}/details`);
+                                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
+                                    nav(`/appointments/${id}/followup`);
+                                  } else if ((msg.includes('view details') || n.type === 'details') && id) {
                                         nav(`/appointments/${id}/details`);
                                       } else if (n.type === 'meet' && n.apptId) {
                                         const mid = String(n.apptId || '');
@@ -634,11 +637,11 @@ function Header() {
                 try {
                   const id = String(n.apptId || '');
                   const msg = String(n.text || n.message || '').toLowerCase();
-                  if ((msg.includes('follow up') || n.type === 'followup' || n.type === 'chat') && id) {
+                  if (n.type === 'chat' && id) {
                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                    nav(n.kind === 'followup' ? `/appointments/${id}/followup` : `/appointments/${id}/details`);
+                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
                     nav(`/appointments/${id}/followup`);
-                  } else if ((msg.includes('view details') || n.type === 'details') && id) {
-                    nav(`/appointments/${id}/details`);
                   } else if (n.type === 'meet' && id) {
                     nav(`/appointments?joinMeet=${id}`);
                   } else if (n.link) {
