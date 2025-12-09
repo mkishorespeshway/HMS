@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
- 
 import API from "../api";
+import { Helmet } from "react-helmet-async";
 
 export default function Profile() {
+  const OG_FALLBACK = (process.env.PUBLIC_URL || '') + '/logo512.png';
   const DEFAULT_PHOTO = "https://images.unsplash.com/photo-1537368910025-700350fe46c7?q=80&w=256&auto=format&fit=crop";
   const [editing, setEditing] = useState(false);
   const [photo, setPhoto] = useState("");
@@ -113,6 +114,18 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <Helmet>
+        <title>Profile | HospoZen</title>
+        <meta name="description" content="View and update your profile, contact info, and preferences for secure healthcare consultations." />
+        <meta property="og:title" content="Profile | HospoZen" />
+        <meta property="og:description" content="Manage personal details and preferences for better appointments and consultations." />
+        <meta property="og:image" content={OG_FALLBACK} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Profile | HospoZen" />
+        <meta name="twitter:description" content="Manage personal details and preferences for better appointments and consultations." />
+        <meta name="twitter:image" content={OG_FALLBACK} />
+      </Helmet>
       <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Your Profile</h2>
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-8 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>

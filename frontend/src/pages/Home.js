@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import Logo from "../components/Logo";
 import { useEffect, useRef, useState, useMemo } from "react";
 import API from "../api";
@@ -155,7 +156,7 @@ export default function Home() {
         const { data } = await API.get('/doctors');
         setList(Array.isArray(data) ? data : []);
       } catch (_) {}
-    }, 1000);
+    }, 30000);
     return () => clearInterval(iv);
   }, []);
 
@@ -181,6 +182,8 @@ export default function Home() {
     if (!w.io) {
       const s = document.createElement('script');
       s.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+      s.async = true;
+      s.defer = true;
       s.onload = onReady;
       document.body.appendChild(s);
       cleanup.push(() => { try { document.body.removeChild(s); } catch(_) {} });
@@ -191,6 +194,37 @@ export default function Home() {
   }, []);
   return (
     <div className="min-h-screen bg-pink-100">
+      <Helmet>
+        <title>HospoZen | Book Doctors Online</title>
+        <meta name="description" content="Find verified doctors and book appointments online with HospoZen." />
+        <meta property="og:title" content="HospoZen | Book Doctors Online" />
+        <meta property="og:description" content="Find verified doctors and book appointments online with HospoZen." />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content={heroSrc || LOCAL} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="HospoZen | Book Doctors Online" />
+        <meta name="twitter:description" content="Find verified doctors and book appointments online with HospoZen." />
+        <meta name="twitter:image" content={heroSrc || LOCAL} />
+        <link rel="preload" href={LOCAL} as="image" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "HospoZen",
+          "url": typeof window !== 'undefined' ? window.location.origin : "",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": `${typeof window !== 'undefined' ? window.location.origin : ''}/search?q={search_term_string}`,
+            "query-input": "required name=search_term_string"
+          }
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "HospoZen",
+          "url": typeof window !== 'undefined' ? window.location.origin : "",
+          "logo": `${typeof window !== 'undefined' ? window.location.origin : ''}/logo512.png`
+        })}</script>
+      </Helmet>
 
       <section className="relative overflow-hidden py-24">
         <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -231,7 +265,10 @@ export default function Home() {
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 rounded-3xl transform rotate-6 opacity-15 group-hover:rotate-3 transition-transform duration-700"></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-3xl transform -rotate-3 opacity-10 group-hover:-rotate-1 transition-transform duration-700"></div>
-                  <img src={heroSrc} alt="Hero" className="relative w-full rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-700 border-4 border-white/60 group-hover:border-white/80" />
+                  <picture>
+                    <source type="image/webp" srcSet={LOCAL.replace('.png','.webp')} />
+                    <img src={heroSrc} alt="HospoZen healthcare platform" loading="lazy" decoding="async" width="1280" height="720" className="relative w-full rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-700 border-4 border-white/60 group-hover:border-white/80" />
+                  </picture>
                   <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg animate-pulse">
                     <span className="text-blue-600 text-2xl">🏥</span>
                   </div>
@@ -304,7 +341,7 @@ export default function Home() {
                 <div key={d._id} className="glass-card overflow-hidden card-hover animate-fade-in" style={{ animationDelay: `${i * 0.1}s`, animationFillMode: 'forwards' }}>
                   <div className="relative">
                     {String(d.photoBase64 || "").startsWith("data:image") ? (
-                      <img src={d.photoBase64} alt="Doctor" className="w-full h-48 object-cover" />
+                      <img src={d.photoBase64} alt={`Dr. ${d.user?.name || ''}`} loading="lazy" decoding="async" width="640" height="320" className="w-full h-48 object-cover" />
                     ) : (
                       <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
                         <div className="text-4xl text-gray-400">👨‍⚕️</div>

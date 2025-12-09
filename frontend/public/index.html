@@ -4,11 +4,26 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
+    <meta name="theme-color" content="#0b5bd3" />
+    <meta name="description" content="HospoZen — book verified doctors, manage appointments, and access modern healthcare online." />
+    <meta name="keywords" content="online doctor booking, healthcare platform, telemedicine, appointments, verified doctors, hospital, clinics, medical specialties" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" id="canonical-link" href="https://hms.speshwayhrms.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="HospoZen" />
+    <meta property="og:description" content="Book verified doctors and manage your healthcare appointments easily." />
+    <meta property="og:url" content="https://hms.speshwayhrms.com" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo512.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="HospoZen" />
+    <meta name="twitter:description" content="Book verified doctors and manage your healthcare appointments easily." />
+    <meta name="twitter:image" content="%PUBLIC_URL%/logo512.png" />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <link rel="preconnect" href="https://cdn.socket.io" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.socket.io" />
+    <link rel="preconnect" href="https://hms.speshwayhrms.com" crossorigin />
+    <link rel="dns-prefetch" href="https://hms.speshwayhrms.com" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -25,7 +40,77 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>HospoZen</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "HospoZen",
+        "url": "https://hms.speshwayhrms.com",
+        "logo": "%PUBLIC_URL%/logo512.png",
+        "sameAs": []
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "HospoZen",
+        "url": "https://hms.speshwayhrms.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://hms.speshwayhrms.com/search?query={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Online Doctor Appointment Booking",
+        "provider": {
+          "@type": "Organization",
+          "name": "HospoZen"
+        },
+        "areaServed": {
+          "@type": "Country",
+          "name": ""
+        },
+        "serviceType": "Healthcare",
+        "availableChannel": {"@type": "ServiceChannel","serviceUrl": "https://hms.speshwayhrms.com"}
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I book an appointment?",
+            "acceptedAnswer": {"@type": "Answer","text": "Search for a doctor by specialty and choose an available slot."}
+          },
+          {
+            "@type": "Question",
+            "name": "Are the doctors verified?",
+            "acceptedAnswer": {"@type": "Answer","text": "All doctors are verified and approved before listing."}
+          }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {"@type": "ListItem","position": 1,"name": "Home","item": "/"},
+          {"@type": "ListItem","position": 2,"name": "Find Doctors","item": "/search"},
+          {"@type": "ListItem","position": 3,"name": "About","item": "/about"},
+          {"@type": "ListItem","position": 4,"name": "Contact","item": "/contact"}
+        ]
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

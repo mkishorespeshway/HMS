@@ -1,9 +1,23 @@
 import { Link } from "react-router-dom";
 import Logo from "../components/Logo";
+import { Helmet } from "react-helmet-async";
 
 export default function Contact() {
+  const OG_FALLBACK = (process.env.PUBLIC_URL || '') + '/logo512.png';
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <Helmet>
+        <title>Contact HospoZen | Support</title>
+        <meta name="description" content="Get support and contact the HospoZen team." />
+        <meta property="og:title" content="Contact HospoZen | Support" />
+        <meta property="og:description" content="Get support and contact the HospoZen team." />
+        <meta property="og:image" content={OG_FALLBACK} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Contact HospoZen | Support" />
+        <meta name="twitter:description" content="Get support and contact the HospoZen team." />
+        <meta name="twitter:image" content={OG_FALLBACK} />
+      </Helmet>
       <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-left">Contact Information</h2>
         <section className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>

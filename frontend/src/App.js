@@ -1,32 +1,33 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from "react-router-dom";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import Logo from "./components/Logo";
 import API from "./api";
-import { useState, useEffect } from "react";
-import Login from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import DoctorLogin from "./pages/DoctorLogin";
-import Register from "./pages/Register";
- 
-import DoctorDetails from "./pages/DoctorDetails";
-import Payment from "./pages/Payment";
-import DoctorDashboard from "./pages/DoctorDashboard";
-import DoctorToday from "./pages/DoctorToday";
-import DoctorProfile from "./pages/DoctorProfile";
-import Prescription from "./pages/Prescription";
-import AdminPendingDoctors from "./pages/AdminPendingDoctors";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminAppointments from "./pages/AdminAppointments";
-import AdminAddDoctor from "./pages/AdminAddDoctor";
-import SearchDoctors from "./pages/SearchDoctors";
-import Profile from "./pages/Profile";
-import Appointments from "./pages/Appointments";
-import AppointmentDetails from "./pages/AppointmentDetails";
-import FollowUpDetails from "./pages/FollowUpDetails";
-import DoctorAppointmentDocuments from "./pages/DoctorAppointmentDocuments";
+import { useState, useEffect, Suspense, lazy } from "react";
+
+const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const DoctorLogin = lazy(() => import("./pages/DoctorLogin"));
+const Register = lazy(() => import("./pages/Register"));
+const DoctorDetails = lazy(() => import("./pages/DoctorDetails"));
+const Payment = lazy(() => import("./pages/Payment"));
+const DoctorDashboard = lazy(() => import("./pages/DoctorDashboard"));
+const DoctorToday = lazy(() => import("./pages/DoctorToday"));
+const DoctorProfile = lazy(() => import("./pages/DoctorProfile"));
+const Prescription = lazy(() => import("./pages/Prescription"));
+const AdminPendingDoctors = lazy(() => import("./pages/AdminPendingDoctors"));
+const Home = lazy(() => import("./pages/Home"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminAppointments = lazy(() => import("./pages/AdminAppointments"));
+const AdminAddDoctor = lazy(() => import("./pages/AdminAddDoctor"));
+const SearchDoctors = lazy(() => import("./pages/SearchDoctors"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Appointments = lazy(() => import("./pages/Appointments"));
+const AppointmentDetails = lazy(() => import("./pages/AppointmentDetails"));
+const FollowUpDetails = lazy(() => import("./pages/FollowUpDetails"));
+const DoctorAppointmentDocuments = lazy(() => import("./pages/DoctorAppointmentDocuments"));
 
 
 function Header() {
@@ -195,6 +196,8 @@ function Header() {
     if (!w.io) {
       const s = document.createElement('script');
       s.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+      s.async = true;
+      s.defer = true;
       s.onload = onReady;
       document.body.appendChild(s);
       cleanup.push(() => { try { document.body.removeChild(s); } catch(_) {} });
@@ -236,7 +239,7 @@ function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
         <div className="flex items-center justify-between h-16">
           {/* Enhanced Logo Section */}
-          <Link to="/" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
+          <Link to="/" aria-label="Go to HospoZen Home" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border-2 border-white/20">
               <div className="text-white">
                 <Logo size={20} />
@@ -291,6 +294,7 @@ function Header() {
             {/* Enhanced Mobile Menu Button */}
             <button
               className="lg:hidden p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300"
+              aria-label="Toggle navigation menu"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -323,6 +327,7 @@ function Header() {
                       }
                     }}
                     className="inline-flex p-2 sm:p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300 relative"
+                    aria-label="Open notifications panel"
                   >
                     <svg className={`w-6 h-6 ${bell > 0 ? 'animate-bounce' : ''}`} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M12 22a2 2 0 002-2H10a2 2 0 002 2z" fill="#2563EB"/>
@@ -660,45 +665,106 @@ function Header() {
 }
 
 function App() {
-return (
-<BrowserRouter>
-<Header />
-
-
-      <div className="pt-16 px-4 sm:px-6 page-gradient">
-<Routes>
-<Route path="/" element={<Home />} />
-<Route path="/about" element={<About />} />
-<Route path="/contact" element={<Contact />} />
-<Route path="/admin/login" element={<Navigate to="/login" />} />
-<Route path="/login" element={<Login />} />
-<Route path="/doctor/login" element={<Navigate to="/login" />} />
-<Route path="/register" element={<Register />} />
-<Route path="/search" element={<SearchDoctors />} />
-<Route path="/doctor/:id" element={<DoctorDetails />} />
-<Route path="/admin/doctors/:id" element={<DoctorDetails />} />
-<Route path="/book/:id" element={<Navigate to="/search" />} />
-<Route path="/pay/:id" element={<Payment />} />
-<Route path="/doctor/dashboard" element={<DoctorDashboard />} />
-      <Route path="/doctor/appointments" element={<DoctorToday />} />
-      <Route path="/doctor/appointments/:id/documents" element={<DoctorAppointmentDocuments />} />
-      <Route path="/doctor/appointments/:id/followup" element={<FollowUpDetails actor="doctor" backTo="/doctor/appointments" />} />
-      <Route path="/doctor/profile" element={<DoctorProfile />} />
-<Route path="/prescription/:id" element={<Prescription />} />
-<Route path="/admin/doctors/pending" element={<AdminPendingDoctors />} />
-<Route path="/admin" element={<Navigate to="/login" />} />
-<Route path="/admin/dashboard" element={<AdminDashboard />} />
-<Route path="/admin/appointments" element={<AdminAppointments />} />
-<Route path="/admin/add-doctor" element={<AdminAddDoctor />} />
-<Route path="/admin/doctors" element={<SearchDoctors />} />
-<Route path="/forgot" element={<ForgotPassword />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/appointments" element={<Appointments />} />
-      <Route path="/appointments/:id/details" element={<AppointmentDetails />} />
-      <Route path="/appointments/:id/followup" element={<FollowUpDetails />} />
-</Routes>
-</div>
-</BrowserRouter>
-);
+  const MetaManager = () => {
+    const location = useLocation();
+    const setMeta = (name, content) => {
+      if (!name) return;
+      const tag = document.querySelector(`meta[name="${name}"]`) || (() => { const m = document.createElement('meta'); m.setAttribute('name', name); document.head.appendChild(m); return m; })();
+      tag.setAttribute('content', content || '');
+    };
+    const setProp = (prop, content) => {
+      if (!prop) return;
+      const tag = document.querySelector(`meta[property="${prop}"]`) || (() => { const m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); return m; })();
+      tag.setAttribute('content', content || '');
+    };
+    const setCanonical = (href) => {
+      const link = document.getElementById('canonical-link') || (() => { const l = document.createElement('link'); l.setAttribute('rel','canonical'); l.id = 'canonical-link'; document.head.appendChild(l); return l; })();
+      link.setAttribute('href', href || '');
+    };
+    const path = location.pathname;
+    const origin = window.location.origin || '';
+    const url = origin + path + (location.search || '');
+    const metaByPath = () => {
+      if (path === '/') return { title: 'HospoZen | Book Doctors Online', desc: 'Find verified doctors and book appointments online with HospoZen.', keys: 'book doctors online, find doctors, healthcare appointments, telemedicine' };
+      if (path.startsWith('/about')) return { title: 'About HospoZen | Healthcare Platform', desc: 'Learn about HospoZen and our mission to modernize healthcare.', keys: 'about hospozen, healthcare platform, company info' };
+      if (path.startsWith('/contact')) return { title: 'Contact HospoZen | Support', desc: 'Get support and contact the HospoZen team.', keys: 'contact hospozen, support, help' };
+      if (path.startsWith('/search')) return { title: 'Find Doctors by Specialty | HospoZen', desc: 'Search and filter doctors by specialization, experience, and ratings.', keys: 'find doctors, specialties, doctor search, ratings' };
+      if (path.startsWith('/doctor/')) return { title: 'Doctor Profile | HospoZen', desc: 'View doctor details, specialization, experience, and book an appointment.', keys: 'doctor profile, book appointment, specialization' };
+      if (path.startsWith('/appointments')) return { title: 'My Appointments | HospoZen', desc: 'Manage upcoming and past appointments securely.', keys: 'appointments, patient dashboard, manage bookings' };
+      if (path.startsWith('/pay')) return { title: 'Secure Payment | HospoZen', desc: 'Complete your consultation payment securely.', keys: 'payment, secure checkout, consultation' };
+      if (path.startsWith('/login')) return { title: 'Login | HospoZen', desc: 'Access your HospoZen account.', keys: 'login, account access' };
+      if (path.startsWith('/register')) return { title: 'Create Account | HospoZen', desc: 'Register a new account on HospoZen.', keys: 'register, sign up, create account' };
+      if (path.startsWith('/profile')) return { title: 'Profile | HospoZen', desc: 'View and update your profile information.', keys: 'profile, user settings' };
+      if (path.startsWith('/admin')) return { title: 'Admin | HospoZen', desc: 'Administration area.', keys: 'admin, dashboard' };
+      return { title: 'HospoZen', desc: 'HospoZen — book verified doctors and manage appointments online.', keys: 'hospozen, doctors, appointments' };
+    };
+    const cfg = metaByPath();
+    const noindex = (
+      path.startsWith('/admin') ||
+      path.startsWith('/prescription') ||
+      path.startsWith('/login') ||
+      path.startsWith('/register') ||
+      path.startsWith('/forgot') ||
+      path.startsWith('/doctor/login')
+    );
+    const robots = noindex ? 'noindex,nofollow' : 'index,follow';
+    return (
+      <Helmet>
+        <title>{cfg.title}</title>
+        <meta name="description" content={cfg.desc} />
+        <meta name="keywords" content={cfg.keys} />
+        <meta name="robots" content={robots} />
+        <link rel="canonical" href={origin + path} />
+        <meta property="og:title" content={cfg.title} />
+        <meta property="og:description" content={cfg.desc} />
+        <meta property="og:url" content={url} />
+        <meta name="twitter:title" content={cfg.title} />
+        <meta name="twitter:description" content={cfg.desc} />
+      </Helmet>
+    );
+  };
+  return (
+    <HelmetProvider>
+      <BrowserRouter>
+        <Header />
+        <MetaManager />
+        <div className="pt-16 px-4 sm:px-6 page-gradient">
+          <Suspense fallback={<div className="p-8 text-center">Loading…</div>}>
+            <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/admin/login" element={<Navigate to="/login" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/doctor/login" element={<Navigate to="/login" />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/search" element={<SearchDoctors />} />
+          <Route path="/doctor/:id" element={<DoctorDetails />} />
+          <Route path="/admin/doctors/:id" element={<DoctorDetails />} />
+          <Route path="/book/:id" element={<Navigate to="/search" />} />
+          <Route path="/pay/:id" element={<Payment />} />
+          <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+          <Route path="/doctor/appointments" element={<DoctorToday />} />
+          <Route path="/doctor/appointments/:id/documents" element={<DoctorAppointmentDocuments />} />
+          <Route path="/doctor/appointments/:id/followup" element={<FollowUpDetails actor="doctor" backTo="/doctor/appointments" />} />
+          <Route path="/doctor/profile" element={<DoctorProfile />} />
+          <Route path="/prescription/:id" element={<Prescription />} />
+          <Route path="/admin/doctors/pending" element={<AdminPendingDoctors />} />
+          <Route path="/admin" element={<Navigate to="/login" />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/appointments" element={<AdminAppointments />} />
+          <Route path="/admin/add-doctor" element={<AdminAddDoctor />} />
+          <Route path="/admin/doctors" element={<SearchDoctors />} />
+          <Route path="/forgot" element={<ForgotPassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/appointments/:id/details" element={<AppointmentDetails />} />
+          <Route path="/appointments/:id/followup" element={<FollowUpDetails />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </BrowserRouter>
+    </HelmetProvider>
+  );
 }
 export default App;

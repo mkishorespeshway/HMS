@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import API from "../api";
 import Logo from "../components/Logo";
+import { Helmet } from "react-helmet-async";
 
 
 export default function DoctorDetails() {
@@ -180,6 +181,44 @@ export default function DoctorDetails() {
 
   return (
     <>
+      <Helmet>
+        <title>{`Dr. ${name} | ${specList || 'Doctor'} | HospoZen`}</title>
+        <meta name="description" content={(about || `Consult ${name} — ${specList}`)} />
+        <meta name="keywords" content={`${specList}, doctor, appointment, healthcare`} />
+        <meta property="og:title" content={`Dr. ${name} | ${specList || 'Doctor'} | HospoZen`} />
+        <meta property="og:description" content={(about || `Consult ${name} — ${specList}`)} />
+        <meta property="og:type" content="profile" />
+        <meta property="og:image" content={String(doctor?.photoBase64 || '').startsWith('data:image') ? doctor?.photoBase64 : undefined} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={`Dr. ${name} | ${specList || 'Doctor'} | HospoZen`} />
+        <meta name="twitter:description" content={(about || `Consult ${name} — ${specList}`)} />
+        <meta name="twitter:image" content={String(doctor?.photoBase64 || '').startsWith('data:image') ? doctor?.photoBase64 : undefined} />
+        <script type="application/ld+json">{JSON.stringify(() => {
+          const primarySpec = (specList || '').split(',')[0] || 'Doctor';
+          const photo = (String(doctor?.photoBase64 || '').startsWith('data:image') ? doctor?.photoBase64 : undefined);
+          const ratingValue = Number(ratingAvg || 0) || 0;
+          const reviewCount = Number(ratingCount || 0) || 0;
+          const hasRating = reviewCount > 0 && ratingValue > 0;
+          const hours = (Array.isArray(doctor?.weeklyAvailability) ? doctor.weeklyAvailability : []).map((a) => {
+            const map = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            const d = map[a.day] || undefined;
+            return d ? { "@type": "OpeningHoursSpecification", dayOfWeek: d, opens: a.from, closes: a.to } : null;
+          }).filter(Boolean);
+          const obj = {
+            "@context": "https://schema.org",
+            "@type": "Physician",
+            name: name ? `Dr. ${name}` : 'Doctor',
+            description: about || undefined,
+            medicalSpecialty: primarySpec || undefined,
+            image: photo,
+            priceRange: (fee !== "" ? `₹${fee}` : undefined),
+            openingHoursSpecification: hours.length ? hours : undefined,
+            address: (doctor?.clinic ? { "@type": "PostalAddress", streetAddress: doctor?.clinic?.address, addressLocality: doctor?.clinic?.city } : undefined),
+          };
+          if (hasRating) obj.aggregateRating = { "@type": "AggregateRating", ratingValue, reviewCount };
+          return obj;
+        })()}</script>
+      </Helmet>
       {isAdminRoute ? (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
           <div className="max-w-7xl mx-auto px-6 relative">
