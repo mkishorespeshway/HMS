@@ -129,8 +129,10 @@ export default function AppointmentDetails() {
 
   const openFile = (u, name) => {
     try {
-      const s = String(u || "");
-      setFilePreview({ url: s, name: String(name || "") });
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const s0 = String(u || '');
+      const s = (/^https?:\/\//.test(s0) || s0.startsWith('data:')) ? s0 : (origin + (s0.startsWith('/') ? s0 : ('/' + s0)));
+      setFilePreview({ url: s, name: String(name || '') });
       setIsFullPreview(true);
     } catch (_) {}
   };

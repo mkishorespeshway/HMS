@@ -973,9 +973,10 @@ export default function DoctorDashboard() {
                                   try {
                                   const id = String(n.apptId || '');
                                   const msg = String(n.message || '').toLowerCase();
-                                  if ((n.type === 'chat' || msg.includes('new message')) && id) {
-                                    nav(`/doctor/appointments/${id}/documents`);
-                                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
+                                  if (((msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup')) || n.type === 'followup') && id) {
+                                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                                    nav(`/doctor/appointments/${id}/followup`);
+                                  } else if ((n.type === 'chat' || msg.includes('new message')) && id) {
                                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                                     nav(`/doctor/appointments/${id}/followup`);
                                   } else if ((msg.includes('view details') || n.type === 'details') && id) {
@@ -1057,9 +1058,10 @@ export default function DoctorDashboard() {
                 try {
                   const id = String(n.apptId || '');
                   const msg = String(n.text || '').toLowerCase();
-                  if ((n.type === 'chat' || msg.includes('new message')) && id) {
-                    nav(`/doctor/appointments/${id}/documents`);
-                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
+                  if (((msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup')) || n.type === 'followup') && id) {
+                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                    nav(`/doctor/appointments/${id}/followup`);
+                  } else if ((n.type === 'chat' || msg.includes('new message')) && id) {
                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                     nav(`/doctor/appointments/${id}/followup`);
                   } else if ((msg.includes('view details') || n.type === 'details') && id) {

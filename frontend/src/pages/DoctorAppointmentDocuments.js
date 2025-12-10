@@ -124,7 +124,9 @@ export default function DoctorAppointmentDocuments() {
 
   const openFile = (u, name) => {
     try {
-      const s = String(u || '');
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const s0 = String(u || '');
+      const s = (/^https?:\/\//.test(s0) || s0.startsWith('data:')) ? s0 : (s0.startsWith('/') ? (origin + s0) : s0);
       setFilePreview({ url: s, name: String(name || '') });
       setIsFullPreview(true);
     } catch (_) {}
