@@ -551,26 +551,26 @@ export default function DoctorDashboard() {
                 addNotif(`New message from ${a?.patient?.name || 'patient'}`, id);
               } catch (_) {}
             });
-            socket.on('notify', (p) => {
-              try {
-                if (Date.now() < muteUntil) return;
-                const text = p?.message || '';
-                const link = p?.link || '';
-                const apptId = p?.apptId ? String(p.apptId) : null;
-                if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
-                setBellCount((c) => c + 1);
-                addNotif(text, apptId, link);
-                if (panelOpen) {
-                  const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId };
-                  setPanelItems((prev) => {
-                    const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
-                    if (exists) return prev;
-                    return [item, ...prev].slice(0, 100);
-                  });
-                  setPanelUnread((c) => c + 1);
-                }
-              } catch (_) {}
-            });
+                socket.on('notify', (p) => {
+                  try {
+                    if (Date.now() < muteUntil) return;
+                    const text = p?.message || '';
+                    const link = p?.link || '';
+                    const apptId = p?.apptId ? String(p.apptId) : null;
+                    if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
+                    setBellCount((c) => c + 1);
+                    addNotif(text, apptId, link, p?.kind);
+                    if (panelOpen) {
+                      const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', kind: p?.kind, createdAt: new Date().toISOString(), read: false, apptId };
+                      setPanelItems((prev) => {
+                        const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
+                        if (exists) return prev;
+                        return [item, ...prev].slice(0, 100);
+                      });
+                      setPanelUnread((c) => c + 1);
+                    }
+                  } catch (_) {}
+                });
             cleanup.push(() => { try { socket.close(); } catch(_) {} });
           }
         } catch(_) {}
@@ -973,13 +973,13 @@ export default function DoctorDashboard() {
                                   try {
                                   const id = String(n.apptId || '');
                                   const msg = String(n.message || '').toLowerCase();
-                                  if (((msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup')) || n.type === 'followup') && id) {
+                                  const hasFu = (() => { try { const arr = JSON.parse(localStorage.getItem(`fu_${id}_chat`) || '[]'); return Array.isArray(arr) && arr.length > 0; } catch(_) { return false; } })();
+                                  if ((msg.includes('view details') || n.type === 'details') && id) {
+                                    nav(`/doctor/appointments/${id}/documents`);
+                                  } else if ((id && (n.kind === 'followup' || hasFu || msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup') || n.type === 'followup'))) {
                                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                                     nav(`/doctor/appointments/${id}/followup`);
                                   } else if ((n.type === 'chat' || msg.includes('new message')) && id) {
-                                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
-                                    nav(`/doctor/appointments/${id}/followup`);
-                                  } else if ((msg.includes('view details') || n.type === 'details') && id) {
                                     nav(`/doctor/appointments/${id}/documents`);
                                   } else if (n.type === 'meet' && n.apptId) {
                                     await openMeetFor(n.apptId);
