@@ -70,8 +70,12 @@ function Header() {
   })();
   const token = localStorage.getItem('token');
   const uid = localStorage.getItem('userId');
-  const photo = uid ? localStorage.getItem(`userPhotoBase64ById_${uid}`) : '';
-  const userName = uid ? localStorage.getItem(`userNameById_${uid}`) || '' : '';
+  const [photo, setPhoto] = useState(() => {
+    try { return uid ? (localStorage.getItem(`userPhotoBase64ById_${uid}`) || '') : ''; } catch(_) { return ''; }
+  });
+  const [userName, setUserName] = useState(() => {
+    try { return uid ? (localStorage.getItem(`userNameById_${uid}`) || '') : ''; } catch(_) { return ''; }
+  });
   const showAdminLink = false; // Hide admin button as login is unified
   const timeAgo = (ts) => {
     try {
@@ -110,6 +114,18 @@ function Header() {
       </svg>
     );
   };
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!token) return;
+        const { data } = await API.get('/auth/me');
+        if (data) {
+          if (data.name) setUserName(String(data.name));
+          if (String(data.photoBase64 || '').startsWith('data:image')) setPhoto(String(data.photoBase64));
+        }
+      } catch (_) {}
+    })();
+  }, [token]);
   useEffect(() => {
     (async () => {
       try {

@@ -57,15 +57,15 @@ export default function Register() {
 
       localStorage.setItem("token", res.data.token);
       if (res.data?.user?.id) localStorage.setItem("userId", res.data.user.id);
-      const uid = res.data?.user?.id;
-      if (uid && res.data?.user?.name) localStorage.setItem(`userNameById_${uid}`, res.data.user.name);
-      if (uid && res.data?.user?.email) localStorage.setItem(`userEmailById_${uid}`, res.data.user.email);
-      if (uid && photoBase64) localStorage.setItem(`userPhotoBase64ById_${uid}`, photoBase64);
-      if (uid && phone) localStorage.setItem(`userPhoneById_${uid}`, phone);
-      if (uid && address) localStorage.setItem(`userAddressById_${uid}`, address);
-      if (uid && gender) localStorage.setItem(`userGenderById_${uid}`, gender);
-      if (uid && age) localStorage.setItem(`userAgeById_${uid}`, age);
-      if (uid && dob) localStorage.setItem(`userDobById_${uid}`, dob);
+      try {
+        await API.put("/auth/me", {
+          phone,
+          address,
+          gender,
+          birthday: dob,
+          photoBase64,
+        });
+      } catch (_) {}
       nav("/search");
     } catch (err) {
       alert(err.response?.data?.message || err.message);

@@ -61,7 +61,26 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
       const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
       const w = window;
       const socket = w.io ? w.io(origin, { transports: ["websocket", "polling"], auth: { token: localStorage.getItem('token') || '' } }) : null;
-      if (socket) socketRef.current = socket;
+      if (socket) {
+        socketRef.current = socket;
+        const expectedActor = String(actor || '').toLowerCase() === 'doctor' ? 'patient' : 'doctor';
+        socket.on('chat:new', (msg) => {
+          try {
+            const { apptId, actor: fromActor, kind, text } = msg || {};
+            const idStr = String(apptId || '');
+            if (!idStr || idStr !== String(id)) return;
+            if (String(fromActor || '').toLowerCase() !== expectedActor) return;
+            if (kind !== 'followup') return;
+            const t = String(text || '').trim();
+            if (!t) return;
+            const k = `fu_${idStr}_chat`;
+            const arr = JSON.parse(localStorage.getItem(k) || '[]');
+            const next = (Array.isArray(arr) ? arr : []).concat([t]);
+            try { localStorage.setItem(k, JSON.stringify(next)); } catch(_) {}
+            setFuChat(next);
+          } catch (_) {}
+        });
+      }
       return () => { try { socket && socket.close(); } catch(_) {} };
     } catch(_) { return () => {}; }
   }, []);
