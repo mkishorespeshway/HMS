@@ -15,11 +15,16 @@ const nav = useNavigate();
     try {
       const { data } = await API.post("/auth/login", { email, password });
       const userRole = data?.user?.role;
-      localStorage.setItem("token", data.token);
-      if (data?.user?.id) localStorage.setItem("userId", data.user.id);
-      const uid = data?.user?.id;
-      if (uid && data?.user?.name) localStorage.setItem(`userNameById_${uid}`, data.user.name);
-      if (uid && data?.user?.email) localStorage.setItem(`userEmailById_${uid}`, data.user.email);
+      try {
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i) || "";
+          if (k.startsWith("userPhotoBase64ById_")) toRemove.push(k);
+        }
+        toRemove.forEach((k) => { try { localStorage.removeItem(k); } catch(_) {} });
+      } catch(_) {}
+      try { localStorage.setItem("token", data.token); } catch(_) {}
+      try { if (data?.user?.id) localStorage.setItem("userId", data.user.id); } catch(_) {}
       if (userRole === "admin") {
         nav("/admin/dashboard");
       } else if (userRole === "doctor") {

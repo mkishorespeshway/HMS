@@ -158,6 +158,7 @@ export default function DoctorProfile() {
   const specs = (profile?.specializations || []).join(", ");
   const about = profile?.about || "";
   const fee = profile?.consultationFees ?? "";
+  const clinicName = profile?.clinic?.name || "";
   const address = profile?.clinic?.address || "";
   const city = profile?.clinic?.city || "";
 
@@ -324,6 +325,15 @@ export default function DoctorProfile() {
                 <div className="mt-6 bg-white/90 backdrop-blur-sm rounded-2xl border border-white/30 shadow-xl p-6 hover:scale-105 hover:shadow-2xl transition-all duration-500">
                   <div className="text-xl font-bold text-slate-800 mb-4">Clinic Details</div>
                   <div className="space-y-4 text-sm">
+                    {clinicName && (
+                      <div className="flex items-center gap-3">
+                        <svg className="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10l9-7 9 7v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 21V9h6v12" />
+                        </svg>
+                        <div> Clinic: <span className="text-slate-700 font-medium">{clinicName}</span></div>
+                      </div>
+                    )}
                     <div className="flex items-start gap-3">
                       <svg className="w-5 h-5 text-indigo-600 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -353,6 +363,49 @@ export default function DoctorProfile() {
               <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 mb-2">Specializations</label>
+                  {(() => {
+                    const SPECIALTIES = Array.from(new Set([
+                      "General Physician",
+                      "Gynecologist",
+                      "Dermatologist",
+                      "Pediatrician",
+                      "Neurologist",
+                      "Cardiologist",
+                      "Orthopedic Surgeon",
+                      "Gastroenterologist",
+                      "ENT Specialist",
+                      "Dentist",
+                      "Psychiatrist",
+                      "Diabetologist",
+                      "Endocrinologist",
+                      "Pulmonologist",
+                      "Nephrologist",
+                      "Urologist",
+                      "Ophthalmologist",
+                      "Oncologist",
+                      "Rheumatologist",
+                      "Physiotherapist"
+                    ]));
+                    return (
+                      <select
+                        defaultValue=""
+                        onChange={(e) => {
+                          const val = e.target.value || "";
+                          if (!val) return;
+                          setForm((f) => ({
+                            ...f,
+                            specializations: f.specializations ? `${f.specializations}, ${val}` : val,
+                          }));
+                        }}
+                        className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300 mb-2"
+                      >
+                        <option value="">Select specialization</option>
+                        {SPECIALTIES.map((s) => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
+                    );
+                  })()}
                   <input name="specializations" value={form.specializations} onChange={onChange} className="w-full p-3 border-2 border-slate-200 rounded-xl bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300" placeholder="e.g., Cardiology, Dermatology" />
                 </div>
                 <div>

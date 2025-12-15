@@ -50,7 +50,6 @@ export default function Profile() {
     const b1 = uid ? localStorage.getItem(`userBirthdayById_${uid}`) : null;
     const b2 = uid ? localStorage.getItem(`userDobById_${uid}`) : null;
     const ag = uid ? localStorage.getItem(`userAgeById_${uid}`) : null;
-    const byId = uid ? localStorage.getItem(`userPhotoBase64ById_${uid}`) : null;
 
     setName(n || "");
     setEmail(e || "");
@@ -60,7 +59,8 @@ export default function Profile() {
     const dobVal = b1 || b2 || "";
     setBirthday(dobVal);
     setAge(ag || "");
-    setPhoto(byId || "");
+    setPhoto("");
+    try { if (uid) localStorage.removeItem(`userPhotoBase64ById_${uid}`); } catch (_) {}
 
     (async () => {
       try {

@@ -116,8 +116,8 @@ export default function DoctorDetails() {
       const [th, tm] = String(r.to || "00:00").split(":").map(Number);
       let start = fh * 60 + fm;
       let end = th * 60 + tm;
-      const min = 9 * 60;
-      const max = 22 * 60;
+      const min = 0;
+      const max = 24 * 60;
       if (start < min) start = min;
       if (end > max) end = max;
       if (end <= start) return null;
@@ -127,7 +127,7 @@ export default function DoctorDetails() {
       const eM = String(end % 60).padStart(2, "0");
       return { from: `${sH}:${sM}`, to: `${eH}:${eM}` };
     };
-    const baseRanges = avails.length ? avails : [{ day, from: "09:00", to: "22:00" }];
+    const baseRanges = avails.length ? avails : [{ day, from: "00:00", to: "24:00" }];
     const ranges = baseRanges.map(clampRange).filter(Boolean);
     const gen = (from, to) => {
       const [fh, fm] = from.split(":").map(Number);
@@ -145,12 +145,7 @@ export default function DoctorDetails() {
       }
       return out;
     };
-    const full = ranges.flatMap((r) => gen(r.from, r.to)).filter((s) => {
-      try {
-        const [hh] = String(s.start || "00:00").split(":").map((x) => Number(x));
-        return hh < 13 || hh >= 14;
-      } catch(_) { return true; }
-    });
+    const full = ranges.flatMap((r) => gen(r.from, r.to));
     setAllSlots(full);
     const uid = doctor?.user?._id;
     API.get(`/appointments/slots/${uid}`, { params: { date: selectedDate } })

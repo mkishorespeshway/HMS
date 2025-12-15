@@ -31,13 +31,20 @@ export default function AppointmentDetails() {
           setDetSymptoms(s);
           setDetSummary(sum);
         } catch (_) {}
-        try {
-          const files = JSON.parse(localStorage.getItem(`wr_${id}_files`) || "[]");
-          const prev = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || "[]");
-          const base = ([]).concat(Array.isArray(files) ? files : [], Array.isArray(prev) ? prev : []);
-          const arr = base.filter((x) => typeof x?.url === "string" && String(x.url).trim() !== "");
-          setDetPrevFiles(arr);
-        } catch (_) { setDetPrevFiles([]); }
+      try {
+        const files = JSON.parse(localStorage.getItem(`wr_${id}_files`) || "[]");
+        const server = Array.isArray(data?.patientReports) ? data.patientReports : [];
+        const merged = [...(Array.isArray(files) ? files : []), ...server];
+        const seen = new Set();
+        const arr = [];
+        for (const x of merged) {
+          const key = `${String(x?.url || '')}|${String(x?.name || '')}`;
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          if (typeof x?.url === "string" && String(x.url).trim() !== "") arr.push(x);
+        }
+        setDetPrevFiles(arr);
+      } catch (_) { setDetPrevFiles([]); }
         try {
           const msgs = JSON.parse(localStorage.getItem(`wr_${id}_chat`) || "[]");
           setDetChat(Array.isArray(msgs) ? msgs : []);
@@ -86,6 +93,7 @@ export default function AppointmentDetails() {
         date: d.date,
         startTime: d.startTime,
         doctorId: String(d.doctor?._id || d.doctor || ""),
+        reports: detPrevFiles,
       });
       try {
         localStorage.setItem(`wr_${id}_symptoms`, String(detSymptoms || ""));
@@ -102,6 +110,7 @@ export default function AppointmentDetails() {
             date: d.date,
             startTime: d.startTime,
             doctorId: String(d.doctor?._id || d.doctor || ""),
+            reports: detPrevFiles,
           });
           try {
             localStorage.setItem(`wr_${id}_symptoms`, String(detSymptoms || ""));
@@ -120,8 +129,10 @@ export default function AppointmentDetails() {
 
   const openFile = (u, name) => {
     try {
-      const s = String(u || "");
-      setFilePreview({ url: s, name: String(name || "") });
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const s0 = String(u || '');
+      const s = (/^https?:\/\//.test(s0) || s0.startsWith('data:')) ? s0 : (origin + (s0.startsWith('/') ? s0 : ('/' + s0)));
+      setFilePreview({ url: s, name: String(name || '') });
       setIsFullPreview(true);
     } catch (_) {}
   };
@@ -253,7 +264,6 @@ export default function AppointmentDetails() {
                   }
                   const nextFiles = [...detPrevFiles, ...newItems];
                   setDetPrevFiles(nextFiles);
-                  try { localStorage.setItem(`wr_${id}_prevpres`, JSON.stringify(nextFiles)); } catch(_) {}
                   try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
                   try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report', text: `Report uploaded (${filesSel.length})` }); } catch(_) {}
                   e.target.value = '';
@@ -272,7 +282,6 @@ export default function AppointmentDetails() {
                           onClick={() => {
                             const nextFiles = detPrevFiles.filter((_, i) => i !== idx);
                             setDetPrevFiles(nextFiles);
-                            try { localStorage.setItem(`wr_${id}_prevpres`, JSON.stringify(nextFiles)); } catch(_) {}
                             try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
                           }}
                           className="px-2 py-1 rounded-md border border-red-600 text-red-700 text-sm"

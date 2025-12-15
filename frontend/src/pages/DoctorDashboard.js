@@ -222,6 +222,8 @@ export default function DoctorDashboard() {
     } catch (_) {}
   }, [list, latestToday]);
 
+  
+
   const setStatus = async (status) => {
     const uid = localStorage.getItem("userId") || "";
     if (status === "online") {
@@ -284,7 +286,7 @@ export default function DoctorDashboard() {
       } else {
         try { await API.put(`/appointments/${id}/meet-link`, { url }); } catch(_) {}
       }
-      try { localStorage.setItem(`joinedByDoctor_${id}`, '1'); } catch(_) {}
+      try { localStorage.setItem(`joinedByDoctor_${id}`, '1'); localStorage.setItem(`everJoinedDoctor_${id}`, '1'); } catch(_) {}
       try { socketRef.current && socketRef.current.emit('meet:update', { apptId: id, actor: 'doctor', event: 'join' }); } catch(_) {}
       try {
         const uid = localStorage.getItem('userId') || '';
@@ -297,32 +299,42 @@ export default function DoctorDashboard() {
       setBusy(true);
       try { const chan = new BroadcastChannel('doctorStatus'); const uid = localStorage.getItem('userId') || ''; chan.postMessage({ uid, online: true, busy: true }); chan.close(); } catch(_) {}
       try {
-        meetWinRef.current = window.open(url, '_blank');
-        meetMonitorRef.current = setInterval(() => {
+        meetWinRef.current = window.open(url, 'doctorMeet');
+        meetMonitorRef.current = setInterval(async () => {
           try {
             const end = new Date(a.date);
             const [eh, em] = String(a.endTime || a.startTime || '00:00').split(':').map((x) => Number(x));
             end.setHours(eh, em, 0, 0);
             const now = Date.now();
-            const expired = now >= end.getTime();
-            if (expired) {
-              try { localStorage.setItem(`joinedByDoctor_${id}`, '0'); } catch(_) {}
-              try { socketRef.current && socketRef.current.emit('meet:update', { apptId: id, actor: 'doctor', event: 'complete' }); } catch(_) {}
-              try {
-                const uid = localStorage.getItem('userId') || '';
-                if (uid) {
-                  localStorage.setItem(`doctorBusyById_${uid}`, '0');
-                  API.put('/doctors/me/status', { isOnline: true, isBusy: false }).catch(() => {});
-                }
-              } catch(_) {}
-              setBusy(false);
-              setOnline(true);
-              try { const chan = new BroadcastChannel('doctorStatus'); const uid2 = localStorage.getItem('userId') || ''; chan.postMessage({ uid: uid2, online: true, busy: false }); chan.close(); } catch(_) {}
-              try { if (meetWinRef.current && !meetWinRef.current.closed) meetWinRef.current.close(); } catch(_) {}
-              meetWinRef.current = null;
-              if (meetMonitorRef.current) { clearInterval(meetMonitorRef.current); meetMonitorRef.current = null; }
-              return;
-            }
+          const expired = now >= end.getTime();
+          if (expired) {
+            const pjEver = localStorage.getItem(`everJoinedPatient_${id}`) === '1';
+            const djEver = localStorage.getItem(`everJoinedDoctor_${id}`) === '1';
+            const both = pjEver && djEver;
+            try { localStorage.setItem(`joinedByDoctor_${id}`, '0'); } catch(_) {}
+            try {
+              if (both) {
+                await API.put(`/appointments/${id}/complete`);
+                socketRef.current && socketRef.current.emit('meet:update', { apptId: id, actor: 'doctor', event: 'complete' });
+              } else {
+                socketRef.current && socketRef.current.emit('meet:update', { apptId: id, actor: 'doctor', event: 'exit' });
+              }
+            } catch(_) {}
+            try {
+              const uid = localStorage.getItem('userId') || '';
+              if (uid) {
+                localStorage.setItem(`doctorBusyById_${uid}`, '0');
+                API.put('/doctors/me/status', { isOnline: true, isBusy: false }).catch(() => {});
+              }
+            } catch(_) {}
+            setBusy(false);
+            setOnline(true);
+            try { const chan = new BroadcastChannel('doctorStatus'); const uid2 = localStorage.getItem('userId') || ''; chan.postMessage({ uid: uid2, online: true, busy: false }); chan.close(); } catch(_) {}
+            try { if (meetWinRef.current && !meetWinRef.current.closed) meetWinRef.current.close(); } catch(_) {}
+            meetWinRef.current = null;
+            if (meetMonitorRef.current) { clearInterval(meetMonitorRef.current); meetMonitorRef.current = null; }
+            return;
+          }
           } catch(_) {}
           if (!meetWinRef.current || meetWinRef.current.closed) {
             if (meetMonitorRef.current) { clearInterval(meetMonitorRef.current); meetMonitorRef.current = null; }
@@ -360,6 +372,10 @@ export default function DoctorDashboard() {
       try {
         if (meetMonitorRef.current) { clearInterval(meetMonitorRef.current); meetMonitorRef.current = null; }
         if (meetWinRef.current && !meetWinRef.current.closed) { meetWinRef.current.close(); }
+        try {
+          const w = window.open('', 'doctorMeet');
+          if (w && !w.closed) w.close();
+        } catch(_) {}
         meetWinRef.current = null;
       } catch(_) {}
     } catch(_) {}
@@ -442,7 +458,7 @@ export default function DoctorDashboard() {
                   try { localStorage.removeItem(`joinedByPatient_${id}`); } catch(_) {}
                   if (active) setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, status: 'CONFIRMED' } : x)));
                 } else if (event === 'join' && actor === 'doctor') {
-                  try { localStorage.setItem(`joinedByDoctor_${id}`, '1'); } catch(_) {}
+                  try { localStorage.setItem(`joinedByDoctor_${id}`, '1'); localStorage.setItem(`everJoinedDoctor_${id}`, '1'); } catch(_) {}
                   setBusy(true);
                   setOnline(true);
                 } else if (event === 'exit' && actor === 'doctor') {
@@ -535,26 +551,26 @@ export default function DoctorDashboard() {
                 addNotif(`New message from ${a?.patient?.name || 'patient'}`, id);
               } catch (_) {}
             });
-            socket.on('notify', (p) => {
-              try {
-                if (Date.now() < muteUntil) return;
-                const text = p?.message || '';
-                const link = p?.link || '';
-                const apptId = p?.apptId ? String(p.apptId) : null;
-                if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
-                setBellCount((c) => c + 1);
-                addNotif(text, apptId, link);
-                if (panelOpen) {
-                  const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', createdAt: new Date().toISOString(), read: false, apptId };
-                  setPanelItems((prev) => {
-                    const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
-                    if (exists) return prev;
-                    return [item, ...prev].slice(0, 100);
-                  });
-                  setPanelUnread((c) => c + 1);
-                }
-              } catch (_) {}
-            });
+                socket.on('notify', (p) => {
+                  try {
+                    if (Date.now() < muteUntil) return;
+                    const text = p?.message || '';
+                    const link = p?.link || '';
+                    const apptId = p?.apptId ? String(p.apptId) : null;
+                    if (p?.type === 'chat' && apptId) try { localStorage.setItem('lastChatApptId', apptId); } catch(_) {}
+                    setBellCount((c) => c + 1);
+                    addNotif(text, apptId, link, p?.kind);
+                    if (panelOpen) {
+                      const item = { _id: p?.id || String(Date.now()), id: p?.id || String(Date.now()), message: text, link, type: p?.type || 'general', kind: p?.kind, createdAt: new Date().toISOString(), read: false, apptId };
+                      setPanelItems((prev) => {
+                        const exists = prev.some((x) => String(x._id || x.id) === String(item._id || item.id));
+                        if (exists) return prev;
+                        return [item, ...prev].slice(0, 100);
+                      });
+                      setPanelUnread((c) => c + 1);
+                    }
+                  } catch (_) {}
+                });
             cleanup.push(() => { try { socket.close(); } catch(_) {} });
           }
         } catch(_) {}
@@ -957,12 +973,13 @@ export default function DoctorDashboard() {
                                   try {
                                   const id = String(n.apptId || '');
                                   const msg = String(n.message || '').toLowerCase();
-                                  if ((n.type === 'chat' || msg.includes('new message')) && id) {
+                                  const hasFu = (() => { try { const arr = JSON.parse(localStorage.getItem(`fu_${id}_chat`) || '[]'); return Array.isArray(arr) && arr.length > 0; } catch(_) { return false; } })();
+                                  if ((msg.includes('view details') || n.type === 'details') && id) {
                                     nav(`/doctor/appointments/${id}/documents`);
-                                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
+                                  } else if ((id && (n.kind === 'followup' || hasFu || msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup') || n.type === 'followup'))) {
                                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                                     nav(`/doctor/appointments/${id}/followup`);
-                                  } else if ((msg.includes('view details') || n.type === 'details') && id) {
+                                  } else if ((n.type === 'chat' || msg.includes('new message')) && id) {
                                     nav(`/doctor/appointments/${id}/documents`);
                                   } else if (n.type === 'meet' && n.apptId) {
                                     await openMeetFor(n.apptId);
@@ -996,18 +1013,18 @@ export default function DoctorDashboard() {
                   </div>
                 </div>
               )}
-              <button
-                onClick={() => {
-                  try {
-                    const uid = localStorage.getItem("userId") || "";
-                    if (uid) {
-                      localStorage.setItem(`doctorOnlineById_${uid}`, "0");
-                      localStorage.setItem(`doctorBusyById_${uid}`, "0");
-                    }
-                  } catch (_) {}
-                  localStorage.removeItem("token");
-                  nav("/doctor/login");
-                }}
+  <button
+    onClick={() => {
+      try {
+        const uid = localStorage.getItem("userId") || "";
+        if (uid) {
+          localStorage.setItem(`doctorOnlineById_${uid}`, "0");
+          localStorage.setItem(`doctorBusyById_${uid}`, "0");
+        }
+      } catch (_) {}
+      localStorage.removeItem("token");
+      nav("/doctor/login");
+    }}
                 className="hidden sm:inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/20"
               >
                 Logout
@@ -1024,10 +1041,10 @@ export default function DoctorDashboard() {
                 <Link to="/doctor/dashboard" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Dashboard</Link>
                 <Link to="/doctor/appointments" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Appointments</Link>
                 <Link to="/doctor/profile" className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm hover:bg-blue-50">Profile</Link>
-                <button
-                  onClick={() => { try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorOnlineById_${uid}`, '0'); localStorage.setItem(`doctorBusyById_${uid}`, '0'); } } catch(_) {}; localStorage.removeItem('token'); nav('/doctor/login'); }}
-                  className="px-3 py-2 rounded-lg text-white text-sm bg-gradient-to-r from-blue-500 to-purple-600"
-                >Logout</button>
+  <button
+    onClick={() => { try { const uid = localStorage.getItem('userId') || ''; if (uid) { localStorage.setItem(`doctorOnlineById_${uid}`, '0'); localStorage.setItem(`doctorBusyById_${uid}`, '0'); } } catch(_) {}; localStorage.removeItem('token'); nav('/doctor/login'); }}
+    className="px-3 py-2 rounded-lg text-white text-sm bg-gradient-to-r from-blue-500 to-purple-600"
+  >Logout</button>
               </nav>
             </div>
           </div>
@@ -1041,9 +1058,10 @@ export default function DoctorDashboard() {
                 try {
                   const id = String(n.apptId || '');
                   const msg = String(n.text || '').toLowerCase();
-                  if ((n.type === 'chat' || msg.includes('new message')) && id) {
-                    nav(`/doctor/appointments/${id}/documents`);
-                  } else if ((msg.includes('follow up') || n.type === 'followup') && id) {
+                  if (((msg.includes('follow up') || msg.includes('follow-up') || msg.includes('followup')) || n.type === 'followup') && id) {
+                    try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
+                    nav(`/doctor/appointments/${id}/followup`);
+                  } else if ((n.type === 'chat' || msg.includes('new message')) && id) {
                     try { localStorage.setItem('lastChatApptId', id); } catch(_) {}
                     nav(`/doctor/appointments/${id}/followup`);
                   } else if ((msg.includes('view details') || n.type === 'details') && id) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../api";
 
@@ -16,13 +16,16 @@ export default function DoctorAppointmentDocuments() {
   const [filePreview, setFilePreview] = useState(null);
   const [isFullPreview, setIsFullPreview] = useState(false);
   const [chatText, setChatText] = useState("");
+  const socketRef = useRef(null);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError("");
+      let fetched = null;
       try {
         const { data } = await API.get(`/appointments/${id}`);
+        fetched = data;
         setAppt(data);
       } catch (e) {
         setError(e.response?.data?.message || e.message || "Failed to load appointment");
@@ -31,20 +34,26 @@ export default function DoctorAppointmentDocuments() {
         const wrMsgs = JSON.parse(localStorage.getItem(`wr_${id}_chat`) || "[]");
         const wrF = JSON.parse(localStorage.getItem(`wr_${id}_files`) || "[]");
         const fuF = JSON.parse(localStorage.getItem(`fu_${id}_files`) || "[]");
-        const prevAny = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || "[]");
+        const serverF = Array.isArray(fetched?.patientReports) ? fetched.patientReports : [];
         const wrS = String(localStorage.getItem(`wr_${id}_symptoms`) || "");
         const fuS = String(localStorage.getItem(`fu_${id}_symptoms`) || "");
         const baseMsgs = Array.isArray(wrMsgs) ? wrMsgs : [];
-        const allFiles = ([])
-          .concat(Array.isArray(wrF) ? wrF : [], Array.isArray(fuF) ? fuF : [], Array.isArray(prevAny) ? prevAny : []);
-        const cleanFiles = (Array.isArray(allFiles) ? allFiles : [])
-          .filter((x) => {
-            const name = String(x?.name || '').toLowerCase();
-            const by = String(x?.by || '').toLowerCase();
-            if (by === 'doctor') return false;
-            if (name.includes('prescription')) return false;
-            return true;
-          });
+        const merged = ([]).concat(Array.isArray(wrF) ? wrF : [], Array.isArray(fuF) ? fuF : [], Array.isArray(serverF) ? serverF : []);
+        const uniq = [];
+        const seen = new Set();
+        for (const x of Array.isArray(merged) ? merged : []) {
+          const key = `${String(x?.url || '')}|${String(x?.name || '')}`;
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          uniq.push(x);
+        }
+        const cleanFiles = uniq.filter((x) => {
+          const name = String(x?.name || '').toLowerCase();
+          const by = String(x?.by || '').toLowerCase();
+          if (by === 'doctor') return false;
+          if (name.includes('prescription')) return false;
+          return true;
+        });
         setChat(baseMsgs.map((it) => (typeof it === 'string' ? it : String(it?.text || ''))).filter(Boolean));
         setFiles(cleanFiles);
         setSymptoms(wrS || fuS || "");
@@ -61,6 +70,29 @@ export default function DoctorAppointmentDocuments() {
     };
     load();
   }, [id]);
+
+  useEffect(() => {
+    try {
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const w = window;
+      const onReady = () => {
+        try {
+          const socket = w.io ? w.io(origin, { transports: ['websocket','polling'], auth: { token: localStorage.getItem('token') || '' } }) : null;
+          if (socket) socketRef.current = socket;
+        } catch(_) {}
+      };
+      if (!w.io) {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.socket.io/4.7.2/socket.io.min.js';
+        s.onload = onReady;
+        document.body.appendChild(s);
+        return () => { try { document.body.removeChild(s); } catch(_) {} try { socketRef.current && socketRef.current.close(); } catch(_) {} };
+      } else {
+        onReady();
+        return () => { try { socketRef.current && socketRef.current.close(); } catch(_) {} };
+      }
+    } catch(_) { return () => {}; }
+  }, []);
 
   const patientName = appt?.patient?.name || "";
   const patientGender = (() => {
@@ -92,7 +124,9 @@ export default function DoctorAppointmentDocuments() {
 
   const openFile = (u, name) => {
     try {
-      const s = String(u || '');
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      const s0 = String(u || '');
+      const s = (/^https?:\/\//.test(s0) || s0.startsWith('data:')) ? s0 : (s0.startsWith('/') ? (origin + s0) : s0);
       setFilePreview({ url: s, name: String(name || '') });
       setIsFullPreview(true);
     } catch (_) {}
@@ -158,6 +192,7 @@ export default function DoctorAppointmentDocuments() {
                     try { localStorage.setItem(`wr_${id}_chat`, JSON.stringify(next)); } catch(_) {}
                     try { localStorage.setItem('lastChatApptId', String(id)); } catch(_) {}
                     try { const chan = new BroadcastChannel('chatmsg'); chan.postMessage({ apptId: String(id), actor: 'doctor', text: t }); chan.close(); } catch(_) {}
+                    try { socketRef.current && socketRef.current.emit('chat:new', { apptId: String(id), actor: 'doctor', kind: 'pre', text: t }); } catch(_) {}
                     setChatText("");
                   }}
                   className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white"

@@ -21,9 +21,11 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
     const load = async () => {
       setLoading(true);
       setError("");
+      let fetched = null;
       try {
         const { data } = await API.get(`/appointments/${id}`);
-        setAppt(data || null);
+        fetched = data || null;
+        setAppt(fetched);
       } catch (e) {
         setError(e.response?.data?.message || e.message || "Failed to load appointment");
       }
@@ -37,7 +39,17 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
         setFuChat(fuN);
         const wrF = JSON.parse(localStorage.getItem(`wr_${id}_files`) || "[]");
         const fuF = JSON.parse(localStorage.getItem(`fu_${id}_files`) || "[]");
-        setFiles(([]).concat(Array.isArray(wrF) ? wrF : [], Array.isArray(fuF) ? fuF : []));
+        const serverF = Array.isArray(fetched?.patientReports) ? fetched.patientReports : [];
+        const merged = ([]).concat(Array.isArray(wrF) ? wrF : [], Array.isArray(fuF) ? fuF : [], Array.isArray(serverF) ? serverF : []);
+        const seen = new Set();
+        const uniq = [];
+        for (const x of Array.isArray(merged) ? merged : []) {
+          const key = `${String(x?.url || '')}|${String(x?.name || '')}`;
+          if (!key || seen.has(key)) continue;
+          seen.add(key);
+          if (typeof x?.url === 'string' && String(x.url).trim() !== '') uniq.push(x);
+        }
+        setFiles(uniq);
       } catch (_) { setFuChat([]); setFiles([]); }
       setLoading(false);
     };
@@ -49,7 +61,26 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
       const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
       const w = window;
       const socket = w.io ? w.io(origin, { transports: ["websocket", "polling"], auth: { token: localStorage.getItem('token') || '' } }) : null;
-      if (socket) socketRef.current = socket;
+      if (socket) {
+        socketRef.current = socket;
+        const expectedActor = String(actor || '').toLowerCase() === 'doctor' ? 'patient' : 'doctor';
+        socket.on('chat:new', (msg) => {
+          try {
+            const { apptId, actor: fromActor, kind, text } = msg || {};
+            const idStr = String(apptId || '');
+            if (!idStr || idStr !== String(id)) return;
+            if (String(fromActor || '').toLowerCase() !== expectedActor) return;
+            if (kind !== 'followup') return;
+            const t = String(text || '').trim();
+            if (!t) return;
+            const k = `fu_${idStr}_chat`;
+            const arr = JSON.parse(localStorage.getItem(k) || '[]');
+            const next = (Array.isArray(arr) ? arr : []).concat([t]);
+            try { localStorage.setItem(k, JSON.stringify(next)); } catch(_) {}
+            setFuChat(next);
+          } catch (_) {}
+        });
+      }
       return () => { try { socket && socket.close(); } catch(_) {} };
     } catch(_) { return () => {}; }
   }, []);
@@ -81,6 +112,16 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
       return String(age);
     } catch (_) { return ""; }
   })();
+
+  const absUrl = (u) => {
+    try {
+      const s = String(u || '');
+      if (!s) return s;
+      if (/^https?:\/\//.test(s) || s.startsWith('data:')) return s;
+      const origin = String(API.defaults.baseURL || '').replace(/\/(api)?$/, '');
+      return origin + (s.startsWith('/') ? s : ('/' + s));
+    } catch (_) { return String(u || ''); }
+  };
 
   return (
     <div className="page-gradient">
@@ -157,11 +198,11 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
                     <div key={idx} className="flex items-center justify-between border border-blue-200 rounded-xl p-3 bg-white/70">
                       <div className="flex items-center gap-3">
                         {(String(f.url || '').startsWith('data:image')) && (
-                          <img src={f.url} alt={f.name} className="h-10 w-10 object-cover rounded" />
+                          <img src={absUrl(f.url)} alt={f.name} className="h-10 w-10 object-cover rounded" />
                         )}
                         <div className="text-sm text-slate-800 truncate max-w-[12rem]">{f.name}</div>
                       </div>
-                      <button onClick={() => { try { setFilePreview({ url: f.url, name: f.name }); setIsFullPreview(true); } catch(_) {} }} className="px-2 py-1 rounded-md border border-blue-200 text-blue-700 text-sm">Open</button>
+                      <button onClick={() => { try { setFilePreview({ url: absUrl(f.url), name: f.name }); setIsFullPreview(true); } catch(_) {} }} className="px-2 py-1 rounded-md border border-blue-200 text-blue-700 text-sm">Open</button>
                     </div>
                   ))
                 )}
@@ -170,7 +211,7 @@ export default function FollowUpDetails({ actor = 'patient', backTo = '/appointm
             {filePreview && isFullPreview && (
               <div className="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center">
                 <button type="button" onClick={() => setIsFullPreview(false)} className="absolute top-4 right-4 px-3 py-1 rounded-md border border-slate-300 bg-white/90">Close</button>
-                <img src={String(filePreview.url || '')} alt="" className="w-[98vw] h-[90vh] object-contain shadow-2xl" />
+                <img src={absUrl(String(filePreview.url || ''))} alt="" className="w-[98vw] h-[90vh] object-contain shadow-2xl" />
               </div>
             )}
           </div>

@@ -116,7 +116,8 @@ export default function Appointments() {
           if (url && /^https?:\/\//.test(url)) {
             const idX = String(a._id || a.id);
             try { localStorage.setItem(`joinedByPatient_${idX}`, '1'); } catch(_) {}
-            const win = window.open(url, '_blank');
+            const win = window.open(url, meetWindowName(idX));
+            try { localStorage.setItem(`openMeeting_${idX}`, '1'); } catch(_) {}
             try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: 'join' }); } catch(_) {}
             if (win) {
               const end = new Date(a.date);
@@ -127,7 +128,7 @@ export default function Appointments() {
                 const expired = now >= end.getTime();
                 if (expired || !win || win.closed) {
                   clearInterval(monitor);
-                  try { localStorage.setItem(`joinedByPatient_${idX}`, expired ? '0' : '0'); } catch(_) {}
+                  try { localStorage.setItem(`joinedByPatient_${idX}`, expired ? '0' : '0'); localStorage.setItem(`openMeeting_${idX}`, '0'); } catch(_) {}
                   try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: expired ? 'complete' : 'exit' }); } catch(_) {}
                 }
               }, 1000);
@@ -416,6 +417,7 @@ export default function Appointments() {
               const active = now >= d.getTime() && now < end.getTime();
               if (event === 'join' && actor === 'doctor') {
                 try { localStorage.setItem(`doctorJoined_${id}`, '1'); } catch(_) {}
+                try { localStorage.setItem(`everJoinedDoctor_${id}`, '1'); } catch(_) {}
                 setProfiles((prev) => {
                   const next = new Map(prev);
                   const did = String(a.doctor?._id || a.doctor || '');
@@ -445,7 +447,7 @@ export default function Appointments() {
                 } catch(_) {}
                 setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, status: 'COMPLETED' } : x)));
               } else if (event === 'join' && actor === 'patient') {
-                try { localStorage.setItem(`joinedByPatient_${id}`, '1'); } catch(_) {}
+                try { localStorage.setItem(`joinedByPatient_${id}`, '1'); localStorage.setItem(`everJoinedPatient_${id}`, '1'); } catch(_) {}
                 setList((prev) => prev.slice());
               } else if (event === 'exit' && actor === 'patient') {
                 try { localStorage.removeItem(`joinedByPatient_${id}`); } catch(_) {}
@@ -519,12 +521,18 @@ export default function Appointments() {
         setDetSymptoms(s);
         setDetSummary(sum);
       } catch(_) {}
-      const files = JSON.parse(localStorage.getItem(`wr_${id}_prevpres`) || '[]');
-      setDetPrevFiles(Array.isArray(files) ? files : []);
       const doctorFiles = JSON.parse(localStorage.getItem(`wr_${id}_files`) || '[]');
-      if (Array.isArray(doctorFiles) && doctorFiles.length && (!files || files.length === 0)) {
-        setDetPrevFiles(doctorFiles);
+      const serverFiles = Array.isArray(detailsAppt?.patientReports) ? detailsAppt.patientReports : [];
+      const mergedFiles = [...(Array.isArray(doctorFiles) ? doctorFiles : []), ...serverFiles];
+      const seen = new Set();
+      const arr = [];
+      for (const x of mergedFiles) {
+        const key = `${String(x?.url || '')}|${String(x?.name || '')}`;
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        arr.push(x);
       }
+      setDetPrevFiles(arr);
       const msgs = JSON.parse(localStorage.getItem(`wr_${id}_chat`) || '[]');
       const normMsgs = (Array.isArray(msgs) ? msgs : []).map((it) => (typeof it === 'string' ? it : String(it?.text || ''))).filter(Boolean);
       setDetChat(normMsgs);
@@ -649,6 +657,8 @@ export default function Appointments() {
       setIsFullPreview(true);
     } catch (_) {}
   };
+
+  const meetWindowName = (id) => `patientMeet_${String(id || '')}`;
 
   const meetLinkFor = (appt) => {
     try {
@@ -880,37 +890,7 @@ export default function Appointments() {
                                       View Prescription
                                     </button>
                                   )}
-                                  {canFollowUp(a) && (
-                                    <button
-                                      onClick={() => { const id = String(a._id || a.id || ''); if (id) { try { localStorage.setItem('lastChatApptId', id); } catch(_) {}; nav(`/appointments/${id}/followup`); } }}
-                                      className="border border-green-600 text-green-700 px-3 py-1 rounded-md"
-                                    >
-                                      Follow-up
-                                    </button>
-                                  )}
-                                  {(() => {
-                                    const key = `rate_${String(a._id || a.id || '')}`;
-                                    let rated = false;
-                                    try { rated = Number(localStorage.getItem(`${key}_stars`) || 0) > 0; } catch(_) {}
-                                    return (
-                                      <button
-                                        onClick={() => {
-                                          if (rated) return;
-                                          setRateAppt(a);
-                                          try {
-                                            const stars = Number(localStorage.getItem(`${key}_stars`) || 0) || 0;
-                                            const text = String(localStorage.getItem(`${key}_comment`) || '') || '';
-                                            setRateStars(stars);
-                                            setRateText(text);
-                                          } catch(_) { setRateStars(0); setRateText(''); }
-                                        }}
-                                        disabled={rated}
-                                        className={`border px-3 py-1 rounded-md ${rated ? 'border-slate-300 text-slate-400 cursor-not-allowed' : 'border-green-600 text-green-700'}`}
-                                      >
-                                        {rated ? 'Rated' : 'Rate Doctor'}
-                                      </button>
-                                    );
-                                  })()}
+                                  
                                 </>
                               );
                             }
@@ -962,11 +942,14 @@ export default function Appointments() {
                                       localStorage.setItem(`joinedByPatient_${idX}`, '1');
                                       setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: 'JOINED' } : x)));
                                     } catch(_) {}
-                                    const win = window.open(url, '_blank');
+                                    const name = meetWindowName(id);
+                                    const win = window.open(url, name);
+                                    try { localStorage.setItem(`openMeeting_${String(a._id || a.id)}`, '1'); } catch(_) {}
                                     try { meetWinRef.current[id] = win; } catch(_) {}
                                     try { socketRef.current && socketRef.current.emit('meet:update', { apptId: String(a._id || a.id), actor: 'patient', event: 'join' }); } catch(_) {}
                                     try {
                                       const idX = String(a._id || a.id);
+                                      try { localStorage.setItem(`everJoinedPatient_${idX}`, '1'); } catch(_) {}
                                       const monitor = setInterval(() => {
                                         const end = new Date(a.date);
                                         const [eh, em] = String(a.endTime || a.startTime || '00:00').split(':').map((x) => Number(x));
@@ -974,11 +957,15 @@ export default function Appointments() {
                                         const now = Date.now();
                                         const expired = now >= end.getTime();
                                         if (expired) {
+                                          const djEver = localStorage.getItem(`everJoinedDoctor_${idX}`) === '1';
+                                          const pjEver = localStorage.getItem(`everJoinedPatient_${idX}`) === '1';
+                                          const both = djEver && pjEver;
                                           try {
                                             localStorage.setItem(`joinedByPatient_${idX}`, '0');
-                                            setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: 'COMPLETED' } : x)));
+                                            localStorage.setItem(`openMeeting_${idX}`, '0');
+                                            setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: both ? 'COMPLETED' : 'CONFIRMED' } : x)));
                                           } catch(_) {}
-                                          try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: 'complete' }); } catch(_) {}
+                                          try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: both ? 'complete' : 'exit' }); } catch(_) {}
                                           try {
                                             const w = meetWinRef.current[idX];
                                             if (w && !w.closed) w.close();
@@ -991,7 +978,7 @@ export default function Appointments() {
                                         if (!win || win.closed) {
                                           clearInterval(monitor);
                                           meetMonitorRef.current[idX] = null;
-                                          try { localStorage.setItem(`joinedByPatient_${idX}`, '0'); setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: 'CONFIRMED' } : x))); } catch(_) {}
+                                          try { localStorage.setItem(`joinedByPatient_${idX}`, '0'); localStorage.setItem(`openMeeting_${idX}`, '0'); setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: 'CONFIRMED' } : x))); } catch(_) {}
                                           try { socketRef.current && socketRef.current.emit('meet:update', { apptId: idX, actor: 'patient', event: 'exit' }); } catch(_) {}
                                         }
                                       }, 1000);
@@ -1005,6 +992,7 @@ export default function Appointments() {
                                           try {
                                             const idX = String(a._id || a.id);
                                             localStorage.setItem(`joinedByPatient_${idX}`, '0');
+                                            localStorage.setItem(`openMeeting_${idX}`, '0');
                                             setList((prev) => prev.map((x) => (String(x._id || x.id) === idX ? { ...x, status: 'CONFIRMED' } : x)));
                                           } catch(_) {}
                                           try { socketRef.current && socketRef.current.emit('meet:update', { apptId: String(a._id || a.id), actor: 'patient', event: 'exit' }); } catch(_) {}
@@ -1015,6 +1003,11 @@ export default function Appointments() {
                                             const w = meetWinRef.current[idX];
                                             if (w && !w.closed) { w.close(); }
                                             meetWinRef.current[idX] = null;
+                                            try {
+                                              const name = meetWindowName(idX);
+                                              const w2 = window.open('', name);
+                                              if (w2 && !w2.closed) w2.close();
+                                            } catch(_) {}
                                           } catch(_) {}
                                         }}
                                         className="border border-red-600 text-red-700 px-3 py-1 rounded-md"
@@ -1431,7 +1424,6 @@ export default function Appointments() {
                     const nextFiles = [...detPrevFiles, ...newItems];
                     setDetPrevFiles(nextFiles);
                     const id = String(detailsAppt._id || detailsAppt.id);
-                    try { localStorage.setItem(`wr_${id}_prevpres`, JSON.stringify(nextFiles)); } catch(_) {}
                     try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
                     try { socketRef.current && socketRef.current.emit('chat:new', { apptId: id, actor: 'patient', kind: 'report', text: `Report uploaded (${files.length})` }); } catch(_) {}
                     e.target.value = '';
@@ -1456,7 +1448,6 @@ export default function Appointments() {
                               const nextFiles = detPrevFiles.filter((_, i) => i !== idx);
                               setDetPrevFiles(nextFiles);
                               const id = String(detailsAppt._id || detailsAppt.id);
-                              try { localStorage.setItem(`wr_${id}_prevpres`, JSON.stringify(nextFiles)); } catch(_) {}
                               try { localStorage.setItem(`wr_${id}_files`, JSON.stringify(nextFiles)); } catch(_) {}
                             }}
                             className="px-2 py-1 rounded-md border border-red-600 text-red-700 text-sm"
@@ -1493,7 +1484,8 @@ export default function Appointments() {
                         summary: detSummary,
                         date: detailsAppt.date,
                         startTime: detailsAppt.startTime,
-                        doctorId: String(detailsAppt.doctor?._id || detailsAppt.doctor || '')
+                        doctorId: String(detailsAppt.doctor?._id || detailsAppt.doctor || ''),
+                        reports: detPrevFiles
                       });
                       setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, patientSymptoms: detSymptoms, patientSummary: detSummary } : x)));
                       try {
@@ -1509,7 +1501,8 @@ export default function Appointments() {
                             summary: detSummary,
                             date: detailsAppt.date,
                             startTime: detailsAppt.startTime,
-                            doctorId: String(detailsAppt.doctor?._id || detailsAppt.doctor || '')
+                            doctorId: String(detailsAppt.doctor?._id || detailsAppt.doctor || ''),
+                            reports: detPrevFiles
                           });
                           const id = String(detailsAppt._id || detailsAppt.id);
                           setList((prev) => prev.map((x) => (String(x._id || x.id) === id ? { ...x, patientSymptoms: detSymptoms, patientSummary: detSummary } : x)));

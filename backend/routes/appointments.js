@@ -23,7 +23,7 @@ router.get("/slots/:doctorId", async (req, res) => {
         return res.status(404).json({ message: "Doctor profile not found" });
 
     const day = new Date(date).getDay(); // 0-6 (Sun-Sat)
-    let todaysAvailability = [{ day, from: "10:00", to: "22:00" }];
+    let todaysAvailability = [{ day, from: "00:00", to: "24:00" }];
 
     const duration = profile.slotDurationMins || 15;
     const slotsMap = generateSlots(todaysAvailability, duration);
@@ -283,7 +283,7 @@ router.put('/:id/rate', authenticate, async (req, res) => {
 // Patient adds or updates details for online consultation
 router.put("/:id/patient-details", authenticate, async (req, res) => {
   const { id } = req.params;
-  const { symptoms, summary, date, startTime, doctorId } = req.body || {};
+  const { symptoms, summary, date, startTime, doctorId, reports } = req.body || {};
   let appt = null;
   try {
     if (id && id !== 'undefined') {
@@ -300,13 +300,29 @@ router.put("/:id/patient-details", authenticate, async (req, res) => {
   if (!appt) return res.status(404).json({ message: "Appointment not found" });
   appt.patientSymptoms = typeof symptoms === 'string' ? symptoms : appt.patientSymptoms;
   appt.patientSummary = typeof summary === 'string' ? summary : appt.patientSummary;
+  try {
+    if (Array.isArray(reports)) {
+      const clean = [];
+      const seen = new Set();
+      for (const r of reports) {
+        const name = typeof r?.name === 'string' ? r.name : '';
+        const url = typeof r?.url === 'string' ? r.url : '';
+        if (!name || !url) continue;
+        const key = `${name}|${url}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        clean.push({ name, url });
+      }
+      appt.patientReports = clean.slice(0, 20);
+    }
+  } catch (_) {}
   await appt.save();
   res.json({ ok: true });
 });
 
 // Fallback without id
 router.put("/patient-details", authenticate, async (req, res) => {
-  const { symptoms, summary, date, startTime, doctorId } = req.body || {};
+  const { symptoms, summary, date, startTime, doctorId, reports } = req.body || {};
   const filter = { patient: req.user._id };
   if (doctorId) filter.doctor = doctorId;
   if (date) filter.date = String(date);
@@ -315,6 +331,22 @@ router.put("/patient-details", authenticate, async (req, res) => {
   if (!appt) return res.status(404).json({ message: "Appointment not found" });
   appt.patientSymptoms = typeof symptoms === 'string' ? symptoms : appt.patientSymptoms;
   appt.patientSummary = typeof summary === 'string' ? summary : appt.patientSummary;
+  try {
+    if (Array.isArray(reports)) {
+      const clean = [];
+      const seen = new Set();
+      for (const r of reports) {
+        const name = typeof r?.name === 'string' ? r.name : '';
+        const url = typeof r?.url === 'string' ? r.url : '';
+        if (!name || !url) continue;
+        const key = `${name}|${url}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        clean.push({ name, url });
+      }
+      appt.patientReports = clean.slice(0, 20);
+    }
+  } catch (_) {}
   await appt.save();
   res.json({ ok: true });
 });
@@ -338,7 +370,7 @@ router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const appt = await Appointment.findById(id)
     .populate("doctor", "name email phone")
-    .populate("patient", "name email");
+    .populate("patient", "name email gender birthday");
   if (!appt) return res.status(404).json({ message: "Appointment not found" });
   if (String(appt.patient._id) !== String(req.user._id) && String(appt.doctor._id) !== String(req.user._id)) return res.status(403).json({ message: "Forbidden" });
   res.json(appt);
