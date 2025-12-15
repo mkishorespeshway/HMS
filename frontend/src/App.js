@@ -725,6 +725,9 @@ function App() {
       return { title: 'HospoZen', desc: 'HospoZen — book verified doctors and manage appointments online.', keys: 'hospozen, doctors, appointments' };
     };
     const cfg = metaByPath();
+    const ogImage = (process.env.PUBLIC_URL || '') + '/logo512.png';
+    const siteName = 'HospoZen';
+    const ogType = path.startsWith('/doctor/') ? 'profile' : 'website';
     const noindex = (
       path.startsWith('/admin') ||
       path.startsWith('/prescription') ||
@@ -744,8 +747,13 @@ function App() {
         <meta property="og:title" content={cfg.title} />
         <meta property="og:description" content={cfg.desc} />
         <meta property="og:url" content={url} />
+        <meta property="og:site_name" content={siteName} />
+        <meta property="og:type" content={ogType} />
+        <meta property="og:image" content={ogImage} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={cfg.title} />
         <meta name="twitter:description" content={cfg.desc} />
+        <meta name="twitter:image" content={ogImage} />
       </Helmet>
     );
   };
