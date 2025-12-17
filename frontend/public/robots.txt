@@ -1,3 +1,10 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /prescription/
+Disallow: /doctor/dashboard
+Disallow: /doctor/appointments
+Disallow: /doctor/profile
+Disallow: /login
+Disallow: /register
+Sitemap: https://hms.speshwayhrms.com/sitemap.xml

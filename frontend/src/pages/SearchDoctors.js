@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import API from "../api";
+import { Helmet } from "react-helmet-async";
 
 const SPECIALTIES = [
   "General Physician",
@@ -25,6 +26,8 @@ const SPECIALTIES = [
   "Rheumatologist",
   "Physiotherapist",
 ];
+
+const OG_FALLBACK = (process.env.PUBLIC_URL || '') + '/logo512.png';
 
 export default function SearchDoctors() {
   const location = useLocation();
@@ -167,6 +170,7 @@ export default function SearchDoctors() {
     initSocket();
     return () => { cleanup.forEach((fn) => fn()); };
   }, []);
+  
 
   const linkClass = (active) =>
     active
@@ -175,13 +179,27 @@ export default function SearchDoctors() {
 
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const pageTitle = specialization ? `Find ${specialization} | HospoZen` : (q ? `Find Doctors: ${q} | HospoZen` : 'Find Doctors | HospoZen');
+  const pageDesc = specialization ? `Browse and book ${specialization} near you.` : (q ? `Search results for doctors matching "${q}".` : 'Search and book verified doctors by specialty, experience, and ratings.');
+
   if (isAdmin) {
     return (
       <div className="min-h-screen">
+        <Helmet>
+          <title>{pageTitle}</title>
+          <meta name="description" content={pageDesc} />
+          <meta property="og:title" content={pageTitle} />
+          <meta property="og:description" content={pageDesc} />
+          <meta property="og:image" content={OG_FALLBACK} />
+          <meta property="og:type" content="website" />
+          <meta name="twitter:card" content="summary" />
+          <meta name="twitter:title" content={pageTitle} />
+          <meta name="twitter:description" content={pageDesc} />
+          <meta name="twitter:image" content={OG_FALLBACK} />
+        </Helmet>
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
             <div className="flex items-center justify-between h-16">
-              {/* Enhanced Logo Section */}
               <Link to="/admin/dashboard" className="flex items-center gap-4 group hover:scale-105 transition-all duration-300">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 border-2 border-white/20">
                   <div className="text-white">
@@ -194,8 +212,6 @@ export default function SearchDoctors() {
                   </span>
                 </div>
               </Link>
-
-              {/* Enhanced Desktop Navigation */}
               <nav className="hidden lg:flex items-center space-x-10">
                 {(() => {
                   const p = window.location.pathname;
@@ -221,10 +237,7 @@ export default function SearchDoctors() {
                   );
                 })()}
               </nav>
-
-              {/* Enhanced User Actions */}
               <div className="flex items-center space-x-4">
-                {/* Enhanced Mobile Menu Button */}
                 <button
                   className="lg:hidden p-3 rounded-xl text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 border border-gray-200 hover:border-blue-300"
                   onClick={() => setMobileOpen(!mobileOpen)}
@@ -233,8 +246,6 @@ export default function SearchDoctors() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 </button>
-
-                {/* Logout Button */}
                 <button
                   onClick={() => { localStorage.removeItem("token"); nav("/admin/login"); }}
                   className="hidden lg:inline-flex bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-105 border-2 border-white/20"
@@ -243,8 +254,6 @@ export default function SearchDoctors() {
                 </button>
               </div>
             </div>
-
-            {/* Enhanced Mobile Menu */}
             {mobileOpen && (
               <div className="lg:hidden fixed inset-0 z-40" onClick={() => setMobileOpen(false)}>
                 <div className="absolute top-16 left-0 right-0">
@@ -339,6 +348,18 @@ export default function SearchDoctors() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDesc} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDesc} />
+        <meta property="og:image" content={OG_FALLBACK} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDesc} />
+        <meta name="twitter:image" content={OG_FALLBACK} />
+      </Helmet>
       <div className="max-w-7xl mx-auto pt-8 px-4 animate-fade-in">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent animate-slide-in-right">Find Your Perfect Doctor</h2>
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl p-6 mb-8 animate-slide-in-left opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>

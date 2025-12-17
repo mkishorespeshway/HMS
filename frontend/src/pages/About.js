@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import API from "../api";
+import { Helmet } from "react-helmet-async";
 
 export default function About() {
+  const OG_FALLBACK = (process.env.PUBLIC_URL || '') + '/logo512.png';
   const [stats, setStats] = useState({ appointments: 0, doctors: 0, specialties: 0 });
   const [specs, setSpecs] = useState([]);
   useEffect(() => {
@@ -40,6 +42,18 @@ export default function About() {
 
   return (
     <div className="page-gradient">
+      <Helmet>
+        <title>About HospoZen | Healthcare Platform</title>
+        <meta name="description" content="Learn about HospoZen and our mission to modernize healthcare." />
+        <meta property="og:title" content="About HospoZen | Healthcare Platform" />
+        <meta property="og:description" content="Learn about HospoZen and our mission to modernize healthcare." />
+        <meta property="og:image" content={OG_FALLBACK} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="About HospoZen | Healthcare Platform" />
+        <meta name="twitter:description" content="Learn about HospoZen and our mission to modernize healthcare." />
+        <meta name="twitter:image" content={OG_FALLBACK} />
+      </Helmet>
       <section className="relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-gradient-to-br from-indigo-300/40 to-purple-300/40 rounded-full blur-3xl" />
         <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-gradient-to-br from-blue-300/40 to-cyan-300/40 rounded-full blur-3xl" />

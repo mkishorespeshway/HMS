@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../api";
+import { Helmet } from "react-helmet-async";
 
 export default function Appointments() {
   const nav = useNavigate();
   const location = useLocation();
+  const TW_FALLBACK = (process.env.PUBLIC_URL || '') + '/logo512.png';
   const isPrescriptionsView = (() => {
     try {
       const q = new URLSearchParams(location.search);
@@ -682,6 +684,32 @@ export default function Appointments() {
 
   return (
     <div className="page-gradient">
+      <Helmet>
+        <title>{isPrescriptionsView ? 'Prescriptions | HospoZen' : 'My Appointments | HospoZen'}</title>
+        <meta name="description" content={isPrescriptionsView ? 'View and access your prescriptions, print or share securely.' : 'Manage bookings, join online consultations, pay, and follow up with doctors.'} />
+        <meta property="og:title" content={isPrescriptionsView ? 'Prescriptions | HospoZen' : 'My Appointments | HospoZen'} />
+        <meta property="og:description" content={isPrescriptionsView ? 'View and access your prescriptions, print or share securely.' : 'Manage bookings, join online consultations, pay, and follow up with doctors.'} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={isPrescriptionsView ? 'Prescriptions | HospoZen' : 'My Appointments | HospoZen'} />
+        <meta name="twitter:description" content={isPrescriptionsView ? 'View and access your prescriptions, print or share securely.' : 'Manage bookings, join online consultations, pay, and follow up with doctors.'} />
+        <meta name="twitter:image" content={(() => { if (isPrescriptionsView && presItems.length) { const first = presItems[0]; const prof = profiles.get(String(first.docId || '')); const src = prof?.photoBase64; if (src && String(src).startsWith('data:image')) return src; } return TW_FALLBACK; })()} />
+        {isPrescriptionsView && presItems.length > 0 && (
+          <script type="application/ld+json">{JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: presItems.map((it, idx) => ({
+              "@type": "ListItem",
+              position: idx + 1,
+              item: {
+                "@type": "CreativeWork",
+                name: it.name || `Prescription ${it.date || ''} ${it.time || ''}`.trim(),
+                url: `${typeof window !== 'undefined' ? window.location.origin : ''}${it.url || ''}`
+              }
+            }))
+          })}</script>
+        )}
+      </Helmet>
       <div className="max-w-7xl mx-auto px-4 pt-12 md:pt-16 animate-fade-in">
       
       <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-700 via-purple-700 to-indigo-800 bg-clip-text text-transparent mb-4">{isPrescriptionsView ? 'Prescriptions' : 'My appointments'}</h1>
