@@ -188,7 +188,7 @@ export default function DoctorDetails() {
         <meta name="twitter:title" content={`Dr. ${name} | ${specList || 'Doctor'} | HospoZen`} />
         <meta name="twitter:description" content={(about || `Consult ${name} — ${specList}`)} />
         <meta name="twitter:image" content={String(doctor?.photoBase64 || '').startsWith('data:image') ? doctor?.photoBase64 : undefined} />
-        <script type="application/ld+json">{JSON.stringify(() => {
+        <script type="application/ld+json">{JSON.stringify((() => {
           const primarySpec = (specList || '').split(',')[0] || 'Doctor';
           const photo = (String(doctor?.photoBase64 || '').startsWith('data:image') ? doctor?.photoBase64 : undefined);
           const ratingValue = Number(ratingAvg || 0) || 0;
@@ -212,7 +212,7 @@ export default function DoctorDetails() {
           };
           if (hasRating) obj.aggregateRating = { "@type": "AggregateRating", ratingValue, reviewCount };
           return obj;
-        })()}</script>
+        })())}</script>
       </Helmet>
       {isAdminRoute ? (
         <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-xl border-b border-blue-200/50">

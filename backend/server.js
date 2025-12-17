@@ -1,6 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
@@ -24,16 +27,12 @@ const { notifyChat } = require('./utils/notify');
 
 
 const app = express();
-<<<<<<< HEAD
-const allowedOrigins = [process.env.CORS_ORIGIN_LOCAL, process.env.CORS_ORIGIN_PRODUCTION];
-app.use(cors({ origin: allowedOrigins }));
-app.options('*', cors({ origin: allowedOrigins }));
-=======
-app.use(cors());
-app.options('*', cors());
+const allowedOrigins = [process.env.CORS_ORIGIN_LOCAL, process.env.CORS_ORIGIN_PRODUCTION].filter(Boolean);
+const corsConfig = { origin: allowedOrigins.length ? allowedOrigins : '*' };
+app.use(cors(corsConfig));
+app.options('*', cors(corsConfig));
 app.use(helmet());
 app.use(compression({ threshold: 0 }));
->>>>>>> 8e159f7edbdd15307b7b6ffdd06f9b079bf5db86
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -46,7 +45,7 @@ connectDB();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: corsConfig.origin,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   }
 });
@@ -202,7 +201,6 @@ app.get('/sitemap.xml', async (req, res) => {
 });
 
 try {
-  const path = require('path');
   if (String(process.env.SERVE_CLIENT || '').trim() === '1') {
     const clientPath = path.join(__dirname, '../frontend/build');
     app.use(express.static(clientPath, { maxAge: '30d', etag: true, lastModified: true }));
